@@ -308,6 +308,9 @@ TSWLatexianTemp*
 ./auto/*
 *.el
 
+# python venv
+.venv/
+
 # expex forward references with \gathertags
 *-tags.tex
 
