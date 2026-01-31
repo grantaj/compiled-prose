@@ -18,7 +18,7 @@ OLLAMA_HOST ?= http://localhost:11434
 # Inputs
 OUTLINE := outline.md
 SYSTEM := prompts/00_system.md
-TARGET_STYLE ?= prompts/targets/default.md
+TARGET_STYLE ?= prompts/targets/journal_academic.md
 
 P_DRAFT := prompts/10_draft.md
 P_SMOOTH := prompts/20_smooth.md
