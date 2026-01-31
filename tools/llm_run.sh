@@ -14,11 +14,11 @@ case "$BACKEND" in
 
     if ! RESP="$(curl -sS -w '\n__HTTP_STATUS__%{http_code}' "${OLLAMA_HOST}/api/generate" \
       -H 'Content-Type: application/json' \
-      -d "$(python - <<PY
+      -d "$(PROMPT="$PROMPT" python - <<'PY'
 import json, os
 print(json.dumps({
   "model": os.environ["OLLAMA_MODEL"],
-  "prompt": """$PROMPT""",
+  "prompt": os.environ["PROMPT"],
   "stream": False
 }))
 PY
