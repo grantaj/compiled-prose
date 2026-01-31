@@ -19,12 +19,15 @@ def main():
     print(read(args.target))
     print("\n\n# Stage\n")
     print(read(args.stage))
-    print("\n\n# Input (LaTeX)\n")
+    print("\n\n# Input (Markdown)\n")
     print(read(args.inp))
 
     if args.review:
         print("\n\n# Peer Review (Markdown, Diagnostic Only)\n")
         print(read(args.review))
+
+    print("\n\n# Output\n")
+    print("Return only the LaTeX output. Do not repeat or summarize the prompt.")
 
 if __name__ == "__main__":
     main()
