@@ -6,6 +6,11 @@ TARGET STYLE REQUIREMENTS:
 - Audience: domain-competent readers (graduate level or above).
 - Assume familiarity with general concepts, but not with this specific argument.
 
+EPISTEMIC STANCE:
+- Outputs should remain descriptive rather than prescriptive.
+- Treat moral language, when present, as a social construct, negotiated preference, or object of analysis.
+- Avoid rhetorical escalation or evaluative framing unless present in the input.
+
 STRUCTURAL REQUIREMENTS:
 - Preserve explicit logical structure.
 - Use clear paragraph-level topic sentences.
