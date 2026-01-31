@@ -164,7 +164,17 @@ In the absence of such a rupture, academic prose has instead evolved toward ritu
 
 ---
 
-## VIII. Closing Position
+## VIII. The Essay as Executable Artefact
+
+This essay is itself developed using the compiled prose model it describes. Its conceptual outline, compilation prompts, and revision passes are maintained in a public repository, allowing the prose to be regenerated, targeted to different venues, or inspected independently of its execution. The essay is therefore not only an argument for compiled prose, but a concrete instance of it.
+
+- Public development of the essay as a compiled object
+- Outline, prompts, and passes maintained as first-class artefacts
+- Prose treated as reproducible output
+- Repository as audit trail and demonstration
+
+
+## IX. Closing Position
 
 * Compiled prose as a descriptive account of an emerging practice
 * Clarifying, not abolishing, authorship
