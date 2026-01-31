@@ -1,6 +1,10 @@
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -euo pipefail -c
 
+# Load .env if present and export variables for recipes.
+-include .env
+export
+
 BUILD_DIR := build
 
 # Backend selection (can be overridden: make BACKEND=openai final)
@@ -33,13 +37,17 @@ REVISE_OUT := $(BUILD_DIR)/revise.tex
 REVIEW_OUT := $(BUILD_DIR)/peer_review.md
 FINAL_OUT  := $(BUILD_DIR)/final.tex
 
-.PHONY: all draft smooth revise review final clean
+.PHONY: all draft smooth revise review final check-ollama clean clobber
 all: final
 draft: $(DRAFT_OUT)
 smooth: $(SMOOTH_OUT)
 revise: $(REVISE_OUT)
 review: $(REVIEW_OUT)
 final: $(FINAL_OUT)
+
+check-ollama:
+	@python tools/check_ollama.py
+
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -71,4 +79,7 @@ $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TA
 	$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),--review $(REVIEW_OUT)) > "$@"
 
 clean:
+	rm -f $(DRAFT_OUT) $(SMOOTH_OUT) $(REVISE_OUT) $(REVIEW_OUT) $(FINAL_OUT)
+
+clobber:
 	rm -rf $(BUILD_DIR)
