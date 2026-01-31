@@ -1,0 +1,142 @@
+# Compiled Prose: Constraint-Driven Outline
+
+## Anchor Paragraph
+
+This essay concerns academic and technical writing: forms of prose whose primary function is the reliable transmission of concepts, arguments, and procedures. In these contexts, clarity is primal. Expressive gesture is not merely optional but often counterproductive—at best introducing noise, and at worst functioning as borrowed weight, rhetorical camouflage, or obfuscation. The essay proposes *compiled prose* as a model in which conceptual structure is authored explicitly and upstream, while natural language is treated as a compiled artefact rather than a site of primary expression. In this model, the detailed outline functions as source code, encoding the logic, dependencies, and invariants of the argument; prose becomes machine code, a deterministic rendering optimised for legibility and compatibility with disciplinary norms, institutional conventions, and reader expectations. This is not a claim that prose is unimportant, nor that meaning is fully reducible to structure, nor that expressive writing is obsolete. It is a claim about separation of concerns: in domains where misunderstanding carries real epistemic or material cost, treating style, voice, and register as externalised constraints—akin to compilation targets or stylesheets—improves reproducibility, auditability, and revision without erasing conceptual authorship. The essay is descriptive rather than prescriptive. It names a practice already emerging, often implicitly and unevenly, under the pressures of scale, collaboration, and AI-assisted execution, and asks what follows if we acknowledge it explicitly rather than continuing to treat linguistic execution as a sacred site of authorship.
+
+---
+
+## I. Domain and Failure Mode
+
+### I.1 Academic and Technical Writing as a Coordination Technology
+
+* Writing whose purpose is transmission, coordination, and reproducibility
+* Misunderstanding as a structural cost, not a stylistic inconvenience
+* Distinction from expressive or aesthetic writing
+
+### I.2 Gesture as Noise and Obfuscation
+
+* Definition of gesture in academic prose
+* Noise vs borrowed weight vs rhetorical camouflage
+* Gesture as interference when clarity is primal
+
+---
+
+## II. The Compiled Prose Model
+
+### II.1 Separation of Concept and Execution
+
+* Conceptual structure as the authored object
+* Natural language as an execution layer
+* Authorship relocated upstream
+
+### II.2 Compiler Analogy (Operational)
+
+* Outline as source code
+* Drafting, smoothing, revision as compilation passes
+* Prose as deterministic output targeting reader norms
+* Style guides and journal voices as compilation targets
+
+### II.3 Determinism and Variance Control
+
+* Determinism as predictability, not reduction
+* Inspectability, regenerability, revisability
+* Prose as interface, not invention site
+
+---
+
+## III. Precedent: Instruction and Delegated Execution in Art
+
+Although this essay is concerned primarily with academic and technical writing, the underlying model has precedent outside those domains. In conceptual art, particularly in the instruction-based works of Sol LeWitt, authorship is located not in execution but in specification. The artwork exists fully at the level of the idea and its constraints; physical realisation is delegated, repeatable, and intentionally variable. Compiled prose extends this logic into writing: the detailed outline functions as an instruction set, prose as an execution. As with instruction-based art, variability in surface realisation does not undermine authorship so long as fidelity to the underlying structure is maintained. What appears novel in the context of AI-assisted writing is thus better understood as the convergence of long-standing conceptual practices with new execution technologies.
+
+### III.1 Conceptual Art and Specification
+
+* Instruction-based practices as relocation of authorship
+* Idea and constraint as the work
+* Execution as delegated, repeatable, and variable
+
+### III.2 Structural Equivalence to Compiled Prose
+
+* Instructions ↔ detailed outline
+* Execution ↔ prose realisation
+* Fidelity measured against specification
+
+### III.3 AI as Execution Technology
+
+* AI as draftsperson or compiler
+* Novelty as convergence, not rupture
+
+---
+
+## IV. The Missing Rupture in Academic Prose
+
+**Academic prose still treats execution as sacred because it never underwent its conceptual-art rupture.** 
+
+In the absence of such a rupture, academic prose has instead evolved toward ritualisation. Its most pathological forms resemble liturgical language: opaque, formulaic, and authoritative by convention rather than by argument. Like liturgy, this prose is not designed to be interrogated line by line, paraphrased freely, or recomposed without loss of status. Its function is not primarily to transmit ideas with minimal distortion, but to signal legitimacy through correct performance of inherited forms. In such contexts, gesture becomes protective. It shields claims from scrutiny by embedding them in ritual, where deviation is treated as error rather than inquiry.
+
+### IV.1 Sacred Execution
+
+* Conflation of surface fluency with rigor
+* Persistence of handcrafted prose norms
+
+### IV.2 Historical Lag and Institutional Inertia
+
+* Why authorship remained bound to execution
+* Absence of explicit specification culture
+
+---
+
+## V. Ritualised Academia and Liturgical Prose
+
+### V.1 Ritual as Stabilisation Mechanism
+
+* Formulaic language and inherited forms
+* Authority through correct performance
+* Initiation-based comprehension
+
+### V.2 Liturgical Analogy
+
+* Opaque, non-paraphrasable language
+* Deviation treated as error
+* Ritual as debate-bypass mechanism
+
+### V.3 Gesture as Protection
+
+* Gesture shielding claims from scrutiny
+* Legitimacy signalling vs transmission
+
+---
+
+## VI. Compiled Prose as De-Ritualisation
+
+### VI.1 Desacralising Execution
+
+* Making prose contingent and inspectable
+* Authority relocated to structure
+
+### VI.2 Specification over Performance
+
+* Executable outlines
+* Explicit constraints replacing inherited ritual
+
+---
+
+## VII. Implications and Limits
+
+### VII.1 Transparency and Responsibility
+
+* Clear locus of authorship
+* Disclosure of execution mechanisms
+
+### VII.2 When Compiled Prose Is Inappropriate
+
+* Expressive, aesthetic, or exploratory writing
+* Contexts where gesture is primary
+
+---
+
+## VIII. Closing Position
+
+* Compiled prose as a descriptive account of an emerging practice
+* Clarifying, not abolishing, authorship
+* A response to scale, collaboration, and automation rather than a stylistic ideology
