@@ -43,15 +43,24 @@ def main():
             f"[openai] tokens input={input_tokens} output={output_tokens} total={total_tokens} cached_input={cached_tokens}\n"
         )
 
-        # Cost estimate for gpt-5-mini based on current pricing.
-        # Input: $0.250 / 1M tokens, Cached input: $0.025 / 1M tokens, Output: $2.000 / 1M tokens.
-        if model.startswith("gpt-5-mini"):
-            in_rate = 0.250 / 1_000_000
-            cached_rate = 0.025 / 1_000_000
-            out_rate = 2.000 / 1_000_000
-            if input_tokens is not None and output_tokens is not None:
-                cached = cached_tokens or 0
-                uncached = max(input_tokens - cached, 0)
+        # Cost estimates based on current pricing.
+        # gpt-5: input $1.250 / 1M, cached input $0.125 / 1M, output $10.000 / 1M
+        # gpt-5-mini: input $0.250 / 1M, cached input $0.025 / 1M, output $2.000 / 1M
+        if input_tokens is not None and output_tokens is not None:
+            cached = cached_tokens or 0
+            uncached = max(input_tokens - cached, 0)
+            if model.startswith("gpt-5-mini"):
+                in_rate = 0.250 / 1_000_000
+                cached_rate = 0.025 / 1_000_000
+                out_rate = 2.000 / 1_000_000
+            elif model.startswith("gpt-5"):
+                in_rate = 1.250 / 1_000_000
+                cached_rate = 0.125 / 1_000_000
+                out_rate = 10.000 / 1_000_000
+            else:
+                in_rate = cached_rate = out_rate = None
+
+            if in_rate is not None:
                 est = uncached * in_rate + cached * cached_rate + output_tokens * out_rate
                 sys.stderr.write(f"[openai] est_cost_usd={est:.6f}\n")
 
