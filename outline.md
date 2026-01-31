@@ -25,23 +25,52 @@ This essay concerns academic and technical writing: forms of prose whose primary
 ## II. The Compiled Prose Model
 
 ### II.1 Separation of Concept and Execution
+- Conceptual structure as the primary authored object
+- Natural language as an execution layer rather than a site of invention
+- Authorship explicitly relocated upstream into specification
 
-* Conceptual structure as the authored object
-* Natural language as an execution layer
-* Authorship relocated upstream
+### II.2 The Outline as Executable Specification
+- The detailed outline as the authoritative artefact
+- Encoding of:
+  - Logical dependencies
+  - Argument order and invariants
+  - Claims, warrants, and scope boundaries
+- The outline as "source code" rather than planning aid
 
-### II.2 Compiler Analogy (Operational)
+### II.3 Compilation Passes in Prose Production
+- Multi-stage generation as an explicit workflow:
+  - Structural draft (faithful expansion of outline)
+  - Smoothing pass (local coherence and readability)
+  - Revision pass (cross-sectional consistency, redundancy removal)
+  - Peer-review pass (simulated reviewer objections and stress tests)
+  - Final compilation (targeted stylistic normalisation)
+- Each pass transforms representation without altering core logic
 
-* Outline as source code
-* Drafting, smoothing, revision as compilation passes
-* Prose as deterministic output targeting reader norms
-* Style guides and journal voices as compilation targets
+### II.4 Determinism and Variance Control
+- Determinism defined operationally:
+  - Same outline + same constraints → equivalent prose
+- Variance introduced only through:
+  - Explicit parameter changes
+  - Target audience or venue constraints
+- Benefits:
+  - Predictable regeneration
+  - Fine-grained revision without conceptual drift
 
-### II.3 Determinism and Variance Control
+### II.5 Targeting and Stylesheets
+- Journals, disciplines, and genres as compilation targets
+- Voice and register treated as external constraints
+- Style guides as prose stylesheets rather than authorial expression
+- Portability of arguments across venues via re-compilation
 
-* Determinism as predictability, not reduction
-* Inspectability, regenerability, revisability
-* Prose as interface, not invention site
+### II.6 LLMs as Compilers, Not Authors
+- Large language models positioned as execution machinery
+- LLM role limited to:
+  - Faithful expansion of specification
+  - Local linguistic optimisation
+  - Consistency enforcement across sections
+- Explicit rejection of:
+  - Emergent authorship
+  - Implicit conceptual contribution
 
 ---
 
