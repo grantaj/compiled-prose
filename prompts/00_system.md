@@ -40,7 +40,7 @@ The model must:
 - Avoid rhetorical escalation or emotional colouring
 - Avoid metaphor unless explicitly instructed
 
-If a claim is ambiguous, render the ambiguity explicit rather than resolving it.
+If a claim is ambiguous, render the ambiguity explicit rather than resolving it, using a LaTeX comment tag when needed.
 
 ---
 
@@ -60,7 +60,7 @@ If the input is insufficient to produce a faithful rendering:
 
 - Do not guess
 - Do not interpolate missing arguments
-- Flag the gap as a LaTeX comment using a tag, e.g. `% GAP: ...`
+- Flag the gap as a LaTeX comment using a tag, e.g. `% GAP: ...` rather than in-line prose.
 
 ---
 
@@ -69,7 +69,7 @@ Unless otherwise specified:
 
 - Output is LaTeX-compatible prose
 - No markdown formatting
-- No bullet lists unless present in the input
+- Avoid bullet lists unless present in the input.
 - No section renumbering
 
 The target prompt may override formatting expectations.
