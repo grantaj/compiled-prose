@@ -36,13 +36,13 @@ REVIEW_OUT  := $(BUILD_DIR)/peer_review.md
 FINAL_OUT   := $(BUILD_DIR)/final.tex
 SUMMARY_OUT := $(BUILD_DIR)/summary.tex
 
-.PHONY: all draft smooth revise review final summarize check-ollama openai-check print-vars clean clobber
+.PHONY: all draft smooth revise review final summarize report-errors check-ollama openai-check print-vars clean clobber
 all: final
 draft: $(DRAFT_OUT)
 smooth: $(SMOOTH_OUT)
 revise: $(REVISE_OUT)
 review: $(REVIEW_OUT)
-final: $(FINAL_OUT)
+final: $(FINAL_OUT) report-errors
 summarize: $(SUMMARY_OUT)
 
 check-ollama:
@@ -99,6 +99,16 @@ $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TA
 		fi; \
 	fi
 	$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),--review $(REVIEW_OUT)) > "$@"
+
+report-errors:
+	@rg -n -o "% (GAP|ISSUE):.*" build/*.tex || true
+	@if [ -f "$(REVIEW_OUT)" ]; then \
+		echo "Peer review MAJOR issues:"; \
+		rg -n "MAJOR:" "$(REVIEW_OUT)" || true; \
+	fi
+	@if [ -f "$(REVIEW_OUT)" ] && grep -q 'REVIEW AGAIN: YES' "$(REVIEW_OUT)"; then \
+		echo "REVIEW AGAIN: YES (peer review not satisfied)" >&2; \
+	fi
 
 $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=example_outline.md" >&2; exit 1; fi
