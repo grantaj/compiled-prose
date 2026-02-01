@@ -60,7 +60,7 @@ If the input is insufficient to produce a faithful rendering:
 
 - Do not guess
 - Do not interpolate missing arguments
-- Flag the gap explicitly in the output using square brackets
+- Flag the gap as a LaTeX comment using a tag, e.g. `% GAP: ...`
 
 ---
 

@@ -22,6 +22,7 @@ Constraints (strict and must be followed):
 - Do not include any meta-commentary, model thoughts, or messages to the user; output only the LaTeX content.
 - Do not introduce terminology, interpretations, or examples that are not explicitly present in the outline.
 - Do not add analogies or explanatory metaphors unless the outline contains them.
+- If you must flag gaps or errors, add a LaTeX comment with a tag (e.g., `% GAP: ...`, `% ISSUE: ...`).
 
 Output:
 - Expand each outline item into full prose; do not compress or generalize.

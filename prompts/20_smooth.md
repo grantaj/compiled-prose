@@ -12,6 +12,7 @@ Constraints:
 - End most paragraphs with a brief forward-bridge sentence that links to the next paragraph’s topic.
 - Maintain neutral, analytical tone.
 - LaTeX must compile; avoid invalid commands.
+- If you must flag gaps or errors, add a LaTeX comment with a tag (e.g., `% GAP: ...`, `% ISSUE: ...`).
 
 Output:
 - Fewer, smoother paragraphs with internal arcs.

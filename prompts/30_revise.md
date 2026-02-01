@@ -11,6 +11,7 @@ Constraints:
 - Reduce citation clustering by synthesizing adjacent claims where possible.
 - Maintain neutral, analytical tone.
 - LaTeX must compile; avoid invalid commands.
+- If you must flag gaps or errors, add a LaTeX comment with a tag (e.g., `% GAP: ...`, `% ISSUE: ...`).
 
 Output:
 - A coherent, PhD level readable text ready for academic peer review.

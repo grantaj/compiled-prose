@@ -8,6 +8,7 @@ Constraints:
 - Maintain neutral, analytical tone.
 - LaTeX must compile; avoid invalid commands.
 - Address the reviewer comments provided to you
+- If you must flag gaps or errors, add a LaTeX comment with a tag (e.g., `% GAP: ...`, `% ISSUE: ...`).
 
 Output:
 - A final, high quality, publication-ready text.
