@@ -17,12 +17,13 @@ Constraints (strict and must be followed):
 - Produce readable sentences and paragraphs that flow
 - Sentences should work within the context of surrounding sentences
 - Do not produce stilted, mechanical text. Your goal is to translate from outline to high quality prose 
-- Do not include text before or after the latex document text
+- Output must begin with `\documentclass` and end with `\end{document}`; no text outside the document.
 - If the outline uses headings, render them as the corresponding level of LaTeX sectioning commands with fully written prose under each heading.
 - Do not include any meta-commentary, model thoughts, or messages to the user; output only the LaTeX content.
 - Do not introduce terminology, interpretations, or examples that are not explicitly present in the outline.
 - Do not add analogies or explanatory metaphors unless the outline contains them.
 - If you must flag gaps or errors, add a LaTeX comment with a tag (e.g., `% GAP: ...`, `% ISSUE: ...`).
+- Avoid list formatting by default. Only emit LaTeX lists (e.g., `itemize`, `enumerate`) when the outline explicitly indicates a list.
 
 Output:
 - Expand each outline item into full prose; do not compress or generalize.
