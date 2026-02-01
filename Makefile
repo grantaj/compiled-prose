@@ -90,6 +90,14 @@ $(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(SYSTEM) $(P_REVIEW) $(TARGET_STYLE) 
 
 # final: LaTeX in + peer_review.md context → LaTeX out
 $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
+	@if grep -q 'REVIEW AGAIN: YES' "$(REVIEW_OUT)"; then \
+		echo "Review requested rerun: YES" >&2; \
+		$(call RUN_LLM,$(P_REVISE),$(SMOOTH_OUT),) > "$(REVISE_OUT)"; \
+		$(call RUN_LLM,$(P_REVIEW),$(REVISE_OUT),) > "$(REVIEW_OUT)"; \
+		if grep -q 'REVIEW AGAIN: YES' "$(REVIEW_OUT)"; then \
+			echo "ERROR: reviewer comments not satisfied after rerun" >&2; \
+		fi; \
+	fi
 	$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),--review $(REVIEW_OUT)) > "$@"
 
 $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
