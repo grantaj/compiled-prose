@@ -21,4 +21,8 @@ Formatting:
 
 Output:
 - Save a concise review report file with numbered comments.
+- Use MAJOR or MINOR tags per comment.
+- Format:
+  1. MAJOR: ...
+  2. MINOR: ...
 - End the report with one line: "REVIEW AGAIN: YES" or "REVIEW AGAIN: NO". Only specify YES if you identified serious problems in your review.
