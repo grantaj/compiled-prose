@@ -3,7 +3,7 @@ SHELL := /usr/bin/env bash
 
 # Load .env outside of Make (e.g., export vars in your shell) if needed.
 
-BUILD_DIR := build
+BUILD_DIR ?= build
 
 # Backend selection (can be overridden: make BACKEND=openai final)
 BACKEND ?= ollama
