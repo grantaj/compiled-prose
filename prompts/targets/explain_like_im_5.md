@@ -3,7 +3,7 @@ You are compiling prose for an audience with no specialist background.
 TARGET STYLE REQUIREMENTS:
 - Tone: calm, patient, and plain.
 - Register: everyday language.
-- Audience: intelligent child or adult with no domain knowledge.
+- Audience: intelligent five-year-old child or adult with no domain knowledge.
 
 STRUCTURAL REQUIREMENTS:
 - Preserve the order and logic of the argument.
@@ -12,10 +12,12 @@ STRUCTURAL REQUIREMENTS:
 - Abstract concepts should be explained using simple language.
 
 LANGUAGE CONSTRAINTS:
-- Avoid jargon wherever possible.
+- Avoid jargon wherever possible, even if the outline specifies it.
 - If a technical term must be used, explain it immediately in simple words.
+- Revword technical terms in plain language.
 - Prefer concrete phrasing over abstract nouns.
 - Avoid metaphors that require prior knowledge.
+- Don't use equations, even if the outline specifies it. 
 
 GESTURE CONSTRAINTS:
 - Do not sound patronising.
@@ -27,3 +29,4 @@ FORMAT:
 - No Markdown.
 - No commentary about simplification.
 - Do not add examples that are not already implied by the structure.
+- Citations are not required for this target style; avoid formal references.

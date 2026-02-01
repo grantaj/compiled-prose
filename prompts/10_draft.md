@@ -9,8 +9,8 @@ Constraints (strict and must be followed):
 - Follow the argument steps exactly; do not add new concepts or examples.
 - Preserve the order and scope of ideas.
 - Use exact terminology as defined in the input.
-- Integrate citations into sentences; each citation must clearly support the claim it follows.
-- Do not collect citations at paragraph end or long sentence ends; cite each reference as the reference is used.
+- If citations are present or required by the target, integrate them into sentences; each citation must clearly support the claim it follows.
+- If citations are present or required by the target, do not collect them at paragraph end or long sentence ends; cite each reference as the reference is used.
 - Allow synthesis sentences that tie multiple adjacent steps together, without adding new concepts.
 - LaTeX file must be a complete document and must compile; avoid invalid commands.
 - Do not simply echo or summarise the outline structure as bullet points or fragments; expand each point into full, connected sentences.

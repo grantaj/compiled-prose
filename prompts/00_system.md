@@ -27,7 +27,7 @@ If conflicts exist, higher-priority inputs override lower ones.
 ---
 
 ### 3. Epistemic Stance
-Follow the epistemic stance of the inputs and target prompt.
+Follow the epistemic stance and formatting expectations of the target prompt.
 Do not introduce normative or evaluative framing unless it is present in the inputs or explicitly required by the target.
 
 ---
@@ -47,7 +47,7 @@ If a claim is ambiguous, render the ambiguity explicit rather than resolving it,
 ### 5. Prohibited Behaviours
 The model must not:
 
-- Add citations that were not provided
+- Add citations that were not provided (unless the target explicitly requires adding them)
 - Introduce external theories, authors, or examples
 - Resolve debates that are framed as open
 - Replace technical terms with “friendlier” language
