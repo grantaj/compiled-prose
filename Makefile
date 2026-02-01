@@ -21,8 +21,6 @@ OLLAMA_HOST ?= http://localhost:11434
 IN ?=
 SYSTEM := prompts/00_system.md
 TARGET_STYLE ?= prompts/targets/journal_academic.md
-SUMMARY_IN ?= $(OUTLINE)
-IN ?= $(SUMMARY_IN)
 
 P_DRAFT := prompts/10_draft.md
 P_SMOOTH := prompts/20_smooth.md
@@ -57,9 +55,7 @@ openai-check:
 	( echo "OpenAI request failed; check API key and billing." >&2; exit 1 )
 
 print-vars:
-	@echo "OUTLINE=$(OUTLINE)"
 	@echo "IN=$(IN)"
-	@echo "SUMMARY_IN=$(SUMMARY_IN)"
 	@echo "MAKEFLAGS=$(MAKEFLAGS)"
 
 
@@ -75,13 +71,10 @@ python tools/render_prompt.py \
   bash tools/llm_run.sh
 endef
 
-ifndef IN
-$(error IN is required, e.g. make draft IN=example_outline.md)
-endif
-
 DRAFT_IN := $(IN)
 
 $(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(SYSTEM) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
+	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make draft IN=example_outline.md" >&2; exit 1; fi
 	@echo "Draft input: $(DRAFT_IN)"
 	$(call RUN_LLM,$(P_DRAFT),$(DRAFT_IN),) > "$@"
 
@@ -100,6 +93,7 @@ $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TA
 	$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),--review $(REVIEW_OUT)) > "$@"
 
 $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
+	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=example_outline.md" >&2; exit 1; fi
 	@echo "Summarize input: $(IN)"
 	python tools/render_prompt.py --system $(SYSTEM) --stage prompts/05_summarize.md --target $(TARGET_STYLE) --in $(IN) \
 	| BACKEND=$(BACKEND) \
