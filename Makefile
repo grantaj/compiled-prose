@@ -35,6 +35,7 @@ REVISE_OUT  := $(BUILD_DIR)/revise.tex
 REVIEW_OUT  := $(BUILD_DIR)/peer_review.md
 FINAL_OUT   := $(BUILD_DIR)/final.tex
 SUMMARY_OUT := $(BUILD_DIR)/summary.tex
+FINAL_RERUN_OUT := $(BUILD_DIR)/final_rerun.tex
 
 .PHONY: all draft smooth revise review final summarize report-errors check-ollama openai-check print-vars clean clobber
 all: final
@@ -90,15 +91,17 @@ $(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(SYSTEM) $(P_REVIEW) $(TARGET_STYLE) 
 
 # final: LaTeX in + peer_review.md context → LaTeX out
 $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	@if grep -q 'REVIEW AGAIN: YES' "$(REVIEW_OUT)"; then \
+	@final_input="$(REVISE_OUT)"; \
+	if grep -q 'REVIEW AGAIN: YES' "$(REVIEW_OUT)"; then \
 		echo "Review requested rerun: YES" >&2; \
-		$(call RUN_LLM,$(P_REVISE),$(SMOOTH_OUT),) > "$(REVISE_OUT)"; \
-		$(call RUN_LLM,$(P_REVIEW),$(REVISE_OUT),) > "$(REVIEW_OUT)"; \
+		$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),--review $(REVIEW_OUT)) > "$(FINAL_RERUN_OUT)"; \
+		$(call RUN_LLM,$(P_REVIEW),$(FINAL_RERUN_OUT),) > "$(REVIEW_OUT)"; \
+		final_input="$(FINAL_RERUN_OUT)"; \
 		if grep -q 'REVIEW AGAIN: YES' "$(REVIEW_OUT)"; then \
 			echo "ERROR: reviewer comments not satisfied after rerun" >&2; \
 		fi; \
-	fi
-	$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),--review $(REVIEW_OUT)) > "$@"
+	fi; \
+	$(call RUN_LLM,$(P_FINAL),$$final_input,--review $(REVIEW_OUT)) > "$@"
 
 report-errors:
 	@rg -n -o "% (GAP|ISSUE):.*" build/*.tex || true
@@ -120,7 +123,7 @@ $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_ST
 	  bash tools/llm_run.sh > "$@"
 
 clean:
-	rm -f $(DRAFT_OUT) $(SMOOTH_OUT) $(REVISE_OUT) $(REVIEW_OUT) $(FINAL_OUT) $(SUMMARY_OUT)
+	rm -f $(DRAFT_OUT) $(SMOOTH_OUT) $(REVISE_OUT) $(REVIEW_OUT) $(FINAL_OUT) $(FINAL_RERUN_OUT) $(SUMMARY_OUT)
 
 clobber:
 	rm -rf $(BUILD_DIR)
