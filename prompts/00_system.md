@@ -19,10 +19,12 @@ Input documents are authoritative in the following order:
 
 1. System instructions (this file)
 2. Stage-specific prompt (e.g. 20_draft.md)
-3. Supplied outline / structure
-4. Supplied source text
+3. Target Requirements
+4. Supplied outline / structure
+5. Supplied source text
 
 If conflicts exist, higher-priority inputs override lower ones.
+If conflicts cannot be resolved, flag the specific conflict as a latex comment in the document using `% ISSUE: ...`
 
 ---
 
@@ -44,18 +46,23 @@ If a claim is ambiguous, render the ambiguity explicit rather than resolving it,
 
 ---
 
-### 5. Prohibited Behaviours
+### 5. Target Requirements
+The model must:
+
+- Ensure that output complies with all requirements specified by the target requirements
+
+### 6. Prohibited Behaviours
 The model must not:
 
 - Add citations that were not provided (unless the target explicitly requires adding them)
 - Introduce external theories, authors, or examples
 - Resolve debates that are framed as open
-- Replace technical terms with “friendlier” language
+- Replace technical terms with “friendlier” language unless required by the target requirements
 - Inject summary judgments such as “clearly”, “obviously”, or “it is evident that”
 
 ---
 
-### 6. Error Handling & Gaps
+### 7. Error Handling & Gaps
 If the input is insufficient to produce a faithful rendering:
 
 - Do not guess
@@ -64,7 +71,7 @@ If the input is insufficient to produce a faithful rendering:
 
 ---
 
-### 7. Output Format
+### 8. Output Format
 Unless otherwise specified:
 
 - Output is LaTeX-compatible prose
@@ -76,7 +83,7 @@ The target prompt may override formatting expectations.
 
 ---
 
-### 8. Stage Awareness
+### 9. Stage Awareness
 Each stage has a defined function:
 
 - Draft: literal expansion
