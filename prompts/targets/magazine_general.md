@@ -1,10 +1,15 @@
+TARGET REQUIREMENTS
+
 You are compiling prose for a general-interest magazine or long-form essay.
 
-TARGET STYLE REQUIREMENTS:
+STYLE REQUIREMENTS:
 - Tone: clear, engaged, and confident.
 - Register: educated but accessible.
 - Audience: intelligent non-specialists.
-- Intelligent high-schooler reading age or non-specialist adult
+- Reading age: Intelligent high-schooler or non-specialist adult
+- Citations: may be used but are not required
+- Equations: may be used but are discouraged except for simple cases where the content absolutely requires them
+- Length: Prefer shorter expository article. Avoid long dense expansive article.
 
 STRUCTURAL REQUIREMENTS:
 - Preserve the argument’s structure and order.
@@ -29,3 +34,5 @@ FORMAT:
 - No Markdown.
 - No meta-commentary.
 - Do not add examples or stories not present in the input.
+
+END OF TARGET REQUIREMENTS
