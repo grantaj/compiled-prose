@@ -104,7 +104,7 @@ $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TA
 	$(call RUN_LLM,$(P_FINAL),$$final_input,--review $(REVIEW_OUT)) > "$@"
 
 report-errors:
-	@rg -n -o "% (GAP|ISSUE):.*" build/*.tex || true
+	@rg -n -o "% (GAP|ISSUE):.*" "$(BUILD_DIR)"/*.tex || true
 	@if [ -f "$(REVIEW_OUT)" ]; then \
 		echo "Peer review MAJOR issues:"; \
 		rg -n "MAJOR:" "$(REVIEW_OUT)" || true; \
