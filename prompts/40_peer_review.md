@@ -18,6 +18,8 @@ Constraints:
 - Flag irrelevant or weak citations which do not support the argument (only if citations are expected for the target requirements).
 - Flag any sentence where justification/legitimacy is asserted without a direct legitimacy source. (take into account citation standards specified by the target requirements).
 - Identify missing references that could reasonably be expected in a text like this (only if citations are expected for the target requirements).
+- If you identify missing references provide a bibitem providing the details (only if citations are expected for the target requirements).
+- Ignore text that is part of a latex comment
 
 Formatting:
 - Output Markdown only. Do not output LaTeX.
