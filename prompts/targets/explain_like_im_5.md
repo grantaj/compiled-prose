@@ -10,7 +10,7 @@ STYLE REQUIREMENTS:
 - Citations: must not be used. 
 - Equations: must not be used.
 - Audience: intelligent five-year-old child or adult with no domain knowledge.
-- Reading age: Seven
+- Reading age: About seven. Not strict, but should be for a younger audience
 
 STRUCTURAL REQUIREMENTS:
 - Preserve the order and logic of the argument.
