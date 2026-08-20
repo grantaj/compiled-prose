@@ -69,7 +69,7 @@ class RenderPromptContractTests(unittest.TestCase):
             with self.subTest(stage=stage_path):
                 rendered = self.render(stage_path, TARGETS[0], output_type)
                 self.assertIn("OUTPUT_TYPE: tex", rendered)
-                self.assertIn("SUCCESS: Return only raw LaTeX content.", rendered)
+                self.assertIn("SUCCESS: Return exactly one complete raw LaTeX document", rendered)
 
     def test_failure_contract_is_external_and_authorial(self):
         rendered = self.render("prompts/10_draft.md", TARGETS[0], "tex")
@@ -107,7 +107,9 @@ class RenderPromptContractTests(unittest.TestCase):
             with self.subTest(call=call):
                 self.assertIn(call, makefile)
         self.assertIn("python tools/enforce_protocol.py", makefile)
+        self.assertIn('--output-type "$(4)"', makefile)
         self.assertIn('--diagnostic "$(ERROR_DIR)/$(1).md"', makefile)
+        self.assertIn('--backend-exit-status "$$status"', makefile)
 
     def test_final_prompt_with_review_still_has_one_success_type(self):
         rendered = self.render("prompts/50_final.md", TARGETS[0], "tex")

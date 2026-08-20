@@ -49,14 +49,17 @@ Every stage produces exactly one of two results:
 
 The sentinel is a transport protocol marker, not part of the diagnostic artefact. The build system removes it and writes the remaining Markdown to `$(BUILD_DIR)/errors/<stage>.md`.
 
-The backend output is never written directly to the nominal stage artefact. It is captured privately and passed through one backend-independent protocol enforcement boundary. A successful result is published only after that check succeeds.
+The backend output is never written directly to the nominal stage artefact. It is captured privately and passed through one backend-independent protocol enforcement boundary. A successful result is published only after that check succeeds. The declared success type is enforced at this boundary: current `tex` stages must return one structurally complete raw LaTeX document (`\documentclass` through `\end{document}` with no trailing content), while an `md` stage must not return a complete LaTeX document. This structural check does not replace later LaTeX compilation or semantic validation.
 
 On failure:
 
 * the nominal stage artefact is absent, including any stale result from a previous successful build;
 * the external diagnostic is written under the configured build directory;
+* any diagnostic from a previous attempt at that stage is replaced rather than left deceptively current;
 * the stage exits non-zero and `make` stops;
 * no automatic retry or source-level self-healing is attempted.
+
+If prompt rendering or backend execution exits non-zero before a complete model result exists, the captured partial output is discarded and the same external diagnostic path records an execution failure. Such an infrastructure failure is not misreported as an authorial source defect.
 
 On a later success, the nominal artefact is published and any stale diagnostic for that stage is removed.
 

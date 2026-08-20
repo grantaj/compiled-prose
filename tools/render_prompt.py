@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 OUTPUT_CONTRACTS = {
-    "tex": "Return only raw LaTeX content. Do not repeat or summarize the prompt.",
+    "tex": "Return exactly one complete raw LaTeX document beginning with `\\documentclass` and ending with `\\end{document}`. Do not repeat or summarize the prompt.",
     "md": "Return only Markdown content. Do not repeat or summarize the prompt.",
 }
 

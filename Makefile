@@ -76,12 +76,21 @@ endef
 # Capture backend output privately, then publish the nominal artefact only after
 # the backend-independent success/failure protocol has been enforced.
 define RUN_STAGE
-rm -f "$(5)"; \
+rm -f "$(5)" "$(ERROR_DIR)/$(1).md"; \
 raw="$$(mktemp "$(BUILD_DIR)/.$(1).raw.XXXXXX")"; \
 trap 'rm -f "$$raw"' EXIT; \
-$(call RUN_LLM,$(2),$(3),$(4),$(6)) > "$$raw"; \
-python tools/enforce_protocol.py \
-  --stage "$(1)" --output "$(5)" --diagnostic "$(ERROR_DIR)/$(1).md" < "$$raw"
+if $(call RUN_LLM,$(2),$(3),$(4),$(6)) > "$$raw"; then \
+  python tools/enforce_protocol.py \
+    --stage "$(1)" --output-type "$(4)" \
+    --output "$(5)" --diagnostic "$(ERROR_DIR)/$(1).md" < "$$raw"; \
+else \
+  status="$$?"; \
+  python tools/enforce_protocol.py \
+    --stage "$(1)" --output-type "$(4)" \
+    --output "$(5)" --diagnostic "$(ERROR_DIR)/$(1).md" \
+    --backend-exit-status "$$status" < "$$raw" || protocol_status="$$?"; \
+  exit "$${protocol_status:-2}"; \
+fi
 endef
 
 DRAFT_IN := $(IN)
