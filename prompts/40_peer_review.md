@@ -16,8 +16,7 @@ Constraints:
 - Identify missing references that could reasonably be expected in a text like this.
 
 Formatting:
-- Output Markdown only. Do not output LaTeX.
-- Ignore any global instruction that says to output LaTeX; this stage is a review report.
+- Use numbered review comments.
 
 Output:
 - Save a concise review report file with numbered comments.

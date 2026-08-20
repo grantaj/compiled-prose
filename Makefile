@@ -64,7 +64,7 @@ $(BUILD_DIR):
 
 define RUN_LLM
 python tools/render_prompt.py \
-  --system $(SYSTEM) --stage $(1) --target $(TARGET_STYLE) --in $(2) $(3) \
+  --system $(SYSTEM) --stage $(1) --target $(TARGET_STYLE) --in $(2) --output-type $(3) $(4) \
 | BACKEND=$(BACKEND) \
   OPENAI_MODEL=$(OPENAI_MODEL) OPENAI_TEMPERATURE=$(OPENAI_TEMPERATURE) OPENAI_SEED=$(OPENAI_SEED) \
   OLLAMA_MODEL=$(OLLAMA_MODEL) OLLAMA_HOST=$(OLLAMA_HOST) \
@@ -76,26 +76,26 @@ DRAFT_IN := $(IN)
 $(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(SYSTEM) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make draft IN=example_outline.md" >&2; exit 1; fi
 	@echo "Draft input: $(DRAFT_IN)"
-	$(call RUN_LLM,$(P_DRAFT),$(DRAFT_IN),) > "$@"
+	$(call RUN_LLM,$(P_DRAFT),$(DRAFT_IN),tex) > "$@"
 
 $(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(SYSTEM) $(P_SMOOTH) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	$(call RUN_LLM,$(P_SMOOTH),$(DRAFT_OUT),) > "$@"
+	$(call RUN_LLM,$(P_SMOOTH),$(DRAFT_OUT),tex) > "$@"
 
 $(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(SYSTEM) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	$(call RUN_LLM,$(P_REVISE),$(SMOOTH_OUT),) > "$@"
+	$(call RUN_LLM,$(P_REVISE),$(SMOOTH_OUT),tex) > "$@"
 
 # review: LaTeX in → Markdown out
 $(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(SYSTEM) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	$(call RUN_LLM,$(P_REVIEW),$(REVISE_OUT),) > "$@"
+	$(call RUN_LLM,$(P_REVIEW),$(REVISE_OUT),md) > "$@"
 
 # final: LaTeX in + peer_review.md context → LaTeX out
 $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),--review $(REVIEW_OUT)) > "$@"
+	$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),tex,--review $(REVIEW_OUT)) > "$@"
 
 $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=example_outline.md" >&2; exit 1; fi
 	@echo "Summarize input: $(IN)"
-	python tools/render_prompt.py --system $(SYSTEM) --stage prompts/05_summarize.md --target $(TARGET_STYLE) --in $(IN) \
+	python tools/render_prompt.py --system $(SYSTEM) --stage prompts/05_summarize.md --target $(TARGET_STYLE) --in $(IN) --output-type tex \
 	| BACKEND=$(BACKEND) \
 	  OPENAI_MODEL=$(OPENAI_MODEL) OPENAI_TEMPERATURE=$(OPENAI_TEMPERATURE) OPENAI_SEED=$(OPENAI_SEED) \
 	  OLLAMA_MODEL=$(OLLAMA_MODEL) OLLAMA_HOST=$(OLLAMA_HOST) \

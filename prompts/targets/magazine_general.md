@@ -22,7 +22,5 @@ GESTURE CONSTRAINTS:
 - Maintain intellectual seriousness without academic stiffness.
 
 FORMAT:
-- Output LaTeX only.
-- No Markdown.
 - No meta-commentary.
 - Do not add examples or stories not present in the input.
