@@ -1,3 +1,5 @@
+import ast
+import re
 import unittest
 from pathlib import Path
 
@@ -27,7 +29,11 @@ def text(path: str) -> str:
 
 class RenderPromptContractTests(unittest.TestCase):
     def render(self, stage_path: str, target_path: str, output_type: str) -> str:
-        review = "1. MINOR: Test review.\nREVIEW AGAIN: NO" if stage_path.endswith("50_final.md") else None
+        review = (
+            "1. MINOR: Test review.\nREVIEW AGAIN: NO"
+            if stage_path.endswith("50_final.md")
+            else None
+        )
         return render_prompt(
             system=text("prompts/00_system.md"),
             target=text(target_path),
@@ -53,6 +59,7 @@ class RenderPromptContractTests(unittest.TestCase):
                 self.assertIn("Return only Markdown content.", rendered)
                 self.assertNotIn("Return only the LaTeX output", rendered)
                 self.assertNotIn("Output LaTeX only", rendered)
+                self.assertNotIn("LaTeX comment", rendered)
                 self.assertNotIn("No Markdown", rendered)
                 self.assertNotIn("Ignore any global instruction", rendered)
 
@@ -71,16 +78,49 @@ class RenderPromptContractTests(unittest.TestCase):
             for target_path in TARGETS:
                 rendered = self.render(stage_path, target_path, output_type)
                 contract = next(
-                    line for line in rendered.splitlines() if line.startswith("OUTPUT_TYPE:")
+                    line
+                    for line in rendered.splitlines()
+                    if line.startswith("OUTPUT_TYPE:")
                 )
                 contracts.append(contract)
             with self.subTest(stage=stage_path):
                 self.assertEqual(len(set(contracts)), 1)
 
+    def test_makefile_wires_production_stage_output_types(self):
+        makefile = text("Makefile")
+        calls = dict(
+            re.findall(
+                r"\$\(call RUN_LLM,\$\(P_(DRAFT|SMOOTH|REVISE|REVIEW|FINAL)\),"
+                r".*?,(tex|md)(?:,|\))",
+                makefile,
+            )
+        )
+        self.assertEqual(
+            calls,
+            {
+                "DRAFT": "tex",
+                "SMOOTH": "tex",
+                "REVISE": "tex",
+                "REVIEW": "md",
+                "FINAL": "tex",
+            },
+        )
+        self.assertRegex(
+            makefile,
+            r"--stage prompts/05_summarize\.md .*?--output-type tex",
+        )
+
     def test_final_prompt_with_review_still_has_one_contract(self):
         rendered = self.render("prompts/50_final.md", TARGETS[0], "tex")
         self.assertIn("# Peer Review (Markdown, Diagnostic Only)", rendered)
         self.assertEqual(rendered.count("OUTPUT_TYPE:"), 1)
+
+    def test_renderer_remains_python_39_compatible(self):
+        ast.parse(
+            text("tools/render_prompt.py"),
+            filename="tools/render_prompt.py",
+            feature_version=(3, 9),
+        )
 
     def test_unknown_output_type_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "unsupported output type"):
