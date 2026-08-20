@@ -106,13 +106,27 @@ $(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(SYSTEM) $(P_SMOOTH) $(TARGET_STYLE) t
 $(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(SYSTEM) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@$(call RUN_STAGE,revise,$(P_REVISE),$(SMOOTH_OUT),tex,$@)
 
-# review: LaTeX in → Markdown out
+# review: LaTeX in -> structured Markdown diagnostic out
 $(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(SYSTEM) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@$(call RUN_STAGE,review,$(P_REVIEW),$(REVISE_OUT),md,$@)
 
-# final: LaTeX in + peer_review.md context → LaTeX out
-$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
-	@$(call RUN_STAGE,final,$(P_FINAL),$(REVISE_OUT),tex,$@,--review $(REVIEW_OUT))
+# final: validate peer-review authority first. PASS promotes revise.tex without
+# another model call; only REVISE_REALISATION may invoke one bounded final pass.
+$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/review_decision.py tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+	@decision="$$(python tools/review_decision.py \
+	  --review "$(REVIEW_OUT)" --revised "$(REVISE_OUT)" \
+	  --output "$(FINAL_OUT)" --diagnostic "$(ERROR_DIR)/review.md" \
+	  --final-diagnostic "$(ERROR_DIR)/final.md")"; \
+	case "$$decision" in \
+	  PASS) \
+	    ;; \
+	  REVISE_REALISATION) \
+	    $(call RUN_STAGE,final,$(P_FINAL),$(REVISE_OUT),tex,$@,--review $(REVIEW_OUT)); \
+	    ;; \
+	  *) \
+	    echo "review: unexpected decision '$$decision'" >&2; exit 2; \
+	    ;; \
+	esac
 
 $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=example_outline.md" >&2; exit 1; fi
