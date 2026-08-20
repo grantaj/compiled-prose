@@ -114,7 +114,7 @@ No Python packages are required for this mode.
 
 Create an API key at:
 
-[https://platform.openai.com/](https://platform.openai.com)
+[https://platform.openai.com/](https://platform.openai.com/)
 
 Add it to `.env`:
 
