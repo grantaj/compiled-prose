@@ -202,6 +202,25 @@ make TARGET_STYLE=prompts/targets/<journal>.md final
 
 ---
 
+## CI, paid compilation, and the self-example
+
+Ordinary CI is deliberately **keyless**. Pushes and pull requests run the test suite and syntax checks, but the normal CI workflow does not reference provider credentials or make model calls.
+
+Paid API compilation is a separate manual operation. `.github/workflows/publish-self-example.yml` has only a `workflow_dispatch` trigger, requires an explicit paid-usage checkbox, is restricted to `main`, and permits the paid job only when the dispatcher is the repository owner. It also places the provider call inside the `paid-compilation` GitHub Environment. Repository tests enforce that separation.
+
+A successful approved run builds an inspectable self-example site in `docs/` inside the workflow runner and deploys it through GitHub Pages Actions. The site includes the rendered final essay, the authoritative outline, peer-review diagnostics, raw stage artefacts, and provenance metadata. Generated prose is not committed back into the source tree.
+
+Recommended repository configuration:
+
+1. In **Settings → Environments**, create `paid-compilation`, require the repository owner as reviewer, and restrict deployment branches to `main`. If you are the sole reviewer, do not enable “prevent self-review”.
+2. Prefer moving `OPENAI_API_KEY` from a repository secret to an environment secret of the same name under `paid-compilation`. Environment secrets are unavailable until the environment approval passes.
+3. In **Settings → Pages**, set the publishing source to **GitHub Actions**. Do not configure branch-based `main / docs`; Actions commits made with `GITHUB_TOKEN` do not trigger that Pages build path.
+4. To publish, open **Actions → Compile and publish self-example → Run workflow**, explicitly authorize the paid compilation, then approve the `paid-compilation` environment job.
+
+One approved successful publication invokes the configured provider once per compilation stage (draft, smooth, revise, peer review, final). The workflow currently caps each stage at 20,000 output tokens and performs no automatic retry.
+
+---
+
 ## Project intent
 
 This repository is both an essay and a worked example of **compiled prose**:
