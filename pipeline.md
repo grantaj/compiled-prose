@@ -46,7 +46,7 @@ The following artefacts are authoritative by role:
 
 * **Diagnostic Context** (for example `peer_review.md`):
 
-  * Identifies defects or requested realisation-level changes.
+  * Identifies possible defects or requested realisation-level changes.
   * Is advisory and has no authority to change the argument or supply missing authored content.
 
 The language model is treated as an **execution engine**, not an author.
@@ -308,6 +308,7 @@ The pipeline consists of the following stages and decision gate, applied in orde
 * The authoritative source remains authoritative for conceptual content; the LaTeX stage input is only a derived working artefact.
 * Target requirements control acceptable realisation but do not author content.
 * Peer review comments inform changes but do not override specification or source authority.
+* Final revision must correct prior-stage drift when the faithful correction is fully determined by the authoritative source; otherwise it must fail closed.
 * No new claims, sections, citations, evidence, examples, or conceptual scope may be introduced.
 * If a supposedly realisation-level finding turns out to require authorial source changes, the stage must fail closed rather than reinterpret the review as authority.
 * The stage cannot request or trigger another review pass.
