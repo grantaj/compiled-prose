@@ -14,6 +14,7 @@ Constraints:
 - Preserve authored order and scope of ideas unless a purely realisation-level reordering is permitted by the stage and remains faithful to the authoritative source.
 - Preserve citations supplied by the authoritative source and represented in the stage input; keep them tied to the claims they support.
 - Do not treat a citation, claim, example, or scope change that appears only in the derived stage input or diagnostic context as authored source material.
+- If the selected target requires citation or evidence support that the authoritative source does not supply, use the failure branch rather than inventing or substituting material.
 - If satisfying a review comment or target requirement actually requires a new claim, warrant, interpretation, citation, evidence, scope decision, or other authorial source change, use the failure branch instead of improvising. The earlier review classification does not grant conceptual authority.
 - Check paragraph- and document-level coherence according to the selected target rather than an assumed academic style.
 - Preserve the epistemic stance of the authoritative source.
