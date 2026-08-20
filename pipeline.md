@@ -1,6 +1,6 @@
 # Compilation Pipeline Specification
 
-This document defines the **normative semantics** of the compiled‑prose pipeline implemented in this repository. It specifies the required stages, invariants, failure conditions, and artefact boundaries. It is **not** an execution script. Orchestration and scheduling are handled externally by the build system (`make`).
+This document defines the **normative semantics** of the compiled-prose pipeline implemented in this repository. It specifies the required stages, invariants, failure conditions, and artefact boundaries. It is **not** an execution script. Orchestration and scheduling are handled externally by the build system (`make`).
 
 The purpose of this specification is to make the behaviour of the pipeline explicit, inspectable, and auditable, independent of any particular execution environment or language model backend.
 
@@ -8,11 +8,12 @@ The purpose of this specification is to make the behaviour of the pipeline expli
 
 ## Scope
 
-This specification applies to the compilation of a single essay or essay section from an authoritative outline into publication‑ready LaTeX, using a fixed sequence of transformation passes. It governs:
+This specification applies to the compilation of a single essay or essay section from an authoritative outline into publication-ready LaTeX, using a fixed sequence of transformation passes. It governs:
 
 * permitted inputs and outputs
 * stage ordering and responsibilities
-* file‑modification constraints
+* target-specific rendering constraints
+* file-modification constraints
 * diagnostic and review behaviour
 * failure and retry semantics
 
@@ -22,21 +23,61 @@ This specification applies to the compilation of a single essay or essay section
 
 The following artefacts are authoritative by role:
 
-* **Outline** (`outline.md` or section‑level outline):
+* **Authoritative source** (`outline.md` or other explicitly authored source material):
 
-  * The primary source of conceptual authorship.
-  * Defines claims, structure, scope, and invariants.
+  * The sole source of conceptual authorship throughout the pipeline.
+  * Defines claims, argument, structure, scope, distinctions, examples, evidence, citations, and unresolved authorial choices.
+
+* **Stage Artefacts** (`draft.tex`, `smooth.tex`, `revise.tex`):
+
+  * Derived working representations produced by compiler stages.
+  * Are inputs to later transformations but are not conceptual authority.
+  * Must remain faithful to the authoritative source; a claim, citation, example, or scope change appearing only in a stage artefact does not become authored content merely by surviving to a later stage.
 
 * **Stage Prompts** (`prompts/*.md`):
 
-  * Define the allowed transformation at each stage.
-  * Must not introduce new conceptual content beyond the outline.
+  * Define the transformation performed at each stage.
+  * May constrain realisation but must not introduce new conceptual content.
 
-* **Target Style Prompt** (`prompts/targets/*.md`):
+* **Target Requirements** (`prompts/targets/*.md`):
 
-  * Defines venue‑specific constraints (register, citation style, formatting expectations).
+  * Define venue- or audience-specific realisation constraints such as register, reading level, formatting, citation expectations, and audience assumptions.
+  * Must not introduce claims, arguments, examples, evidence, citations, or conceptual scope.
+
+* **Diagnostic Context** (for example `peer_review.md`):
+
+  * Identifies possible defects or requested realisation-level changes.
+  * Is advisory and has no authority to change the argument or supply missing authored content.
 
 The language model is treated as an **execution engine**, not an author.
+
+---
+
+## Prompt Authority and Content Authority
+
+The authority relationship remains stable:
+
+1. system instructions;
+2. stage prompt;
+3. target requirements;
+4. authoritative source;
+5. diagnostic context, when present.
+
+The prompt renderer composes system, stage, target, and authoritative source in that order. When the current stage input differs from the authoritative source, it is then included as a separately labelled **derived working artefact** before diagnostic context. The stage input is not an additional authority layer. The explicit output contract is protocol-level system instruction and cannot be overridden by any prompt content.
+
+Instruction precedence is not conceptual authorship. The authoritative source remains the sole authority for what the work says. Higher-priority system, stage, and target instructions may define compiler behaviour or acceptable realisation, but they may not license new conceptual content. A downstream stage must not promote an invention or omission in a derived stage artefact into authored content.
+
+In particular:
+
+* a stage prompt defines **what transformation is being performed**;
+* a target defines **what constitutes acceptable realisation for the selected audience or venue**;
+* the authoritative source defines **what the work says**;
+* a stage artefact is the current working representation to transform and must be checked against that source;
+* diagnostic context may identify defects but cannot supply the missing answer.
+
+If satisfying a target requirement would require evidence, a citation, an example, a new claim, a scope decision, or another authored choice absent from the authoritative source, the relevant prose-producing stage must fail closed rather than inventing it. A diagnostic stage should report such a defect as its normal diagnostic output.
+
+The build system carries the original authoritative source alongside each downstream stage artefact. Draft and summarise operate directly on that source; smooth, revise, review, and final receive both the original source and the derived artefact they are transforming or inspecting.
 
 ---
 
@@ -63,7 +104,7 @@ If prompt rendering or backend execution exits non-zero before a complete model 
 
 On a later success, the nominal artefact is published and any stale diagnostic for that stage is removed.
 
-For prose-producing stages, source insufficiency is blocking whenever faithful prose would require inventing a claim or warrant, choosing an unresolved interpretation, expanding scope, inventing evidence or citations, changing the strength of an authored claim, or resolving contradictory authoritative input without a defined priority rule. Such conditions must not be hidden in LaTeX comments or repaired downstream.
+For prose-producing stages, source insufficiency is blocking whenever faithful prose would require inventing a claim or warrant, choosing an unresolved interpretation, expanding scope, inventing evidence or citations, satisfying a target-required evidence or citation obligation that the authoritative source does not supply, changing the strength of an authored claim, or resolving a contradiction in the authoritative source without a defined priority rule. Such conditions must not be hidden in LaTeX comments or repaired downstream.
 
 A diagnostic stage may report defects as its normal Markdown success output; it uses the failure protocol only if the diagnostic stage itself cannot be executed faithfully.
 
@@ -77,14 +118,14 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Purpose**
 
-* Faithful expansion of the outline into LaTeX prose.
+* Faithful expansion of the outline into LaTeX prose realised for the selected target.
 
 **Inputs**
 
 * Outline
 * Draft stage prompt
 * System prompt
-* Target style prompt
+* Target requirements
 
 **Output**
 
@@ -95,6 +136,7 @@ The pipeline consists of the following stages, which MUST be applied in order.
 * Output MUST be valid LaTeX.
 * No commentary or Markdown on success.
 * No claims not grounded in the outline.
+* Target-required citations may only come from the authoritative source; missing required support is blocking.
 
 ---
 
@@ -102,11 +144,12 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Purpose**
 
-* Improve local coherence, readability, and flow without altering structure or claims.
+* Improve local coherence, readability, and flow without altering structure or claims, while preserving the selected target requirements.
 
-**Input**
+**Inputs**
 
-* `draft.tex`
+* authoritative source
+* `draft.tex` (derived stage input)
 
 **Output**
 
@@ -116,6 +159,8 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 * No new claims or sections.
 * Structural order must be preserved.
+* Drift between `draft.tex` and the authoritative source may be repaired only when the correction is fully determined by the source; otherwise the stage must fail closed.
+* Citation handling is conditional on supplied citations and target requirements.
 * Output MUST be valid LaTeX only on success.
 
 ---
@@ -124,11 +169,12 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Purpose**
 
-* Address redundancy, tighten argumentation, and ensure global consistency.
+* Address redundancy, tighten prose realisation, and ensure global consistency for the selected target.
 
-**Input**
+**Inputs**
 
-* `smooth.tex`
+* authoritative source
+* `smooth.tex` (derived stage input)
 
 **Output**
 
@@ -137,7 +183,9 @@ The pipeline consists of the following stages, which MUST be applied in order.
 **Constraints**
 
 * No expansion of scope.
-* Citations, labels, and structure must be preserved unless explicitly corrected.
+* Drift between `smooth.tex` and the authoritative source may be repaired only when the correction is fully determined by the source; otherwise the stage must fail closed.
+* Citations, labels, and structure must be preserved unless a permitted realisation-level correction is made.
+* No academic or other venue-specific norm may be imposed unless it comes from the selected target.
 * Output MUST be valid LaTeX only on success.
 
 ---
@@ -146,11 +194,13 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Purpose**
 
-* Produce a critical review of the revised LaTeX without modifying it.
+* Produce a critical review of the revised LaTeX against the selected target without modifying it.
 
-**Input**
+**Inputs**
 
-* `revise.tex`
+* authoritative source
+* `revise.tex` (derived stage input)
+* Target requirements
 
 **Output**
 
@@ -161,6 +211,10 @@ The pipeline consists of the following stages, which MUST be applied in order.
 * Successful output MUST be Markdown.
 * MUST NOT rewrite or paraphrase the text.
 * Review should reference sections, labels, or passages in the LaTeX.
+* Review must identify material drift between the derived stage input and the authoritative source; such drift does not become authoritative by propagation.
+* Tone, structure, reading level, formatting, citation expectations, and related criteria must be assessed against the selected target rather than an assumed academic venue.
+* Scholarly citation checks apply when the selected target requires them; a non-academic target must not inherit academic reference obligations.
+* Missing target-required evidence or citations are source defects to report, not material for the reviewer to invent.
 * Review content is diagnostic only and has no direct authority.
 
 ---
@@ -169,11 +223,13 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Purpose**
 
-* Reconcile the revised LaTeX with the peer review diagnostics.
+* Reconcile the revised LaTeX with peer-review diagnostics within the selected target and source authority boundaries.
 
 **Inputs**
 
-* `revise.tex` (authoritative executable artefact)
+* authoritative source
+* `revise.tex` (derived stage input)
+* target requirements
 * `peer_review.md` (diagnostic context)
 
 **Output**
@@ -183,21 +239,23 @@ The pipeline consists of the following stages, which MUST be applied in order.
 **Constraints**
 
 * Successful output MUST be valid LaTeX only.
-* The LaTeX input remains authoritative.
-* Peer review comments inform changes but do not override specification.
-* No new claims, sections, citations, evidence, or conceptual scope may be introduced.
-* A review request that requires authorial source changes is blocking rather than permission for the final stage to invent them.
+* The authoritative source remains authoritative for conceptual content; the LaTeX stage input is only a derived working artefact.
+* Target requirements control acceptable realisation but do not author content.
+* Peer review comments inform changes but do not override specification or source authority.
+* Final revision must correct prior-stage drift when the faithful correction is fully determined by the authoritative source; otherwise it must fail closed.
+* No new claims, sections, citations, evidence, examples, or conceptual scope may be introduced.
+* A review or target requirement that requires authorial source changes is blocking rather than permission for the final stage to invent them.
 
 ---
 
-## File‑Modification Rules
+## File-Modification Rules
 
 * Each stage may publish **only** its designated successful output file or its own external failure diagnostic.
 * No stage may modify:
 
   * the outline
   * prompts
-  * target style files
+  * target requirement files
   * successful artefacts from other stages
 
 ---
@@ -205,7 +263,7 @@ The pipeline consists of the following stages, which MUST be applied in order.
 ## Determinism and Variance Control
 
 * Given identical inputs, prompts, constraints, backend configuration, and seed (where supported), the pipeline SHOULD produce equivalent outputs.
-* Variance is permitted only through explicit configuration changes (e.g. target style, backend, temperature).
+* Variance is permitted only through explicit configuration changes (e.g. target, backend, temperature).
 
 ---
 
@@ -213,7 +271,8 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 The pipeline MUST halt and report failure if:
 
-* a prose-producing stage cannot be completed faithfully from authoritative source;
+* a prose-producing stage cannot be completed faithfully from the authoritative source;
+* a target requirement cannot be met without inventing authored content, evidence, or citations;
 * a stage returns an explicit `@@FAIL` result;
 * a backend returns an empty or malformed failure result;
 * a backend process fails before a complete result is available;
@@ -247,7 +306,7 @@ Such reporting is diagnostic and does not alter pipeline semantics.
 
 ## Intent
 
-This specification exists to ensure that the compiled‑prose pipeline is:
+This specification exists to ensure that the compiled-prose pipeline is:
 
 * explicit rather than implicit
 * inspectable rather than ritualised

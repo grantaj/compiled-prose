@@ -66,7 +66,7 @@ $(BUILD_DIR):
 
 define RUN_LLM
 python tools/render_prompt.py \
-  --system $(SYSTEM) --stage $(1) --target $(TARGET_STYLE) --in $(2) --output-type $(3) $(4) \
+  --system $(SYSTEM) --stage $(1) --target $(TARGET_STYLE) --source $(IN) --in $(2) --output-type $(3) $(4) \
 | BACKEND=$(BACKEND) \
   OPENAI_MODEL=$(OPENAI_MODEL) OPENAI_TEMPERATURE=$(OPENAI_TEMPERATURE) OPENAI_SEED=$(OPENAI_SEED) \
   OLLAMA_MODEL=$(OLLAMA_MODEL) OLLAMA_HOST=$(OLLAMA_HOST) \

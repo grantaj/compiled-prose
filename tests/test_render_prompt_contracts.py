@@ -37,6 +37,7 @@ class RenderPromptContractTests(unittest.TestCase):
             system=text("prompts/00_system.md"),
             target=text(target_path),
             stage=text(stage_path),
+            source_text="# Test input\n- one authored claim",
             input_text="# Test input\n- one authored claim",
             output_type=output_type,
             review=review,
@@ -106,6 +107,7 @@ class RenderPromptContractTests(unittest.TestCase):
         for call in expected_calls:
             with self.subTest(call=call):
                 self.assertIn(call, makefile)
+        self.assertIn("--source $(IN) --in $(2)", makefile)
         self.assertIn("python tools/enforce_protocol.py", makefile)
         self.assertIn('--output-type "$(4)"', makefile)
         self.assertIn('--diagnostic "$(ERROR_DIR)/$(1).md"', makefile)
@@ -129,6 +131,7 @@ class RenderPromptContractTests(unittest.TestCase):
                 system="system",
                 target="target",
                 stage="stage",
+                source_text="source",
                 input_text="input",
                 output_type="html",
             )
