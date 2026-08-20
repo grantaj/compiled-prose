@@ -44,7 +44,10 @@ class TargetAwarePromptTests(unittest.TestCase):
             "prompts/targets/journal_academic.md",
             source=source,
             stage_input=stage_input,
-            review="1. MINOR: diagnostic only\nREVIEW AGAIN: NO",
+            review=(
+                "STATUS: REVISE_REALISATION\n"
+                "- [MINOR][REALISATION] Test paragraph :: Diagnostic only."
+            ),
         )
         positions = [
             rendered.index("# Stage\n"),

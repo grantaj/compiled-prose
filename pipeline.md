@@ -77,13 +77,13 @@ In particular:
 
 If satisfying a target requirement would require evidence, a citation, an example, a new claim, a scope decision, or another authored choice absent from the authoritative source, the relevant prose-producing stage must fail closed rather than inventing it. A diagnostic stage should report such a defect as its normal diagnostic output.
 
-The build system carries the original authoritative source alongside each downstream stage artefact. Draft and summarise operate directly on that source; smooth, revise, review, and final receive both the original source and the derived artefact they are transforming or inspecting.
+The build system carries the original authoritative source alongside each downstream stage artefact. Draft and summarise operate directly on that source; smooth, revise, review, and the optional final realisation revision receive both the original source and the derived artefact they are transforming or inspecting.
 
 ---
 
 ## Stage Result Protocol
 
-Every stage produces exactly one of two results:
+Every model-backed stage produces exactly one of two results:
 
 1. **Success** — a complete artefact of the stage's declared output type (`tex` or `md`).
 2. **Failure** — a Markdown diagnostic beginning in the raw backend response with the sentinel line `@@FAIL`.
@@ -110,9 +110,45 @@ A diagnostic stage may report defects as its normal Markdown success output; it 
 
 ---
 
+## Peer-review Decision Protocol
+
+Peer review has an additional machine-readable protocol because a successful diagnostic can still determine whether compilation is allowed to continue.
+
+The first non-empty line of `peer_review.md` is exactly one of:
+
+* `STATUS: PASS`
+* `STATUS: REVISE_REALISATION`
+* `STATUS: BLOCKED_SOURCE`
+
+Every subsequent non-empty line is one localised finding of the form:
+
+`- [MAJOR|MINOR][SOURCE|REALISATION] <location> :: <finding>`
+
+The overall status is not discretionary metadata. It is mechanically implied by the findings:
+
+* any `SOURCE` finding implies `BLOCKED_SOURCE`;
+* otherwise one or more `REALISATION` findings imply `REVISE_REALISATION`;
+* no findings imply `PASS`.
+
+The build system validates both the syntax and this consistency rule. A missing, duplicated, unknown, malformed, or inconsistent status fails closed rather than being guessed or repaired.
+
+`SOURCE` means that satisfying the finding requires authorial source work: for example a missing warrant, unsupported non-trivial claim, missing required evidence or citation, contradiction, meaning-changing ambiguity, missing scope boundary, or material expansion. `REALISATION` means that the existing source completely determines the correction and only wording or presentation changes.
+
+If classification is ambiguous, the finding is source-level. A reviewer-suggested citation or evidence item absent from the authoritative source never becomes authority by appearing in the review.
+
+The decision gate acts as follows:
+
+* `PASS`: `revise.tex` is promoted deterministically to `final.tex`; no final model revision is run.
+* `REVISE_REALISATION`: exactly one named final realisation-revision stage may run.
+* `BLOCKED_SOURCE`: compilation stops non-zero before final revision, any nominal `final.tex` is removed, and the review is surfaced under the normal external diagnostic path for human source revision.
+
+There is no review-again flag and no route from this protocol back into peer review automatically.
+
+---
+
 ## Pipeline Stages (Semantic Order)
 
-The pipeline consists of the following stages, which MUST be applied in order.
+The pipeline consists of the following stages and decision gate, applied in order.
 
 ### 1. Draft
 
@@ -194,7 +230,7 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Purpose**
 
-* Produce a critical review of the revised LaTeX against the selected target without modifying it.
+* Produce a critical, classified review of the revised LaTeX against the selected target without modifying it.
 
 **Inputs**
 
@@ -208,9 +244,9 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Constraints**
 
-* Successful output MUST be Markdown.
+* Successful output MUST be Markdown conforming to the peer-review decision protocol above.
 * MUST NOT rewrite or paraphrase the text.
-* Review should reference sections, labels, or passages in the LaTeX.
+* Every finding must be localised and classified by severity and by `SOURCE` versus `REALISATION` ownership.
 * Review must identify material drift between the derived stage input and the authoritative source; such drift does not become authoritative by propagation.
 * Tone, structure, reading level, formatting, citation expectations, and related criteria must be assessed against the selected target rather than an assumed academic venue.
 * Scholarly citation checks apply when the selected target requires them; a non-academic target must not inherit academic reference obligations.
@@ -219,18 +255,47 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 ---
 
-### 5. Final Compilation
+### 5. Review Decision Gate
 
 **Purpose**
 
-* Reconcile the revised LaTeX with peer-review diagnostics within the selected target and source authority boundaries.
+* Validate review syntax and authority classification and choose the only permitted next action.
+
+**Inputs**
+
+* `peer_review.md`
+* `revise.tex`
+
+**Outputs**
+
+* on `PASS`, `final.tex` as an exact deterministic promotion of `revise.tex`;
+* on `REVISE_REALISATION`, permission for stage 6 and no nominal `final.tex` yet;
+* on `BLOCKED_SOURCE` or malformed review, a non-zero exit and external diagnostic with no nominal `final.tex`.
+
+**Constraints**
+
+* The gate is deterministic and makes no model call.
+* It never converts review suggestions into source authority.
+* It fails closed on malformed or inconsistent review status.
+
+---
+
+### 6. Final Realisation Revision (Conditional, Bounded)
+
+**Purpose**
+
+* Apply the validated realisation-only peer-review findings once.
+
+**Precondition**
+
+* The review decision gate returned `REVISE_REALISATION`.
 
 **Inputs**
 
 * authoritative source
 * `revise.tex` (derived stage input)
 * target requirements
-* `peer_review.md` (diagnostic context)
+* validated `peer_review.md` (diagnostic context containing only `REALISATION` findings)
 
 **Output**
 
@@ -238,19 +303,22 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Constraints**
 
+* This stage may execute at most once per forward compilation.
 * Successful output MUST be valid LaTeX only.
 * The authoritative source remains authoritative for conceptual content; the LaTeX stage input is only a derived working artefact.
 * Target requirements control acceptable realisation but do not author content.
 * Peer review comments inform changes but do not override specification or source authority.
 * Final revision must correct prior-stage drift when the faithful correction is fully determined by the authoritative source; otherwise it must fail closed.
 * No new claims, sections, citations, evidence, examples, or conceptual scope may be introduced.
-* A review or target requirement that requires authorial source changes is blocking rather than permission for the final stage to invent them.
+* If a supposedly realisation-level finding turns out to require authorial source changes, the stage must fail closed rather than reinterpret the review as authority.
+* The stage cannot request or trigger another review pass.
 
 ---
 
 ## File-Modification Rules
 
 * Each stage may publish **only** its designated successful output file or its own external failure diagnostic.
+* The deterministic review decision gate may promote `revise.tex` to `final.tex` on `PASS`, or remove a stale `final.tex` when compilation is blocked.
 * No stage may modify:
 
   * the outline
@@ -264,6 +332,7 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 * Given identical inputs, prompts, constraints, backend configuration, and seed (where supported), the pipeline SHOULD produce equivalent outputs.
 * Variance is permitted only through explicit configuration changes (e.g. target, backend, temperature).
+* A `PASS` review introduces no additional model variance because finalisation is deterministic promotion.
 
 ---
 
@@ -277,18 +346,22 @@ The pipeline MUST halt and report failure if:
 * a backend returns an empty or malformed failure result;
 * a backend process fails before a complete result is available;
 * a stage violates an enforceable output protocol constraint;
-* peer review exposes a blocker that cannot be resolved without authorial source changes.
+* peer review returns a malformed or internally inconsistent machine status;
+* peer review exposes a source-level blocker that cannot be resolved without authorial source changes;
+* the bounded final realisation revision discovers that a requested correction actually requires authorial source work.
 
-A failed stage must not leave behind a newly written partial artefact or a stale artefact that appears to be the result of the failed rebuild.
+A failed stage or decision gate must not leave behind a newly written partial artefact or a stale artefact that appears to be the result of the failed rebuild.
 
 ---
 
 ## Iteration Policy
 
-* The pipeline is defined as a **single forward pass** through the stages.
+* The pipeline is a **single forward pass**: draft -> smooth -> revise -> peer review -> decision gate -> optional one-time final realisation revision.
 * Source-level failures require explicit human intervention in authoritative source or compiler configuration.
 * Automatic retries and self-healing for source-level failures are disallowed.
-* Any later bounded review/revision semantics must remain explicit rather than becoming an implicit loop.
+* `REVISE_REALISATION` permits at most one final realisation-revision pass and never another peer-review pass.
+* `PASS` performs no model-backed revision after peer review.
+* There is no hidden retry loop, recursive make invocation, or reviewer-driven self-improvement cycle.
 
 ---
 

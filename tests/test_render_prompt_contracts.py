@@ -29,7 +29,8 @@ def text(path: str) -> str:
 class RenderPromptContractTests(unittest.TestCase):
     def render(self, stage_path: str, target_path: str, output_type: str) -> str:
         review = (
-            "1. MINOR: Test review.\nREVIEW AGAIN: NO"
+            "STATUS: REVISE_REALISATION\n"
+            "- [MINOR][REALISATION] Test paragraph :: Test review."
             if stage_path.endswith("50_final.md")
             else None
         )
@@ -94,7 +95,7 @@ class RenderPromptContractTests(unittest.TestCase):
             with self.subTest(stage=stage_path):
                 self.assertEqual(len(set(contracts)), 1)
 
-    def test_makefile_wires_all_stages_through_protocol_enforcement(self):
+    def test_makefile_wires_all_model_stages_through_protocol_enforcement(self):
         makefile = text("Makefile")
         expected_calls = (
             "$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)",
@@ -112,10 +113,13 @@ class RenderPromptContractTests(unittest.TestCase):
         self.assertIn('--output-type "$(4)"', makefile)
         self.assertIn('--diagnostic "$(ERROR_DIR)/$(1).md"', makefile)
         self.assertIn('--backend-exit-status "$$status"', makefile)
+        self.assertIn("python tools/review_decision.py", makefile)
+        self.assertEqual(makefile.count("$(call RUN_STAGE,final,"), 1)
 
     def test_final_prompt_with_review_still_has_one_success_type(self):
         rendered = self.render("prompts/50_final.md", TARGETS[0], "tex")
         self.assertIn("# Peer Review (Markdown, Diagnostic Only)", rendered)
+        self.assertIn("STATUS: REVISE_REALISATION", rendered)
         self.assertEqual(rendered.count("OUTPUT_TYPE:"), 1)
 
     def test_renderer_remains_python_39_compatible(self):
