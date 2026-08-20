@@ -2,6 +2,7 @@
 import argparse
 import sys
 from pathlib import Path
+from typing import Optional
 
 OUTPUT_CONTRACTS = {
     "tex": "Return only raw LaTeX content. Do not repeat or summarize the prompt.",
@@ -20,7 +21,7 @@ def render_prompt(
     stage: str,
     input_text: str,
     output_type: str,
-    review: str | None = None,
+    review: Optional[str] = None,
 ) -> str:
     try:
         output_instruction = OUTPUT_CONTRACTS[output_type]
