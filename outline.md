@@ -1,181 +1,502 @@
 # Compiled Prose: Constraint-Driven Outline
 
-## Anchor Paragraph
+## Anchor
 
-This essay concerns academic and technical writing: forms of prose whose primary function is the reliable transmission of concepts, arguments, and procedures. In these contexts, clarity is primal. Expressive gesture is not merely optional but often counterproductive—at best introducing noise, and at worst functioning as borrowed weight, rhetorical camouflage, or obfuscation. The essay proposes *compiled prose* as a model in which conceptual structure is authored explicitly and upstream, while natural language is treated as a compiled artefact rather than a site of primary expression. In this model, the detailed outline functions as source code, encoding the logic, dependencies, and invariants of the argument; prose becomes machine code, a deterministic rendering optimised for legibility and compatibility with disciplinary norms, institutional conventions, and reader expectations. This is not a claim that prose is unimportant, nor that meaning is fully reducible to structure, nor that expressive writing is obsolete. It is a claim about separation of concerns: in domains where misunderstanding carries real epistemic or material cost, treating style, voice, and register as externalised constraints—akin to compilation targets or stylesheets—improves reproducibility, auditability, and revision without erasing conceptual authorship. The essay is descriptive rather than prescriptive. It names a practice already emerging, often implicitly and unevenly, under the pressures of scale, collaboration, and AI-assisted execution, and asks what follows if we acknowledge it explicitly rather than continuing to treat linguistic execution as a sacred site of authorship.
+This essay is both an argument and an experiment. It asks what happens if academic and technical prose is treated in the way conceptual art has often treated physical execution: as a realisation of an upstream authored specification rather than as the unique locus of the work.
+
+The domain is writing whose primary function includes the reliable transmission of concepts, arguments, procedures, or results. In such contexts, clarity is primal. The claim is not that prose is unimportant, nor that meaning is fully separable from language, nor that expressive writing is obsolete. The claim is that conceptual authorship and linguistic execution can sometimes be separated usefully and made independently inspectable.
+
+*Compiled prose* names a model in which the authoritative intellectual artefact is a sufficiently explicit specification of claims, warrants, dependencies, scope, sources, uncertainty, and constraints. Natural-language prose is then a compiled realisation of that specification. The realisation matters and must be reviewed, but conceptual defects are repaired upstream rather than silently rewritten into the generated prose.
+
+This sounds provocative when applied to writing, but the underlying separation of conception from execution is familiar in art practice. Sol LeWitt made the distinction explicit in conceptual art and in his instruction-based wall drawings, where the artist conceives and plans the work and a draftsman may realise it. [LeWitt 1967; LeWitt 1971]
+
+Applying that distinction to academic prose exposes assumptions about where authorship, legitimacy, and intellectual seriousness are located. Academic writing is not merely a neutral transport layer: its genres and conventions are disciplinary social practices through which arguments are presented, communities recognise competent participation, and academic identities are constructed. [Hyland 2008; Hyland 2012; Hyland 2013]
+
+The essay therefore does two related things:
+
+1. develops the practical idea of a prose compiler; and
+2. uses that mechanism as an art-informed critical intervention into academic writing.
+
+The essay is itself produced using the method it describes. Its outline, sources, prompts, compilation passes, review, and generated prose are exposed separately. The repository is therefore not merely software accompanying the essay: the process and its artefacts form part of the work.
 
 ---
 
-## I. Domain and Failure Mode
+## I. The Experiment: Where Is the Work?
 
-### I.1 Academic and Technical Writing as a Coordination Technology
+### I.1 Domain and boundary
 
-* Writing whose purpose is transmission, coordination, and reproducibility
-* Misunderstanding as a structural cost, not a stylistic inconvenience
-* Distinction from expressive or aesthetic writing
+- Concerned with academic and technical writing whose dominant purpose includes reliable transmission, coordination, reproducibility, explanation, or argument.
+- Distinguish this domain from writing in which linguistic discovery, voice, aesthetic form, ambiguity, or expression is itself a primary part of the work.
+- Compiled prose is not proposed as a universal model of writing.
+- The model is useful only where a meaningful distinction can be made between what is being argued and the particular sentences used to realise that argument.
 
-### I.2 Gesture as Noise and Obfuscation
+### I.2 The authorship question
 
-* Definition of gesture in academic prose
-* Noise vs borrowed weight vs rhetorical camouflage
-* Gesture as interference when clarity is primal
+Consider a human author who explicitly specifies:
+
+- the claims to be made;
+- their logical dependencies;
+- the warrants connecting them;
+- the evidence and sources supporting them;
+- qualifications and uncertainty;
+- scope and exclusions;
+- intended argumentative order;
+- material wording constraints where wording itself matters.
+
+A machine then produces grammatical, coherent prose satisfying that specification.
+
+The machine has plainly contributed causal labour. The question is where the intellectually authoritative contribution resides.
+
+Central proposition: if materially different surface texts can faithfully realise the same sufficiently detailed conceptual specification, there is a coherent sense in which the specification rather than any one realisation can function as the primary authored object.
+
+### I.3 Authorship and responsibility are distinct
+
+- Relocating conceptual authorship upstream does not relocate responsibility.
+- The human remains responsible for the specification, source selection, interpretation, generated realisation, and final claims presented to readers.
+- Contemporary publishing guidance already distinguishes AI participation from accountable human authorship: ICMJE requires disclosure of AI assistance, rejects AI systems as authors, and retains human responsibility for generated material. [ICMJE 2026]
+- This is evidence of an emerging practical separation between execution and accountability, not a universal definition of authorship.
 
 ---
 
 ## II. The Compiled Prose Model
 
-### II.1 Separation of Concept and Execution
-- Conceptual structure as the primary authored object
-- Natural language as an execution layer rather than a site of invention
-- Authorship explicitly relocated upstream into specification
+### II.1 Separation of concept and execution
 
-### II.2 The Outline as Executable Specification
-- The detailed outline as the authoritative artefact
-- Encoding of:
-  - Logical dependencies
-  - Argument order and invariants
-  - Claims, warrants, and scope boundaries
-- The outline as "source code" rather than planning aid
+Conceptual source contains, where material:
 
-### II.3 Compilation Passes in Prose Production
-- Multi-stage generation as an explicit workflow:
-  - Structural draft (faithful expansion of outline)
-  - Smoothing pass (local coherence and readability)
-  - Revision pass (cross-sectional consistency, redundancy removal)
-  - Peer-review pass (simulated reviewer objections and stress tests)
-  - Final compilation (targeted stylistic normalisation)
-- Each pass transforms representation without altering core logic
+- claims;
+- warrants;
+- evidence;
+- citations;
+- dependencies;
+- scope;
+- uncertainty;
+- exclusions;
+- required terminology and wording constraints.
 
-### II.4 Determinism and Variance Control
-- Determinism defined operationally:
-  - Same outline + same constraints → equivalent prose
-- Variance introduced only through:
-  - Explicit parameter changes
-  - Target audience or venue constraints
-- Benefits:
-  - Predictable regeneration
-  - Fine-grained revision without conceptual drift
+Compiled realisation contains:
 
-### II.5 Targeting and Stylesheets
-- Journals, disciplines, and genres as compilation targets
-- Voice and register treated as external constraints
-- Style guides as prose stylesheets rather than authorial expression
-- Portability of arguments across venues via re-compilation
+- sentences;
+- paragraph transitions;
+- local syntax;
+- register;
+- target-specific explanation density;
+- conventional formatting and style.
 
-### II.6 LLMs as Compilers, Not Authors
-- Large language models positioned as execution machinery
-- LLM role limited to:
-  - Faithful expansion of specification
-  - Local linguistic optimisation
-  - Consistency enforcement across sections
-- Explicit rejection of:
-  - Emergent authorship
-  - Implicit conceptual contribution
+The distinction is architectural, not absolute. Any surface feature that materially changes meaning belongs in the specification.
 
----
+### II.2 The outline as source code
 
-## III. Precedent: Instruction and Delegated Execution in Art
+- The detailed outline is the authoritative artefact rather than a disposable planning aid.
+- It must contain enough conceptual information that the execution system is not required to invent the argument.
+- A sparse outline that forces the model to supply missing reasoning has delegated conceptual authorship downstream and therefore fails the model.
+- Revision of the argument should normally occur by changing the authoritative source and recompiling.
 
-Although this essay is concerned primarily with academic and technical writing, the underlying model has precedent outside those domains. In conceptual art, particularly in the instruction-based works of Sol LeWitt, authorship is located not in execution but in specification. The artwork exists fully at the level of the idea and its constraints; physical realisation is delegated, repeatable, and intentionally variable. Compiled prose extends this logic into writing: the detailed outline functions as an instruction set, prose as an execution. As with instruction-based art, variability in surface realisation does not undermine authorship so long as fidelity to the underlying structure is maintained. What appears novel in the context of AI-assisted writing is thus better understood as the convergence of long-standing conceptual practices with new execution technologies.
+### II.3 The compiler analogy
 
-### III.1 Conceptual Art and Specification
+The software analogy is functional rather than literal.
 
-* Instruction-based practices as relocation of authorship
-* Idea and constraint as the work
-* Execution as delegated, repeatable, and variable
+The outline resembles source code because it is:
 
-### III.2 Structural Equivalence to Compiled Prose
+- upstream;
+- authoritative;
+- structured;
+- inspectable;
+- maintainable;
+- capable of supporting multiple downstream realisations.
 
-* Instructions ↔ detailed outline
-* Execution ↔ prose realisation
-* Fidelity measured against specification
+Generated prose resembles compiled output because it is:
 
-### III.3 AI as Execution Technology
+- produced under explicit constraints;
+- adapted to a target environment;
+- replaceable by another conforming realisation;
+- not the preferred location for repairing a conceptual defect.
 
-* AI as draftsperson or compiler
-* Novelty as convergence, not rupture
+Natural language is not machine code, and semantic equivalence cannot in general be mechanically guaranteed. The analogy describes an architecture of authorship and revision rather than a formal equivalence between programming and prose.
 
----
+### II.4 Compilation passes
 
-## IV. The Missing Rupture in Academic Prose
+The current implementation makes transformations explicit:
 
-**Academic prose still treats execution as sacred because it never underwent its conceptual-art rupture.** 
+1. **Draft** — faithful expansion of the specification.
+2. **Smooth** — local readability and coherence.
+3. **Revise** — cross-sectional consistency and redundancy reduction.
+4. **Peer review** — diagnostic challenge to argument and execution.
+5. **Final** — bounded response to accepted review findings.
 
-In the absence of such a rupture, academic prose has instead evolved toward ritualisation. Its most pathological forms resemble liturgical language: opaque, formulaic, and authoritative by convention rather than by argument. Like liturgy, this prose is not designed to be interrogated line by line, paraphrased freely, or recomposed without loss of status. Its function is not primarily to transmit ideas with minimal distortion, but to signal legitimacy through correct performance of inherited forms. In such contexts, gesture becomes protective. It shields claims from scrutiny by embedding them in ritual, where deviation is treated as error rather than inquiry.
+Each pass may alter realisation but must preserve conceptual authority.
 
-### IV.1 Sacred Execution
+A missing argument, unsupported claim, unresolved ambiguity, or absent source is a defect in the specification and should propagate upstream rather than being silently repaired by a model.
 
-* Conflation of surface fluency with rigor
-* Persistence of handcrafted prose norms
+### II.5 Targets as stylesheets
 
-### IV.2 Historical Lag and Institutional Inertia
+- Journals, disciplines, audiences, and genres act as compilation targets.
+- Voice, register, formatting, and explanation density can be treated as explicit constraints rather than implicit conceptual authorship.
+- One conceptual source can therefore support different legitimate realisations for different audiences.
+- Retargeting must not silently change claims, evidence, or scope.
+- If a new target genuinely requires different content, that difference belongs in the source or in an explicit source variant.
 
-* Why authorship remained bound to execution
-* Absence of explicit specification culture
+### II.6 Equivalence rather than byte-level determinism
 
----
+- Compiled prose does not require identical generated sentences.
+- Different models or runs may produce different acceptable surface forms.
+- The relevant reproducibility requirement is preservation of source-level invariants: claims, dependencies, scope, evidence, qualifications, and other explicitly authored constraints.
+- Surface variation is permitted; conceptual drift is not.
 
-## V. Ritualised Academia and Liturgical Prose
+### II.7 LLMs as compilers, not authors
 
-### V.1 Ritual as Stabilisation Mechanism
+Within this model, an LLM is assigned an execution role:
 
-* Formulaic language and inherited forms
-* Authority through correct performance
-* Initiation-based comprehension
+- faithful expansion;
+- grammatical realisation;
+- local coherence;
+- target-specific adaptation;
+- bounded revision.
 
-### V.2 Liturgical Analogy
+It is not authorised to:
 
-* Opaque, non-paraphrasable language
-* Deviation treated as error
-* Ritual as debate-bypass mechanism
+- invent claims;
+- supply missing warrants;
+- introduce external theories or examples without source authority;
+- invent citations;
+- resolve ambiguity without instruction.
 
-### V.3 Gesture as Protection
-
-* Gesture shielding claims from scrutiny
-* Legitimacy signalling vs transmission
+Current LLMs can violate these constraints. Calling them compilers describes the role imposed on them, not a claim that they provide formal compilation guarantees.
 
 ---
 
-## VI. Compiled Prose as De-Ritualisation
+## III. Art Precedent: Authorship Beyond Execution
 
-### VI.1 Desacralising Execution
+### III.1 Conceptual art and prior conception
 
-* Making prose contingent and inspectable
-* Authority relocated to structure
+- Conceptual art provides a precedent for locating substantial authorship in conception and specification rather than fabrication alone.
+- LeWitt states that in conceptual art planning and decisions are made beforehand and that "the idea becomes a machine that makes the art." [LeWitt 1967]
+- The importance of the precedent is structural: a work can be substantially conceived before its physical execution.
 
-### VI.2 Specification over Performance
+### III.2 Instruction and delegated execution
 
-* Executable outlines
-* Explicit constraints replacing inherited ritual
+LeWitt's wall drawings make the separation concrete:
+
+- the artist conceives and plans the wall drawing;
+- a draftsman may realise the plan;
+- different draftsmen may interpret the same instructions differently;
+- variation in execution is therefore expected rather than necessarily disqualifying;
+- LeWitt nevertheless continues to distinguish the artist's plan from the draftsman's execution. [LeWitt 1971]
+
+Structural correspondence:
+
+- plan ↔ conceptual specification;
+- draftsman ↔ execution engine;
+- wall drawing ↔ prose realisation;
+- fidelity to plan ↔ fidelity to authored semantic constraints.
+
+The correspondence is an analogy, not an assertion that wall drawings and academic texts are the same kind of object.
+
+### III.3 Wider conceptual-art context
+
+- LeWitt belongs to a broader period in which artists deliberately questioned the relation among idea, object, process, and fabrication.
+- Lippard and Chandler's contemporary discussion of the "dematerialization" of art records this movement away from treating the material object as the sole locus of the work. [Lippard and Chandler 1968]
+- Art practice therefore supplies a mature precedent for asking a question that remains uncomfortable in writing: where exactly is the work?
+
+### III.4 What the art analogy establishes
+
+The art precedent does not prove that academic prose should be compiled.
+
+It establishes that it is coherent to investigate whether:
+
+- conception and execution can be distinguished;
+- delegated execution can coexist with retained authorship;
+- multiple realisations can instantiate a prior specification;
+- execution quality can remain important even when execution is not the sole locus of authorship.
+
+Compiled prose applies these possibilities experimentally to writing.
 
 ---
 
-## VII. Implications and Limits
+## IV. Academic Prose as Disciplinary Performance
 
-### VII.1 Transparency and Responsibility
+### IV.1 Academic writing is not a neutral transport layer
 
-* Clear locus of authorship
-* Disclosure of execution mechanisms
+- Academic genres are community-based conventions rather than generic containers for independently formed ideas.
+- Texts are recognised as successful partly through forms familiar and convincing to disciplinary communities. [Hyland 2008]
+- Specialist academic literacies are embedded in disciplinary beliefs and practices and participate in constructing knowledge, professional standing, and academic identity. [Hyland 2012; Hyland 2013]
 
-### VII.2 When Compiled Prose Is Inappropriate
+Academic prose therefore performs at least two overlapping functions:
 
-* Expressive, aesthetic, or exploratory writing
-* Contexts where gesture is primary
+1. transmitting and negotiating intellectual content;
+2. performing competent participation in a disciplinary community.
+
+### IV.2 Convention is functional
+
+The critique is not that convention is inherently defective.
+
+Shared forms can:
+
+- reduce interpretive uncertainty;
+- communicate stance and evidential status;
+- establish genre expectations;
+- coordinate specialist writers and readers;
+- make disciplinary communication more efficient;
+- allow participants to recognise relevant forms of expertise and membership.
+
+The problem is not convention itself but the difficulty of distinguishing what is conceptually necessary from what belongs to conventional execution.
+
+### IV.3 Sacred execution
+
+The original claim that academic prose treats execution as "sacred" is retained as an interpretive proposition, not as a historical fact.
+
+- Academic culture often treats competent sentence-level production as evidence of intellectual authorship rather than merely as one means of realising it.
+- Compiled prose tests what remains of authorship when the surface prose is made replaceable while the argument is held fixed.
+- In this limited sense, the experiment desacralises execution: prose remains important, but it is no longer automatically the authoritative object.
+
+### IV.4 Liturgical prose
+
+The liturgical analogy is a deliberately critical limit case, not a description of academic writing as a whole.
+
+In pathological cases:
+
+- inherited linguistic forms acquire authority through correct performance;
+- insider recognition depends partly on mastery of those forms;
+- deviation can be penalised independently of underlying argument;
+- surface performance can therefore contribute to legitimacy as well as communication.
+
+Proposition: academic style can become sufficiently ritualised that correct performance partly substitutes for inspectable argumentative structure.
+
+The claim is not that all specialised or difficult prose is ritual. Difficulty may be conceptually necessary.
+
+### IV.5 Gesture as noise, borrowed weight, or camouflage
+
+"Gesture" names linguistic performance whose principal contribution is neither semantic precision nor necessary argumentative structure but rhetorical or disciplinary effect.
+
+Possible forms include:
+
+- borrowed weight;
+- conventional displays of seriousness;
+- unnecessary opacity;
+- rhetorical camouflage;
+- stylistic signals of legitimacy.
+
+A feature that materially communicates uncertainty, stance, disciplinary meaning, relationship among claims, or necessary nuance is not mere gesture.
+
+Compiled prose provides an operational question: must this feature be present in the authoritative specification, or can it vary without changing the work?
 
 ---
 
-## VIII. The Essay as Executable Artefact
+## V. What the Separation Makes Visible
 
-This essay is itself developed using the compiled prose model it describes. Its conceptual outline, compilation prompts, and revision passes are maintained in a public repository, allowing the prose to be regenerated, targeted to different venues, or inspected independently of its execution. The essay is therefore not only an argument for compiled prose, but a concrete instance of it.
+### V.1 Specification over performance
 
-- Public development of the essay as a compiled object
-- Outline, prompts, and passes maintained as first-class artefacts
-- Prose treated as reproducible output
-- Repository as audit trail and demonstration
+- Conceptual authority moves upstream into an inspectable artefact.
+- Surface prose becomes contingent and replaceable within the limits fixed by that artefact.
+- Conceptual changes should therefore be distinguishable from stylistic changes.
 
+### V.2 Two objects of review
 
-## IX. Closing Position
+Compiled prose permits review of two different things.
 
-* Compiled prose as a descriptive account of an emerging practice
-* Clarifying, not abolishing, authorship
-* A response to scale, collaboration, and automation rather than a stylistic ideology
+**Conceptual source:**
+
+- correctness;
+- logic;
+- evidence;
+- scope;
+- omissions;
+- citation support;
+- ambiguity.
+
+**Compiled realisation:**
+
+- readability;
+- fidelity;
+- clarity;
+- target appropriateness;
+- accidental semantic drift.
+
+The separation does not guarantee easy review, but it makes disagreements easier to locate.
+
+### V.3 Explicit revision
+
+Revisions can be classified by where they belong:
+
+- conceptual defect → change source;
+- evidential defect → change source or supporting evidence;
+- target/style defect → change target constraints;
+- execution defect → change compiler behaviour or recompile.
+
+Conventional prose editing often mixes these categories in one surface operation.
+
+### V.4 Responsibility remains human
+
+- The human author remains accountable for both the source and the realisation ultimately presented.
+- Generated prose cannot be accepted merely because it conforms stylistically.
+- Disclosure and review remain necessary where required by institutional practice. [ICMJE 2026]
+
+---
+
+## VI. Limits and Objections
+
+### VI.1 Writing can itself be thinking
+
+- Ideas often emerge through sentence-level composition.
+- In exploratory, literary, philosophical, poetic, or otherwise language-dependent work, conception may not precede execution cleanly.
+- Compiled prose does not deny this; it applies where explicit upstream specification is both possible and useful.
+
+### VI.2 Meaning is not fully separable from wording
+
+- Phrasing can change emphasis, implication, ambiguity, rhetorical force, and propositional meaning.
+- Surface variation is therefore not automatically harmless.
+- Material wording constraints belong in the source when particular language carries conceptual weight.
+- Human review of the final realisation remains necessary.
+
+### VI.3 Execution quality still matters
+
+Generated prose can be awkward, unclear, misleading, generic, or inappropriate.
+
+Relocating authorship upstream does not make execution aesthetically or practically irrelevant. It changes the status of the execution layer from authoritative source to evaluated realisation.
+
+### VI.4 Specifications can fail
+
+- An outline that omits a necessary warrant, distinction, source, or transition has not successfully transferred conceptual authorship upstream.
+- The correct response is failure or an explicit gap, not downstream invention.
+- Repair belongs in the authoritative source before recompilation.
+
+### VI.5 The art analogy is a provocation, not a proof
+
+- Conceptual art and academic prose operate in different institutional, semantic, and aesthetic contexts.
+- The analogy is valuable because it makes a hidden assumption available for inspection: must execution be the privileged evidence of authorship?
+- Compiled prose investigates the consequences of answering "not necessarily."
+
+---
+
+## VII. The Essay as Executable Artefact
+
+### VII.1 The self-example
+
+This essay is developed through the model it describes.
+
+The public repository exposes:
+
+- this authoritative outline;
+- the sources identified below;
+- stage prompts;
+- target-style constraints;
+- compilation tools;
+- peer-review output;
+- generated prose.
+
+The repository is therefore both implementation and audit trail.
+
+### VII.2 Upstream-only conceptual repair
+
+Strong rule of the self-example:
+
+**Conceptual defects discovered in generated prose are repaired in the authoritative outline rather than silently hand-edited into the final prose.**
+
+Examples of source-level defects:
+
+- missing argument;
+- unsupported assertion;
+- inadequate scope;
+- missing citation;
+- ambiguity requiring authorial resolution.
+
+The essay is then recompiled.
+
+### VII.3 What may be repaired downstream
+
+Mechanical or execution-level defects may be addressed downstream only where they do not change conceptual content.
+
+Examples:
+
+- malformed LaTeX;
+- formatting failure;
+- compiler implementation bug.
+
+If an edit changes what the essay says or why it says it, the change belongs upstream.
+
+### VII.4 What a successful self-compilation demonstrates
+
+A successful worked example would show that:
+
+- a non-trivial argument can be maintained as explicit structured source;
+- prose can be generated from that source without intentionally delegating conceptual invention;
+- defects can be repaired upstream and propagated by recompilation;
+- different surface realisations can be treated as executions of the same authored conceptual object when they preserve its invariants.
+
+It would not show that:
+
+- all writing should be compiled;
+- conceptual authorship can always be completely specified;
+- LLM output is automatically faithful;
+- prose style lacks intellectual or aesthetic value.
+
+---
+
+## VIII. Closing Position
+
+Compiled prose is simultaneously:
+
+- a model of writing;
+- a small technical system;
+- an art-informed experiment in the location of authorship;
+- a critical instrument for examining academic prose.
+
+Its central claim is limited but consequential:
+
+**In forms of writing where conceptual structure can be made sufficiently explicit, the authoritative intellectual artefact need not be identical with its surface prose realisation.**
+
+Conceptual art supplies a precedent for separating conception from execution. Academic discourse research shows that linguistic form also performs disciplinary and social functions, so surface prose cannot simply be treated as a neutral container. Compiled prose brings these observations together by making conceptual source and linguistic performance independently visible.
+
+The objective is not to abolish prose, style, convention, or authorship. It is to separate concerns that conventional writing often fuses:
+
+- conception from execution;
+- semantic structure from linguistic realisation;
+- intellectual responsibility from causal production of sentences;
+- disciplinary convention from conceptual necessity.
+
+The final essay is itself the test. If its argument remains attributable to the human author while its sentences are machine-realised from a public specification, the experiment has made its central question concrete: where, exactly, is the work?
+
+---
+
+## Sources identified for the essay
+
+### Conceptual art
+
+**LeWitt 1967**  
+Sol LeWitt, "Paragraphs on Conceptual Art," *Artforum* 5, no. 10 (June 1967): 79–83.
+
+Supports the priority of conception and prior planning in conceptual art, including the formulation that "the idea becomes a machine that makes the art."
+
+**LeWitt 1971**  
+Sol LeWitt, "Doing Wall Drawings," *Art Now: New York* 3, no. 2 (June 1971).
+
+Supports the distinction among artist, plan, draftsman, and realised work; delegated execution; and variation among realisations of a plan.
+
+**Lippard and Chandler 1968**  
+Lucy R. Lippard and John Chandler, "The Dematerialization of Art," *Art International* 12, no. 2 (February 1968): 31–36.
+
+Provides contemporary context for the wider conceptual-art movement away from treating the material object as the sole locus of artistic work.
+
+### Academic discourse
+
+**Hyland 2008**  
+Ken Hyland, "Genre and Academic Writing in the Disciplines," *Language Teaching* 41, no. 4 (2008): 543–562. DOI: 10.1017/S0261444808005235.
+
+Supports the account of genre as community-based convention and the role of familiar disciplinary forms in successful academic texts.
+
+**Hyland 2012**  
+Ken Hyland, *Disciplinary Identities: Individuality and Community in Academic Discourse*. Cambridge: Cambridge University Press, 2012.
+
+Supports the account of disciplinary discourse as a site of identity, positioning, conformity, individuality, and legitimate participation in academic communities.
+
+**Hyland 2013**  
+Ken Hyland, "Writing in the University: Education, Knowledge and Reputation," *Language Teaching* 46, no. 1 (2013): 53–70. DOI: 10.1017/S0261444811000036.
+
+Supports the claim that specialist academic literacies are embedded in disciplinary practice and central to knowledge construction and professional academic life.
+
+### AI-assisted academic authorship
+
+**ICMJE 2026**  
+International Committee of Medical Journal Editors, *Recommendations for the Conduct, Reporting, Editing, and Publication of Scholarly Work in Medical Journals*, current 2026 recommendations, sections on authorship and use of artificial intelligence in publishing.
+
+Supports the limited contemporary example that AI assistance does not transfer responsibility away from human authors and should be disclosed. It is not treated as a universal account of academic authorship.
