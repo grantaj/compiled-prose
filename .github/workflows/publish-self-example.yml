@@ -1,0 +1,113 @@
+name: Compile and publish self-example
+
+# Spending invariant: this workflow is the only workflow allowed to reference
+# OPENAI_API_KEY, and it must never gain an automatic trigger.
+on:
+  workflow_dispatch:
+    inputs:
+      authorize_paid_api_call:
+        description: "I authorize one full paid compilation (draft/smooth/revise/review/final)"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compiled-prose-self-example
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Keyless preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Run keyless tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Verify GitHub Pages configuration
+        uses: actions/configure-pages@v5
+
+  compile:
+    name: Paid compilation
+    needs: preflight
+    if: ${{ github.actor == github.repository_owner && github.ref == 'refs/heads/main' && inputs.authorize_paid_api_call == true }}
+    runs-on: ubuntu-latest
+    environment: paid-compilation
+    permissions:
+      contents: read
+    env:
+      BACKEND: openai
+      OPENAI_MODEL: gpt-5
+      TARGET_STYLE: prompts/targets/journal_academic.md
+      OPENAI_MAX_OUTPUT_TOKENS: "20000"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install compiler dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install --yes pandoc
+          pandoc --version
+
+      - name: Compile self-example using paid API
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          test -n "$OPENAI_API_KEY"
+          make clobber
+          make BACKEND="$BACKEND" OPENAI_MODEL="$OPENAI_MODEL" TARGET_STYLE="$TARGET_STYLE" IN=outline.md final
+
+      - name: Build inspectable Pages site
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python tools/build_self_example_site.py \
+            --build-dir build \
+            --outline outline.md \
+            --output-dir docs \
+            --source-sha "$SOURCE_SHA" \
+            --model "$OPENAI_MODEL" \
+            --target "$TARGET_STYLE" \
+            --run-url "$RUN_URL"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs
+
+  deploy:
+    name: Publish GitHub Pages
+    needs: compile
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
