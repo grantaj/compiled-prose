@@ -60,7 +60,7 @@ If the input is insufficient to produce a faithful rendering:
 
 - Do not guess
 - Do not interpolate missing arguments
-- Flag the gap as a LaTeX comment using a tag, e.g. `% GAP: ...`
+- Report the gap explicitly within the declared `OUTPUT_TYPE`; do not switch artefact types to report it.
 
 ---
 
