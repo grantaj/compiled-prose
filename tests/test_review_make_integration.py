@@ -1,3 +1,4 @@
+import os
 import subprocess
 import tempfile
 import unittest
@@ -48,6 +49,11 @@ class ReviewMakeIntegrationTests(unittest.TestCase):
 
     def run_make(self, review: str):
         (self.build / "peer_review.md").write_text(review, encoding="utf-8")
+        # Creating peer_review.md updates the directory mtime. The production
+        # Makefile intentionally has BUILD_DIR as an order-establishing
+        # prerequisite, so make the fixture directory unambiguously older than
+        # the pre-seeded stage artefacts and avoid accidentally rebuilding them.
+        os.utime(self.build, (0, 0))
         final = self.build / "final.tex"
         if final.exists():
             final.unlink()
