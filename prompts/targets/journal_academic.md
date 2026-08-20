@@ -39,6 +39,8 @@ CITATION & SCHOLARLY NORMS:
 - Do not oversimplify for accessibility.
 - Citations are mandatory and must be of high academic standard
 - All key claims must be either cited or well-argued from sound well-cited basis.
+- Although citations are a mandatory requirement of this target, do not introduce new citations that are not present in the source file. 
+- If new citations not present in the source are required in order to meet the target requirements or peer review report, flag this as a latex comment in the document using `% GAP: ...`
 
 FORMAT:
 - Output LaTeX only.

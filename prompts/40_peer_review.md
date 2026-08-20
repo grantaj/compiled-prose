@@ -20,6 +20,7 @@ Constraints:
 - Identify missing references that could reasonably be expected in a text like this (only if citations are expected for the target requirements).
 - If you identify missing references provide a bibitem providing the details (only if citations are expected for the target requirements).
 - Ignore text that is part of a latex comment
+- Author has been instructed not to automatically introduce new references, even if suggested by you. Instead they will add latex comments with details of these suggestions. If a required citation is missing but flagged in this way, treat it as a MINOR issue in your output.
 
 Formatting:
 - Output Markdown only. Do not output LaTeX.
