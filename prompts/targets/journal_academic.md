@@ -30,6 +30,5 @@ CITATION & SCHOLARLY NORMS:
 - Do not oversimplify for accessibility.
 
 FORMAT:
-- Output LaTeX only.
 - Do not include commentary or explanations of choices.
 - Do not introduce new claims or examples.

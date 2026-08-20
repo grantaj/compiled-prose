@@ -23,7 +23,5 @@ GESTURE CONSTRAINTS:
 - Do not simplify by removing important distinctions.
 
 FORMAT:
-- Output LaTeX only.
-- No Markdown.
 - No commentary about simplification.
 - Do not add examples that are not already implied by the structure.

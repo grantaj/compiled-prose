@@ -65,14 +65,11 @@ If the input is insufficient to produce a faithful rendering:
 ---
 
 ### 7. Output Format
-Unless otherwise specified:
+The prompt composition layer supplies one explicit output contract for each stage.
 
-- Output is LaTeX-compatible prose
-- No markdown formatting
-- No bullet lists unless present in the input
-- No section renumbering
-
-The target prompt may override formatting expectations.
+- Follow the declared `OUTPUT_TYPE` exactly.
+- Do not infer or override the artefact type from target requirements or stage prose.
+- Stage and target prompts may constrain content and structure within the declared type, but they must not change the artefact type.
 
 ---
 
