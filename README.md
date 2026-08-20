@@ -114,7 +114,7 @@ No Python packages are required for this mode.
 
 Create an API key at:
 
-[https://platform.openai.com/](https://platform.openai.com/)
+[https://platform.openai.com/](https://platform.openai.com)
 
 Add it to `.env`:
 
@@ -174,6 +174,14 @@ Generated artefacts appear in `build/`:
 * `peer_review.md`
 * `final.tex`
 
+Peer review has a small machine-readable status contract:
+
+* `PASS` — no findings; `revise.tex` is promoted deterministically to `final.tex` with no extra model call.
+* `REVISE_REALISATION` — only wording/presentation findings; one bounded final realisation-revision pass is permitted.
+* `BLOCKED_SOURCE` — at least one conceptual/source defect; compilation stops before final revision and writes a diagnostic under `build/errors/`.
+
+Malformed or internally inconsistent review status also fails closed. Peer review never amends `outline.md`, supplies missing citations as authority, or triggers a review/revision loop.
+
 ---
 
 ## Switching backends
@@ -197,7 +205,7 @@ make TARGET_STYLE=prompts/targets/<journal>.md final
 
 * The **authoritative sources** are `outline.md` and the prompt files in `prompts/`.
 * LaTeX outputs are treated as compiled artefacts.
-* Peer review output is diagnostic and emitted as Markdown.
+* Peer review output is diagnostic and emitted as structured Markdown.
 * Determinism depends on backend support for fixed seeds and low temperature settings.
 
 ---
@@ -217,7 +225,7 @@ Recommended repository configuration:
 3. In **Settings → Pages**, set the publishing source to **GitHub Actions**. Do not configure branch-based `main / docs`; Actions commits made with `GITHUB_TOKEN` do not trigger that Pages build path.
 4. To publish, open **Actions → Compile and publish self-example → Run workflow**, explicitly authorize the paid compilation, then approve the `paid-compilation` environment job.
 
-One approved successful publication invokes the configured provider once per compilation stage (draft, smooth, revise, peer review, final). The workflow currently caps each stage at 20,000 output tokens and performs no automatic retry.
+One approved successful publication invokes the configured provider for draft, smooth, revise, and peer review. It invokes the provider once more only when peer review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The workflow currently caps each model-backed stage at 20,000 output tokens and performs no automatic retry.
 
 ---
 
