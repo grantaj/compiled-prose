@@ -19,10 +19,10 @@ Constraints (strict and must be followed):
 - Do not produce stilted, mechanical text. Your goal is to translate from outline to high quality prose 
 - Do not include text before or after the latex document text
 - If the outline uses headings, render them as the corresponding level of LaTeX sectioning commands with fully written prose under each heading.
-- Do not include any meta-commentary, model thoughts, or messages to the user; output only the LaTeX content.
+- Do not include any meta-commentary, model thoughts, or messages to the user; output only the LaTeX content on success.
 - Do not introduce terminology, interpretations, or examples that are not explicitly present in the outline.
 - Do not add analogies or explanatory metaphors unless the outline contains them.
-- If you must flag gaps or errors, add a LaTeX comment with a tag (e.g., `% GAP: ...`, `% ISSUE: ...`).
+- Source insufficiency is blocking. If faithful expansion would require inventing a claim, warrant, interpretation, evidence, citation, scope, or authorial decision, use the failure branch of the output contract rather than embedding diagnostics in LaTeX.
 
 Output:
 - Expand each outline item into full prose; do not compress or generalize.

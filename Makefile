@@ -7,6 +7,7 @@ BUILD_DIR := build
 
 # Backend selection (can be overridden: make BACKEND=openai final)
 BACKEND ?= ollama
+LLM_RUNNER ?= bash tools/llm_run.sh
 
 # OpenAI config
 OPENAI_MODEL ?= gpt-5
@@ -35,6 +36,7 @@ REVISE_OUT  := $(BUILD_DIR)/revise.tex
 REVIEW_OUT  := $(BUILD_DIR)/peer_review.md
 FINAL_OUT   := $(BUILD_DIR)/final.tex
 SUMMARY_OUT := $(BUILD_DIR)/summary.tex
+ERROR_DIR   := $(BUILD_DIR)/errors
 
 .PHONY: all draft smooth revise review final summarize check-ollama openai-check print-vars clean clobber
 all: final
@@ -68,41 +70,58 @@ python tools/render_prompt.py \
 | BACKEND=$(BACKEND) \
   OPENAI_MODEL=$(OPENAI_MODEL) OPENAI_TEMPERATURE=$(OPENAI_TEMPERATURE) OPENAI_SEED=$(OPENAI_SEED) \
   OLLAMA_MODEL=$(OLLAMA_MODEL) OLLAMA_HOST=$(OLLAMA_HOST) \
-  bash tools/llm_run.sh
+  $(LLM_RUNNER)
+endef
+
+# Capture backend output privately, then publish the nominal artefact only after
+# the backend-independent success/failure protocol has been enforced.
+define RUN_STAGE
+rm -f "$(5)" "$(ERROR_DIR)/$(1).md"; \
+raw="$$(mktemp "$(BUILD_DIR)/.$(1).raw.XXXXXX")"; \
+trap 'rm -f "$$raw"' EXIT; \
+if $(call RUN_LLM,$(2),$(3),$(4),$(6)) > "$$raw"; then \
+  python tools/enforce_protocol.py \
+    --stage "$(1)" --output-type "$(4)" \
+    --output "$(5)" --diagnostic "$(ERROR_DIR)/$(1).md" < "$$raw"; \
+else \
+  status="$$?"; \
+  python tools/enforce_protocol.py \
+    --stage "$(1)" --output-type "$(4)" \
+    --output "$(5)" --diagnostic "$(ERROR_DIR)/$(1).md" \
+    --backend-exit-status "$$status" < "$$raw" || protocol_status="$$?"; \
+  exit "$${protocol_status:-2}"; \
+fi
 endef
 
 DRAFT_IN := $(IN)
 
-$(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(SYSTEM) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
+$(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(SYSTEM) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make draft IN=example_outline.md" >&2; exit 1; fi
 	@echo "Draft input: $(DRAFT_IN)"
-	$(call RUN_LLM,$(P_DRAFT),$(DRAFT_IN),tex) > "$@"
+	@$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)
 
-$(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(SYSTEM) $(P_SMOOTH) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	$(call RUN_LLM,$(P_SMOOTH),$(DRAFT_OUT),tex) > "$@"
+$(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(SYSTEM) $(P_SMOOTH) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+	@$(call RUN_STAGE,smooth,$(P_SMOOTH),$(DRAFT_OUT),tex,$@)
 
-$(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(SYSTEM) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	$(call RUN_LLM,$(P_REVISE),$(SMOOTH_OUT),tex) > "$@"
+$(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(SYSTEM) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+	@$(call RUN_STAGE,revise,$(P_REVISE),$(SMOOTH_OUT),tex,$@)
 
 # review: LaTeX in → Markdown out
-$(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(SYSTEM) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	$(call RUN_LLM,$(P_REVIEW),$(REVISE_OUT),md) > "$@"
+$(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(SYSTEM) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+	@$(call RUN_STAGE,review,$(P_REVIEW),$(REVISE_OUT),md,$@)
 
 # final: LaTeX in + peer_review.md context → LaTeX out
-$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
-	$(call RUN_LLM,$(P_FINAL),$(REVISE_OUT),tex,--review $(REVIEW_OUT)) > "$@"
+$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+	@$(call RUN_STAGE,final,$(P_FINAL),$(REVISE_OUT),tex,$@,--review $(REVIEW_OUT))
 
-$(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/llm_run.sh tools/openai_responses.py
+$(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=example_outline.md" >&2; exit 1; fi
 	@echo "Summarize input: $(IN)"
-	python tools/render_prompt.py --system $(SYSTEM) --stage prompts/05_summarize.md --target $(TARGET_STYLE) --in $(IN) --output-type tex \
-	| BACKEND=$(BACKEND) \
-	  OPENAI_MODEL=$(OPENAI_MODEL) OPENAI_TEMPERATURE=$(OPENAI_TEMPERATURE) OPENAI_SEED=$(OPENAI_SEED) \
-	  OLLAMA_MODEL=$(OLLAMA_MODEL) OLLAMA_HOST=$(OLLAMA_HOST) \
-	  bash tools/llm_run.sh > "$@"
+	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
 
 clean:
 	rm -f $(DRAFT_OUT) $(SMOOTH_OUT) $(REVISE_OUT) $(REVIEW_OUT) $(FINAL_OUT) $(SUMMARY_OUT)
+	rm -rf $(ERROR_DIR)
 
 clobber:
 	rm -rf $(BUILD_DIR)

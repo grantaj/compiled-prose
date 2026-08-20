@@ -1,5 +1,4 @@
 import ast
-import re
 import unittest
 from pathlib import Path
 
@@ -50,27 +49,35 @@ class RenderPromptContractTests(unittest.TestCase):
                     rendered = self.render(stage_path, target_path, output_type)
                     self.assertEqual(rendered.count("OUTPUT_TYPE:"), 1)
                     self.assertIn(f"OUTPUT_TYPE: {output_type}", rendered)
+                    self.assertEqual(rendered.count("@@FAIL"), 2)
 
-    def test_peer_review_contract_is_markdown_only_without_latex_workaround(self):
+    def test_peer_review_contract_is_markdown_success_without_latex_workaround(self):
         for target_path in TARGETS:
             with self.subTest(target=target_path):
                 rendered = self.render("prompts/40_peer_review.md", target_path, "md")
                 self.assertIn("OUTPUT_TYPE: md", rendered)
-                self.assertIn("Return only Markdown content.", rendered)
+                self.assertIn("SUCCESS: Return only Markdown content.", rendered)
                 self.assertNotIn("Return only the LaTeX output", rendered)
                 self.assertNotIn("Output LaTeX only", rendered)
                 self.assertNotIn("LaTeX comment", rendered)
-                self.assertNotIn("No Markdown", rendered)
                 self.assertNotIn("Ignore any global instruction", rendered)
 
-    def test_prose_stages_declare_tex(self):
+    def test_prose_stages_declare_tex_success(self):
         for stage_path, output_type in STAGES.items():
             if output_type != "tex":
                 continue
             with self.subTest(stage=stage_path):
                 rendered = self.render(stage_path, TARGETS[0], output_type)
                 self.assertIn("OUTPUT_TYPE: tex", rendered)
-                self.assertIn("Return only raw LaTeX content.", rendered)
+                self.assertIn("SUCCESS: Return exactly one complete raw LaTeX document", rendered)
+
+    def test_failure_contract_is_external_and_authorial(self):
+        rendered = self.render("prompts/10_draft.md", TARGETS[0], "tex")
+        self.assertIn("Put @@FAIL on the first line", rendered)
+        self.assertIn("do not invent or apply a conceptual fix", rendered)
+        self.assertIn("rather than embedding diagnostics in LaTeX", rendered)
+        self.assertNotIn("% GAP:", rendered)
+        self.assertNotIn("% ISSUE:", rendered)
 
     def test_target_selection_does_not_change_stage_type(self):
         for stage_path, output_type in STAGES.items():
@@ -86,31 +93,25 @@ class RenderPromptContractTests(unittest.TestCase):
             with self.subTest(stage=stage_path):
                 self.assertEqual(len(set(contracts)), 1)
 
-    def test_makefile_wires_production_stage_output_types(self):
+    def test_makefile_wires_all_stages_through_protocol_enforcement(self):
         makefile = text("Makefile")
-        calls = dict(
-            re.findall(
-                r"\$\(call RUN_LLM,\$\(P_(DRAFT|SMOOTH|REVISE|REVIEW|FINAL)\),"
-                r".*?,(tex|md)(?:,|\))",
-                makefile,
-            )
+        expected_calls = (
+            "$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)",
+            "$(call RUN_STAGE,smooth,$(P_SMOOTH),$(DRAFT_OUT),tex,$@)",
+            "$(call RUN_STAGE,revise,$(P_REVISE),$(SMOOTH_OUT),tex,$@)",
+            "$(call RUN_STAGE,review,$(P_REVIEW),$(REVISE_OUT),md,$@)",
+            "$(call RUN_STAGE,final,$(P_FINAL),$(REVISE_OUT),tex,$@,--review $(REVIEW_OUT))",
+            "$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)",
         )
-        self.assertEqual(
-            calls,
-            {
-                "DRAFT": "tex",
-                "SMOOTH": "tex",
-                "REVISE": "tex",
-                "REVIEW": "md",
-                "FINAL": "tex",
-            },
-        )
-        self.assertRegex(
-            makefile,
-            r"--stage prompts/05_summarize\.md .*?--output-type tex",
-        )
+        for call in expected_calls:
+            with self.subTest(call=call):
+                self.assertIn(call, makefile)
+        self.assertIn("python tools/enforce_protocol.py", makefile)
+        self.assertIn('--output-type "$(4)"', makefile)
+        self.assertIn('--diagnostic "$(ERROR_DIR)/$(1).md"', makefile)
+        self.assertIn('--backend-exit-status "$$status"', makefile)
 
-    def test_final_prompt_with_review_still_has_one_contract(self):
+    def test_final_prompt_with_review_still_has_one_success_type(self):
         rendered = self.render("prompts/50_final.md", TARGETS[0], "tex")
         self.assertIn("# Peer Review (Markdown, Diagnostic Only)", rendered)
         self.assertEqual(rendered.count("OUTPUT_TYPE:"), 1)

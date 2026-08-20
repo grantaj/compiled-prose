@@ -12,7 +12,7 @@ Constraints:
 - End most paragraphs with a brief forward-bridge sentence that links to the next paragraph’s topic.
 - Maintain neutral, analytical tone.
 - LaTeX must compile; avoid invalid commands.
-- If you must flag gaps or errors, add a LaTeX comment with a tag (e.g., `% GAP: ...`, `% ISSUE: ...`).
+- If smoothing exposes a source-level gap that cannot be handled without inventing or changing conceptual content, use the failure branch of the output contract rather than embedding diagnostics in LaTeX.
 
 Output:
 - Fewer, smoother paragraphs with internal arcs.

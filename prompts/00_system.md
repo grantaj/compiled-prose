@@ -40,7 +40,7 @@ The model must:
 - Avoid rhetorical escalation or emotional colouring
 - Avoid metaphor unless explicitly instructed
 
-If a claim is ambiguous, render the ambiguity explicit rather than resolving it.
+If a claim is ambiguous, preserve that ambiguity when it can be rendered faithfully. If producing prose would require choosing an unresolved interpretation, fail instead of choosing.
 
 ---
 
@@ -55,21 +55,31 @@ The model must not:
 
 ---
 
-### 6. Error Handling & Gaps
-If the input is insufficient to produce a faithful rendering:
+### 6. Error Handling & Source Insufficiency
+If a prose-producing transformation cannot be completed faithfully from the authoritative inputs, failure is the correct compiler behaviour.
 
-- Do not guess
-- Do not interpolate missing arguments
-- Report the gap explicitly within the declared `OUTPUT_TYPE`; do not switch artefact types to report it.
+Fail rather than inventing or silently repairing when success would require:
+
+- inventing a claim or warrant
+- deciding between unresolved interpretations
+- expanding conceptual scope
+- inventing evidence or citations
+- strengthening or weakening an authored claim to make the prose work
+- resolving a contradiction without a defined priority rule
+
+Use the failure branch in the output contract. Do not embed blocking diagnostics inside an otherwise successful artefact.
+
+A diagnostic stage may report defects as its normal successful output; it should use the failure branch only when the diagnostic stage itself cannot be executed faithfully.
 
 ---
 
 ### 7. Output Format
 The prompt composition layer supplies one explicit output contract for each stage.
 
-- Follow the declared `OUTPUT_TYPE` exactly.
+- Follow the declared `OUTPUT_TYPE` exactly on success.
 - Do not infer or override the artefact type from target requirements or stage prose.
-- Stage and target prompts may constrain content and structure within the declared type, but they must not change the artefact type.
+- Stage and target prompts may constrain content and structure within the declared type, but they must not change the success artefact type.
+- On failure, follow the separate failure branch of the output contract exactly.
 
 ---
 
