@@ -9,6 +9,12 @@ OUTPUT_CONTRACTS = {
     "md": "Return only Markdown content. Do not repeat or summarize the prompt.",
 }
 
+FAILURE_CONTRACT = """If this stage cannot faithfully produce its declared success artefact under the authoritative inputs, fail instead of improvising:
+- Put @@FAIL on the first line, with no leading whitespace or other content.
+- Follow it with concise Markdown diagnostics localised to the authoritative input.
+- State what authorial information is missing, ambiguous, contradictory, or unsupported; do not invent or apply a conceptual fix.
+Do not mix a failure diagnostic into a successful artefact. Diagnostic stages should not use @@FAIL merely to report findings that are their normal declared output."""
+
 
 def read(path: str) -> str:
     return Path(path).read_text(encoding="utf-8").rstrip()
@@ -49,7 +55,7 @@ def render_prompt(
     sections.extend(
         [
             "\n\n# Output Contract\n\n",
-            f"OUTPUT_TYPE: {output_type}\n{output_instruction}",
+            f"OUTPUT_TYPE: {output_type}\nSUCCESS: {output_instruction}\n\nFAILURE:\n{FAILURE_CONTRACT}",
         ]
     )
     return "".join(sections)

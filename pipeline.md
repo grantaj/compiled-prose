@@ -40,6 +40,32 @@ The language model is treated as an **execution engine**, not an author.
 
 ---
 
+## Stage Result Protocol
+
+Every stage produces exactly one of two results:
+
+1. **Success** — a complete artefact of the stage's declared output type (`tex` or `md`).
+2. **Failure** — a Markdown diagnostic beginning in the raw backend response with the sentinel line `@@FAIL`.
+
+The sentinel is a transport protocol marker, not part of the diagnostic artefact. The build system removes it and writes the remaining Markdown to `$(BUILD_DIR)/errors/<stage>.md`.
+
+The backend output is never written directly to the nominal stage artefact. It is captured privately and passed through one backend-independent protocol enforcement boundary. A successful result is published only after that check succeeds.
+
+On failure:
+
+* the nominal stage artefact is absent, including any stale result from a previous successful build;
+* the external diagnostic is written under the configured build directory;
+* the stage exits non-zero and `make` stops;
+* no automatic retry or source-level self-healing is attempted.
+
+On a later success, the nominal artefact is published and any stale diagnostic for that stage is removed.
+
+For prose-producing stages, source insufficiency is blocking whenever faithful prose would require inventing a claim or warrant, choosing an unresolved interpretation, expanding scope, inventing evidence or citations, changing the strength of an authored claim, or resolving contradictory authoritative input without a defined priority rule. Such conditions must not be hidden in LaTeX comments or repaired downstream.
+
+A diagnostic stage may report defects as its normal Markdown success output; it uses the failure protocol only if the diagnostic stage itself cannot be executed faithfully.
+
+---
+
 ## Pipeline Stages (Semantic Order)
 
 The pipeline consists of the following stages, which MUST be applied in order.
@@ -64,7 +90,7 @@ The pipeline consists of the following stages, which MUST be applied in order.
 **Constraints**
 
 * Output MUST be valid LaTeX.
-* No commentary or Markdown.
+* No commentary or Markdown on success.
 * No claims not grounded in the outline.
 
 ---
@@ -87,7 +113,7 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 * No new claims or sections.
 * Structural order must be preserved.
-* Output MUST be valid LaTeX only.
+* Output MUST be valid LaTeX only on success.
 
 ---
 
@@ -109,7 +135,7 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 * No expansion of scope.
 * Citations, labels, and structure must be preserved unless explicitly corrected.
-* Output MUST be valid LaTeX only.
+* Output MUST be valid LaTeX only on success.
 
 ---
 
@@ -129,8 +155,7 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Constraints**
 
-* Output MUST be Markdown.
-* MUST NOT emit LaTeX.
+* Successful output MUST be Markdown.
 * MUST NOT rewrite or paraphrase the text.
 * Review should reference sections, labels, or passages in the LaTeX.
 * Review content is diagnostic only and has no direct authority.
@@ -154,22 +179,23 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 **Constraints**
 
-* Output MUST be valid LaTeX only.
+* Successful output MUST be valid LaTeX only.
 * The LaTeX input remains authoritative.
 * Peer review comments inform changes but do not override specification.
-* No new claims, sections, or conceptual scope may be introduced.
+* No new claims, sections, citations, evidence, or conceptual scope may be introduced.
+* A review request that requires authorial source changes is blocking rather than permission for the final stage to invent them.
 
 ---
 
 ## File‑Modification Rules
 
-* Each stage may modify **only** its designated output file.
+* Each stage may publish **only** its designated successful output file or its own external failure diagnostic.
 * No stage may modify:
 
   * the outline
   * prompts
   * target style files
-  * artefacts from other stages
+  * successful artefacts from other stages
 
 ---
 
@@ -184,19 +210,23 @@ The pipeline consists of the following stages, which MUST be applied in order.
 
 The pipeline MUST halt and report failure if:
 
-* a stage cannot be completed due to insufficient outline detail
-* a stage violates its output format constraints
-* a peer review reports blocking issues that cannot be resolved without expanding scope
+* a prose-producing stage cannot be completed faithfully from authoritative source;
+* a stage returns an explicit `@@FAIL` result;
+* a backend returns an empty or malformed failure result;
+* a backend process fails before a complete result is available;
+* a stage violates an enforceable output protocol constraint;
+* peer review exposes a blocker that cannot be resolved without authorial source changes.
 
-Failures should be reported explicitly rather than worked around implicitly.
+A failed stage must not leave behind a newly written partial artefact or a stale artefact that appears to be the result of the failed rebuild.
 
 ---
 
 ## Iteration Policy
 
 * The pipeline is defined as a **single forward pass** through the stages.
-* Any iteration (e.g. re‑review after final compilation) MUST be explicit and bounded by the execution environment.
-* Unbounded or implicit loops are disallowed.
+* Source-level failures require explicit human intervention in authoritative source or compiler configuration.
+* Automatic retries and self-healing for source-level failures are disallowed.
+* Any later bounded review/revision semantics must remain explicit rather than becoming an implicit loop.
 
 ---
 
