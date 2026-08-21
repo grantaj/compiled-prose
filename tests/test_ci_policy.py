@@ -64,6 +64,21 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("--source-audit self-example/source-audit.json", content)
         self.assertIn("--bibliography self-example/references.bib", content)
 
+    def test_paid_workflow_always_summarizes_recorded_usage(self):
+        content = PAID_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("name: Summarize paid API usage", content)
+        summary_start = content.index("- name: Summarize paid API usage")
+        summary_end = content.index("- name: Upload failed self-example evidence")
+        block = content[summary_start:summary_end]
+        self.assertIn("if: ${{ always() }}", block)
+        self.assertIn("tools/summarize_openai_usage.py", block)
+        self.assertIn("--input build/openai-usage.jsonl", block)
+        self.assertIn("$GITHUB_STEP_SUMMARY", block)
+        self.assertLess(
+            content.index("Compile and validate self-example using paid API"),
+            summary_start,
+        )
+
     def test_failed_paid_compilation_surfaces_and_retains_diagnostics(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("id: compile_self_example", content)

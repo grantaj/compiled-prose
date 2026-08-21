@@ -1,5 +1,99 @@
 #!/usr/bin/env python3
-import os, sys
+import json
+import os
+import re
+import sys
+from decimal import Decimal
+from pathlib import Path
+from typing import Optional
+
+
+USAGE_SCHEMA = "compiled-prose-openai-usage/1"
+
+# Standard API text-token pricing verified 2026-08-21.
+# Values are USD per 1M tokens: input, cached input, output.
+_PRICING = (
+    (
+        re.compile(r"^gpt-5-mini(?:-\d{4}-\d{2}-\d{2})?$"),
+        (Decimal("0.250"), Decimal("0.025"), Decimal("2.000")),
+    ),
+    (
+        re.compile(r"^gpt-5(?:-\d{4}-\d{2}-\d{2})?$"),
+        (Decimal("1.250"), Decimal("0.125"), Decimal("10.000")),
+    ),
+)
+
+
+def pricing_for_model(model: str):
+    for pattern, pricing in _PRICING:
+        if pattern.fullmatch(model):
+            return pricing
+    return None
+
+
+def estimate_cost_usd(
+    model: str,
+    *,
+    input_tokens: int,
+    cached_input_tokens: int,
+    output_tokens: int,
+) -> Optional[Decimal]:
+    pricing = pricing_for_model(model)
+    if pricing is None:
+        return None
+    input_per_million, cached_per_million, output_per_million = pricing
+    cached = max(cached_input_tokens, 0)
+    uncached = max(input_tokens - cached, 0)
+    million = Decimal(1_000_000)
+    return (
+        Decimal(uncached) * input_per_million
+        + Decimal(cached) * cached_per_million
+        + Decimal(output_tokens) * output_per_million
+    ) / million
+
+
+def usage_record(
+    *,
+    stage: str,
+    model: str,
+    input_tokens: int,
+    cached_input_tokens: int,
+    output_tokens: int,
+    total_tokens: Optional[int],
+) -> dict:
+    estimate = estimate_cost_usd(
+        model,
+        input_tokens=input_tokens,
+        cached_input_tokens=cached_input_tokens,
+        output_tokens=output_tokens,
+    )
+    pricing = pricing_for_model(model)
+    normalized_total = (
+        total_tokens if total_tokens is not None else input_tokens + output_tokens
+    )
+    record = {
+        "schema": USAGE_SCHEMA,
+        "stage": stage,
+        "model": model,
+        "input_tokens": input_tokens,
+        "cached_input_tokens": cached_input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": normalized_total,
+        "estimated_cost_usd": str(estimate) if estimate is not None else None,
+    }
+    if pricing is not None:
+        record["pricing_usd_per_million"] = {
+            "input": str(pricing[0]),
+            "cached_input": str(pricing[1]),
+            "output": str(pricing[2]),
+        }
+    return record
+
+
+def append_usage_record(path: Path, record: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, sort_keys=True) + "\n")
 
 
 def main():
@@ -47,26 +141,34 @@ def main():
             f"[openai] tokens input={input_tokens} output={output_tokens} total={total_tokens} cached_input={cached_tokens}\n"
         )
 
-        # Cost estimates based on current pricing.
-        # gpt-5: input $1.250 / 1M, cached input $0.125 / 1M, output $10.000 / 1M
-        # gpt-5-mini: input $0.250 / 1M, cached input $0.025 / 1M, output $2.000 / 1M
         if input_tokens is not None and output_tokens is not None:
-            cached = cached_tokens or 0
-            uncached = max(input_tokens - cached, 0)
-            if model.startswith("gpt-5-mini"):
-                in_rate = 0.250 / 1_000_000
-                cached_rate = 0.025 / 1_000_000
-                out_rate = 2.000 / 1_000_000
-            elif model.startswith("gpt-5"):
-                in_rate = 1.250 / 1_000_000
-                cached_rate = 0.125 / 1_000_000
-                out_rate = 10.000 / 1_000_000
+            record = usage_record(
+                stage=os.environ.get("COMPILED_PROSE_STAGE", "unknown"),
+                model=model,
+                input_tokens=input_tokens,
+                cached_input_tokens=cached_tokens or 0,
+                output_tokens=output_tokens,
+                total_tokens=total_tokens,
+            )
+            estimate = record["estimated_cost_usd"]
+            if estimate is not None:
+                sys.stderr.write(f"[openai] est_cost_usd={Decimal(estimate):.6f}\n")
             else:
-                in_rate = cached_rate = out_rate = None
+                sys.stderr.write(
+                    f"[openai] est_cost_usd=unavailable model={model!r} pricing_not_configured\n"
+                )
 
-            if in_rate is not None:
-                est = uncached * in_rate + cached * cached_rate + output_tokens * out_rate
-                sys.stderr.write(f"[openai] est_cost_usd={est:.6f}\n")
+            usage_log = os.environ.get("OPENAI_USAGE_LOG")
+            if usage_log:
+                try:
+                    append_usage_record(Path(usage_log), record)
+                except OSError as exc:
+                    # The paid request has already completed. Do not turn a usage-log
+                    # filesystem problem into a retryable provider failure.
+                    sys.stderr.write(
+                        f"[openai] warning: could not append usage log {usage_log!r}: {exc}\n"
+                    )
+
 
 if __name__ == "__main__":
     main()

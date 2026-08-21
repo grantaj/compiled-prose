@@ -99,6 +99,22 @@ jobs:
             exit "$status"
           fi
 
+      - name: Summarize paid API usage
+        if: ${{ always() }}
+        run: |
+          summary="$(mktemp)"
+          if python tools/summarize_openai_usage.py --input build/openai-usage.jsonl > "$summary"; then
+            cat "$summary"
+            cat "$summary" >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## OpenAI compilation usage"
+              echo
+              echo "Usage summary could not be rendered; inspect the paid compilation logs."
+            } | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          rm -f "$summary"
+
       - name: Upload failed self-example evidence
         if: ${{ failure() && steps.compile_self_example.outcome == 'failure' }}
         uses: actions/upload-artifact@v4

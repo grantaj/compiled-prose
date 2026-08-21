@@ -13,6 +13,7 @@ LLM_RUNNER ?= bash tools/llm_run.sh
 OPENAI_MODEL ?= gpt-5
 OPENAI_TEMPERATURE ?= 0.2
 OPENAI_SEED ?= 42
+OPENAI_USAGE_LOG ?= $(BUILD_DIR)/openai-usage.jsonl
 
 # Ollama config
 OLLAMA_MODEL ?= llama3.1
@@ -99,6 +100,7 @@ openai-check:
 print-vars:
 	@echo "IN=$(IN)"
 	@echo "BIBLIOGRAPHY=$(BIBLIOGRAPHY)"
+	@echo "OPENAI_USAGE_LOG=$(OPENAI_USAGE_LOG)"
 	@echo "MAKEFLAGS=$(MAKEFLAGS)"
 
 
@@ -111,6 +113,7 @@ python tools/render_prompt.py \
   $(if $(strip $(BIBLIOGRAPHY)),--bibliography $(BIBLIOGRAPHY),) $(4) \
 | BACKEND=$(BACKEND) \
   OPENAI_MODEL=$(OPENAI_MODEL) OPENAI_TEMPERATURE=$(OPENAI_TEMPERATURE) OPENAI_SEED=$(OPENAI_SEED) \
+  COMPILED_PROSE_STAGE=$(1) OPENAI_USAGE_LOG="$(OPENAI_USAGE_LOG)" \
   OLLAMA_MODEL=$(OLLAMA_MODEL) OLLAMA_HOST=$(OLLAMA_HOST) \
   $(LLM_RUNNER)
 endef
@@ -176,7 +179,7 @@ $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(BIBLIOGRAPHY) $(SYSTEM) prompts/05_summariz
 	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
 
 clean:
-	rm -f "$(DRAFT_OUT)" "$(SMOOTH_OUT)" "$(REVISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(FINAL_PDF)" "$(SUMMARY_OUT)" "$(BUILD_BIBLIOGRAPHY)"
+	rm -f "$(DRAFT_OUT)" "$(SMOOTH_OUT)" "$(REVISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(FINAL_PDF)" "$(SUMMARY_OUT)" "$(BUILD_BIBLIOGRAPHY)" "$(OPENAI_USAGE_LOG)"
 	rm -rf "$(ERROR_DIR)"
 
 clobber:
