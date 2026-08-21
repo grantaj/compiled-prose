@@ -466,7 +466,7 @@ The final essay is itself the test. If its argument remains attributable to the 
 **LeWitt 1967**  
 Sol LeWitt, "Paragraphs on Conceptual Art," *Artforum* 5, no. 10 (June 1967): 79–83.
 
-Supports the priority of conception and prior planning in conceptual art, including the formulation that "the idea becomes a machine that makes the art."
+Supports the priority of conception and prior planning in conceptual art, including LeWitt's characterization of the idea as the work's generative mechanism.
 
 **LeWitt 1971**  
 Sol LeWitt, "Doing Wall Drawings," *Art Now: New York* 3, no. 2 (June 1971).
