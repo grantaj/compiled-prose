@@ -20,6 +20,17 @@ def read(path: str) -> str:
     return Path(path).read_text(encoding="utf-8").rstrip()
 
 
+def _citation_output_contract(bibliography_name: str) -> str:
+    return f"""CITATION_FORMAT:
+- Citation metadata is supplied separately from the authoritative source. It provides only verified bibliographic rendering metadata and stable citation keys; it does not add claims, evidence, or conceptual authority.
+- Use only BibTeX keys present in that supplied metadata. Never invent, rename, or infer a citation key.
+- Preserve source-supplied citations and keep them attached to the claims they support.
+- In LaTeX output, use `\\parencite{{key}}` for ordinary parenthetical citations and `\\textcite{{key}}` only where the citation is grammatically part of the sentence.
+- Configure biblatex with `\\usepackage[backend=biber,style=authoryear]{{biblatex}}` and `\\addbibresource{{{bibliography_name}}}`.
+- Include `\\printbibliography` exactly once near the end of the document.
+- Do not emit a `thebibliography` environment or hand-write bibliography entries; the supplied bibliography file is the rendering source."""
+
+
 def render_prompt(
     *,
     system: str,
@@ -29,11 +40,16 @@ def render_prompt(
     input_text: str,
     output_type: str,
     review: Optional[str] = None,
+    bibliography_text: Optional[str] = None,
+    bibliography_name: Optional[str] = None,
 ) -> str:
     try:
         output_instruction = OUTPUT_CONTRACTS[output_type]
     except KeyError as exc:
         raise ValueError(f"unsupported output type: {output_type}") from exc
+
+    if (bibliography_text is None) != (bibliography_name is None):
+        raise ValueError("bibliography_text and bibliography_name must be supplied together")
 
     stage_input = input_text.rstrip()
     source = source_text.rstrip()
@@ -49,6 +65,15 @@ def render_prompt(
         "\n\n# Authoritative Source\n\n",
         source,
     ]
+
+    if bibliography_text is not None and bibliography_name is not None:
+        sections.extend(
+            [
+                "\n\n# Citation Metadata (Bibliographic Only; Non-Conceptual)\n\n",
+                f"BIBLIOGRAPHY_RESOURCE: {bibliography_name}\n\n",
+                bibliography_text.rstrip(),
+            ]
+        )
 
     # Draft/summarize commonly operate directly on the source. Avoid duplicating
     # a potentially large source payload when the working input is identical.
@@ -68,12 +93,12 @@ def render_prompt(
             ]
         )
 
-    sections.extend(
-        [
-            "\n\n# Output Contract\n\n",
-            f"OUTPUT_TYPE: {output_type}\nSUCCESS: {output_instruction}\n\nFAILURE:\n{FAILURE_CONTRACT}",
-        ]
-    )
+    output_contract = f"OUTPUT_TYPE: {output_type}\nSUCCESS: {output_instruction}"
+    if output_type == "tex" and bibliography_name is not None:
+        output_contract += "\n\n" + _citation_output_contract(bibliography_name)
+    output_contract += f"\n\nFAILURE:\n{FAILURE_CONTRACT}"
+
+    sections.extend(["\n\n# Output Contract\n\n", output_contract])
     return "".join(sections)
 
 
@@ -85,9 +110,11 @@ def main() -> None:
     ap.add_argument("--source", required=True)
     ap.add_argument("--in", dest="inp", required=True)
     ap.add_argument("--review", required=False)
+    ap.add_argument("--bibliography", required=False)
     ap.add_argument("--output-type", required=True, choices=OUTPUT_CONTRACTS)
     args = ap.parse_args()
 
+    bibliography = Path(args.bibliography) if args.bibliography else None
     rendered = render_prompt(
         system=read(args.system),
         target=read(args.target),
@@ -96,6 +123,8 @@ def main() -> None:
         input_text=read(args.inp),
         output_type=args.output_type,
         review=read(args.review) if args.review else None,
+        bibliography_text=read(str(bibliography)) if bibliography else None,
+        bibliography_name=bibliography.name if bibliography else None,
     )
     sys.stdout.write(rendered)
     sys.stdout.write("\n")
