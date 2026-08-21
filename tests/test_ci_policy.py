@@ -64,6 +64,7 @@ class CiSpendingPolicyTests(unittest.TestCase):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("actions/upload-artifact@v4", content)
         self.assertIn("name: self-example-candidate-${{ github.sha }}", content)
+        self.assertIn("include-hidden-files: true", content)
         self.assertIn("retention-days: 90", content)
         self.assertIn("name: github-pages", content)
         self.assertLess(
