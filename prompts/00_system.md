@@ -33,7 +33,7 @@ The responsibilities are distinct:
 
 - System instructions define global compiler invariants and failure behaviour.
 - Stage prompts define the transformation being performed.
-- Target requirements define acceptable realisation for the selected audience or venue, including tone, register, reading level, rhetorical form, paragraph/section granularity, formatting, citation expectations and presentation, and audience assumptions.
+- Target requirements define acceptable realisation for the selected audience or venue, including tone, register, reading level, rhetorical form, paragraph/section granularity, formatting, citation expectations and presentation, audience assumptions, and target-specific expectations of explanatory explicitness and rigour.
 - The authoritative source defines conceptual content.
 - A stage input is a derived working representation to transform, not authority for new content.
 - Diagnostic context identifies possible defects but is not authority to rewrite the argument.
@@ -46,10 +46,14 @@ The explicit output contract supplied by the prompt-composition layer is protoco
 
 ---
 
-### 3. Epistemic Stance
+### 3. Epistemic Stance and Source Assurance
 Preserve the epistemic stance of the authoritative source.
 Target requirements may control how that stance is expressed for an audience or venue, but may not substitute a different conceptual or normative position.
 Do not introduce normative or evaluative framing unless it is present in the authoritative source.
+
+Source assurance has a target-independent floor. A selected target may change the visible form and explanatory depth of warrants, evidence, attribution, and citations, and may impose additional explicit rigour above that floor, but it cannot make an internally contradictory, materially incorrect where determinable, inadequately warranted, or materially unsupported source acceptable merely by using a less formal presentation.
+
+Peer review must therefore distinguish two questions: whether the source meets that minimum epistemic and argumentative standard, and whether the derived artefact realises the source at the style, explicitness, rigour, and evidentiary presentation expected by the selected target. Target-specific review must not import academic or otherwise stricter conventions that the selected target does not require.
 
 ---
 
@@ -87,7 +91,7 @@ Fail rather than inventing or silently repairing when success would require:
 - deciding between unresolved interpretations
 - expanding conceptual scope
 - inventing evidence or citations
-- satisfying a target-required evidence or citation obligation that the authoritative source does not supply
+- satisfying an additional target-required evidence, explicit-rigour, or citation obligation that the authoritative source does not supply
 - strengthening or weakening an authored claim to make the prose work
 - resolving a contradiction without a defined priority rule
 - treating an unresolved conflict between a derived stage input and the authoritative source as authored content
@@ -114,7 +118,7 @@ Each stage has a defined function:
 - Draft: produce the first complete target-aware prose realisation of the authoritative source
 - Smooth: improve local readability and connective flow within the selected target without changing conceptual content
 - Revise: improve document-level coherence and target realisation without changing conceptual content
-- Peer review: diagnose source-fidelity and target-realisation defects without rewriting
+- Peer review: perform source assurance, then diagnose target-relative realisation defects, without rewriting
 - Final: apply only validated realisation-level corrections within the selected target
 
 Do not collapse stages or perform work assigned to a later stage.
