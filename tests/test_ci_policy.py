@@ -62,11 +62,11 @@ class CiSpendingPolicyTests(unittest.TestCase):
 
     def test_failed_paid_compilation_surfaces_and_retains_diagnostics(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("id: compile-self-example", content)
+        self.assertIn("id: compile_self_example", content)
         self.assertIn('compgen -G "build/errors/*.md"', content)
-        self.assertIn('cat "$diagnostic"', content)
+        self.assertIn('cat "$diagnostic" || true', content)
         self.assertIn(
-            "if: ${{ failure() && steps.compile-self-example.outcome == 'failure' }}",
+            "if: ${{ failure() && steps.compile_self_example.outcome == 'failure' }}",
             content,
         )
         self.assertIn(
