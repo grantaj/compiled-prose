@@ -50,9 +50,11 @@ jobs:
       contents: read
     env:
       BACKEND: openai
-      OPENAI_MODEL: gpt-5
+      # End-to-end release-plumbing test: prefer the cheaper capable model.
+      # Release-quality prose can deliberately use a stronger model in a later change.
+      OPENAI_MODEL: gpt-5-mini
       TARGET_STYLE: prompts/targets/journal_academic.md
-      OPENAI_MAX_OUTPUT_TOKENS: "20000"
+      OPENAI_MAX_OUTPUT_TOKENS: "10000"
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
