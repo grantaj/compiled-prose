@@ -1,0 +1,188 @@
+name: Compile self-example target
+
+# Spending invariant: this is the only workflow allowed to reference
+# OPENAI_API_KEY, and it must never gain an automatic trigger.
+on:
+  workflow_dispatch:
+    inputs:
+      authorize_paid_api_call:
+        description: "I authorize one paid self-example compilation"
+        required: true
+        type: boolean
+        default: false
+      openai_model:
+        description: "OpenAI model"
+        required: true
+        type: choice
+        default: gpt-5-mini
+        options:
+          - gpt-5-mini
+          - gpt-5
+          - gpt-5.6-luna
+          - gpt-5.6-terra
+          - gpt-5.6-sol
+      target:
+        description: "Compilation target"
+        required: true
+        type: choice
+        default: journal_academic
+        options:
+          - journal_academic
+          - magazine_general
+          - explain_like_im_5
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compiled-prose-self-example-compile
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Keyless preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      target_style: ${{ steps.target.outputs.path }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Run keyless release-readiness checks
+        run: make check
+
+      - name: Validate selected OpenAI model
+        env:
+          OPENAI_MODEL: ${{ inputs.openai_model }}
+        run: |
+          case "$OPENAI_MODEL" in
+            gpt-5-mini|gpt-5|gpt-5.6-luna|gpt-5.6-terra|gpt-5.6-sol) ;;
+            *) echo "Unsupported OpenAI model: $OPENAI_MODEL" >&2; exit 2 ;;
+          esac
+
+      - name: Resolve and validate selected target
+        id: target
+        env:
+          TARGET_ID: ${{ inputs.target }}
+        run: |
+          target_path="$(python tools/self_example_targets.py "$TARGET_ID")"
+          test -f "$target_path"
+          echo "path=$target_path" >> "$GITHUB_OUTPUT"
+
+  compile:
+    name: Paid compilation
+    needs: preflight
+    if: ${{ github.actor == github.repository_owner && github.ref == 'refs/heads/main' && inputs.authorize_paid_api_call == true }}
+    runs-on: ubuntu-latest
+    environment: paid-compilation
+    permissions:
+      contents: read
+    env:
+      BACKEND: openai
+      OPENAI_MODEL: ${{ inputs.openai_model }}
+      TARGET_ID: ${{ inputs.target }}
+      TARGET_STYLE: ${{ needs.preflight.outputs.target_style }}
+      OPENAI_MAX_OUTPUT_TOKENS: "10000"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install compiler and release-validation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install --yes pandoc latexmk texlive-latex-extra texlive-bibtex-extra biber
+          pandoc --version
+          latexmk -v
+          biber --version
+
+      - name: Compile and validate selected self-example target using paid API
+        id: compile_self_example
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          test -n "$OPENAI_API_KEY"
+          set +e
+          make BACKEND="$BACKEND" OPENAI_MODEL="$OPENAI_MODEL" TARGET_STYLE="$TARGET_STYLE" self
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            echo "::group::Self-example diagnostics"
+            if compgen -G "build/errors/*.md" > /dev/null; then
+              for diagnostic in build/errors/*.md; do
+                echo "==> $diagnostic <=="
+                cat "$diagnostic" || true
+                echo
+              done
+            else
+              echo "No build/errors/*.md diagnostic was produced."
+            fi
+            echo "::endgroup::"
+            exit "$status"
+          fi
+
+      - name: Summarize paid API usage
+        if: ${{ always() }}
+        run: |
+          summary="$(mktemp)"
+          if python tools/summarize_openai_usage.py --input build/openai-usage.jsonl > "$summary"; then
+            cat "$summary"
+            cat "$summary" >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## OpenAI compilation usage"
+              echo
+              echo "Usage summary could not be rendered; inspect the paid compilation logs."
+            } | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          rm -f "$summary"
+
+      - name: Upload failed self-example evidence
+        if: ${{ failure() && steps.compile_self_example.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-example-failure-${{ inputs.target }}-${{ inputs.openai_model }}-${{ github.sha }}-${{ github.run_id }}
+          path: |
+            build
+            outline.md
+            self-example/source-audit.json
+            self-example/references.bib
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Build inspectable candidate
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python tools/build_self_example_site.py \
+            --build-dir build \
+            --outline outline.md \
+            --source-audit self-example/source-audit.json \
+            --bibliography self-example/references.bib \
+            --output-dir candidate \
+            --source-sha "$SOURCE_SHA" \
+            --model "$OPENAI_MODEL" \
+            --target "$TARGET_STYLE" \
+            --run-url "$RUN_URL"
+
+      - name: Upload retained self-example candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-example-candidate-${{ inputs.target }}-${{ inputs.openai_model }}-${{ github.sha }}-${{ github.run_id }}
+          path: candidate
+          include-hidden-files: true
+          retention-days: 90
