@@ -171,6 +171,21 @@ class SelfExampleShowcaseTests(unittest.TestCase):
                 manifest["targets"]["journal_academic"]["model"], "new-model"
             )
 
+    def test_candidate_must_match_current_authoritative_outline_when_supplied(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            academic = self.make_candidate(root, "academic", target="journal_academic")
+            current = root / "outline.md"
+            current.write_text("# New current outline\n", encoding="utf-8")
+            with patch("tools.build_self_example_showcase.subprocess.run") as pandoc:
+                with self.assertRaisesRegex(ValueError, "differs from current source"):
+                    build_showcase(
+                        candidate_roots={"journal_academic": academic},
+                        expected_outline=current,
+                        output_dir=root / "site",
+                    )
+            pandoc.assert_not_called()
+
     def test_different_authoritative_outline_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
