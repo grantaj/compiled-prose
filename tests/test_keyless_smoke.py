@@ -89,6 +89,27 @@ class KeylessSmokeTests(unittest.TestCase):
                         diagnostic.read_text(encoding="utf-8"),
                     )
 
+    def test_whitespace_only_success_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for index, output_type in enumerate(("tex", "md")):
+                with self.subTest(output_type=output_type):
+                    output = root / f"empty-{index}"
+                    diagnostic = root / "errors" / f"empty-{index}.md"
+                    success = enforce_result(
+                        "\ufeff \r\n\t",
+                        stage="smoke",
+                        output_type=output_type,
+                        output=output,
+                        diagnostic=diagnostic,
+                    )
+                    self.assertFalse(success)
+                    self.assertFalse(output.exists())
+                    self.assertIn(
+                        "returned empty output",
+                        diagnostic.read_text(encoding="utf-8"),
+                    )
+
     def test_make_check_aggregates_only_keyless_targets(self):
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         target = next(
@@ -97,12 +118,14 @@ class KeylessSmokeTests(unittest.TestCase):
         self.assertEqual(target, "check: check-python check-shell test")
 
     def test_openai_requirement_declares_responses_api_floor(self):
-        requirements = {
+        requirements = [
             line.strip()
             for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
             if line.strip() and not line.lstrip().startswith("#")
-        }
-        self.assertIn("openai>=1.66.3", requirements)
+        ]
+        declaration = next(line for line in requirements if line.startswith("openai>="))
+        version = tuple(int(part) for part in declaration.removeprefix("openai>=").split("."))
+        self.assertGreaterEqual(version, (1, 66, 3))
 
 
 if __name__ == "__main__":

@@ -100,7 +100,7 @@ def enforce_result(
         _atomic_write(diagnostic, payload)
         return False
 
-    if not raw:
+    if not raw.strip("\ufeff\r\n\t "):
         _write_protocol_failure(
             stage,
             diagnostic,
