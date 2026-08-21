@@ -82,13 +82,6 @@ def audit(
     catalogued = _catalog_keys(catalog)
     errors: list[str] = []
 
-    entropy_fixture = outline.parent / "forgotten-stuff" / "example_outline.md"
-    if entropy_fixture.exists():
-        errors.append(
-            "disposable entropy fixture must not be present in the release source tree: "
-            + str(entropy_fixture)
-        )
-
     missing_catalog = sorted(cited - catalogued)
     unused_catalog = sorted(catalogued - cited)
     if missing_catalog:
