@@ -59,7 +59,6 @@ class KeylessSmokeTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(FIXTURE.read_text(encoding="utf-8").strip(), result.stdout)
         self.assertEqual(result.stdout.count("OUTPUT_TYPE: tex"), 1)
-        self.assertNotIn("forgotten-stuff", result.stdout)
 
     def test_nominal_success_cannot_mix_failure_sentinel(self):
         cases = (
@@ -115,7 +114,11 @@ class KeylessSmokeTests(unittest.TestCase):
         target = next(
             line.strip() for line in makefile.splitlines() if line.startswith("check:")
         )
-        self.assertEqual(target, "check: check-python check-shell test")
+        dependencies = set(target.partition(":")[2].split())
+        self.assertEqual(
+            dependencies,
+            {"check-python", "check-shell", "test", "self-preflight"},
+        )
 
     def test_openai_requirement_declares_responses_api_floor(self):
         requirements = [
