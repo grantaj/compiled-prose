@@ -22,6 +22,8 @@ OLLAMA_HOST ?= http://localhost:11434
 IN ?=
 SYSTEM := prompts/00_system.md
 TARGET_STYLE ?= prompts/targets/journal_academic.md
+SELF_SOURCE := outline.md
+SELF_SOURCE_AUDIT := self-example/source-audit.json
 
 P_DRAFT := prompts/10_draft.md
 P_SMOOTH := prompts/20_smooth.md
@@ -35,10 +37,11 @@ SMOOTH_OUT  := $(BUILD_DIR)/smooth.tex
 REVISE_OUT  := $(BUILD_DIR)/revise.tex
 REVIEW_OUT  := $(BUILD_DIR)/peer_review.md
 FINAL_OUT   := $(BUILD_DIR)/final.tex
+FINAL_PDF   := $(BUILD_DIR)/final.pdf
 SUMMARY_OUT := $(BUILD_DIR)/summary.tex
 ERROR_DIR   := $(BUILD_DIR)/errors
 
-.PHONY: all draft smooth revise review final summarize check check-python check-shell test check-ollama openai-check print-vars clean clobber
+.PHONY: all draft smooth revise review final summarize self self-preflight validate-latex check check-python check-shell test check-ollama openai-check print-vars clean clobber
 all: final
 draft: $(DRAFT_OUT)
 smooth: $(SMOOTH_OUT)
@@ -47,8 +50,28 @@ review: $(REVIEW_OUT)
 final: $(FINAL_OUT)
 summarize: $(SUMMARY_OUT)
 
+# Provider-free release-readiness checks for the repository's authoritative
+# self-example source. This command performs no network access.
+self-preflight:
+	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)"
+
+# One obvious end-to-end self-example command. This deliberately performs a
+# fresh build. The selected BACKEND controls whether model execution is local
+# or paid; self-preflight always runs before any backend invocation.
+self: self-preflight
+	@$(MAKE) --no-print-directory clobber
+	@$(MAKE) --no-print-directory IN="$(SELF_SOURCE)" final
+	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)" --final "$(FINAL_OUT)"
+	@$(MAKE) --no-print-directory validate-latex
+
+# Validation is intentionally non-compiling at the prose-pipeline level: if
+# final.tex does not already exist, fail rather than triggering a model stage.
+validate-latex:
+	@if [ ! -f "$(FINAL_OUT)" ]; then echo "$(FINAL_OUT) does not exist; compile it before LaTeX validation" >&2; exit 2; fi
+	@python tools/validate_latex.py --input "$(FINAL_OUT)" --output "$(FINAL_PDF)"
+
 # Fast local preflight. These dependencies must remain keyless and provider-free.
-check: check-python check-shell test
+check: check-python check-shell test self-preflight
 
 check-python:
 	@python -m py_compile tools/*.py tests/*.py
@@ -146,7 +169,7 @@ $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_ST
 	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
 
 clean:
-	rm -f "$(DRAFT_OUT)" "$(SMOOTH_OUT)" "$(REVISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(SUMMARY_OUT)"
+	rm -f "$(DRAFT_OUT)" "$(SMOOTH_OUT)" "$(REVISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(FINAL_PDF)" "$(SUMMARY_OUT)"
 	rm -rf "$(ERROR_DIR)"
 
 clobber:
