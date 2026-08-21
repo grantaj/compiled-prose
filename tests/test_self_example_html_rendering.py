@@ -6,6 +6,8 @@ from unittest.mock import patch
 
 from tools.build_self_example_site import REQUIRED_ARTIFACTS, build_site
 
+ROOT = Path(__file__).resolve().parents[1]
+
 
 class SelfExampleHtmlRenderingTests(unittest.TestCase):
     def make_inputs(self, root: Path):
@@ -142,6 +144,20 @@ A claim \parencite{known2020}.
             )
             metadata = json.loads((output / "build.json").read_text(encoding="utf-8"))
             self.assertEqual(metadata["bibliography"], "references.bib")
+
+    def test_site_builder_has_no_bespoke_citation_parser_or_rewriter(self):
+        builder = (ROOT / "tools/build_self_example_site.py").read_text(encoding="utf-8")
+        for forbidden in (
+            "_prepare_final_tex_for_html",
+            "_BIBITEM_RE",
+            "_SIMPLE_CITE_RE",
+            "thebibliography environment",
+            "replace_cite",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, builder)
+        self.assertIn("--citeproc", builder)
+        self.assertIn("--bibliography=", builder)
 
 
 if __name__ == "__main__":
