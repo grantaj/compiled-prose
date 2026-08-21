@@ -34,8 +34,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run keyless tests
-        run: python -m unittest discover -s tests -v
+      - name: Run keyless release-readiness checks
+        run: make check
 
       - name: Verify GitHub Pages configuration
         uses: actions/configure-pages@v5
@@ -62,23 +62,23 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install compiler dependencies
+      - name: Install compiler and release-validation dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           sudo apt-get update
-          sudo apt-get install --yes pandoc
+          sudo apt-get install --yes pandoc latexmk texlive-latex-extra
           pandoc --version
+          latexmk -v
 
-      - name: Compile self-example using paid API
+      - name: Compile and validate self-example using paid API
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           test -n "$OPENAI_API_KEY"
-          make clobber
-          make BACKEND="$BACKEND" OPENAI_MODEL="$OPENAI_MODEL" TARGET_STYLE="$TARGET_STYLE" IN=outline.md final
+          make BACKEND="$BACKEND" OPENAI_MODEL="$OPENAI_MODEL" TARGET_STYLE="$TARGET_STYLE" self
 
-      - name: Build inspectable Pages site
+      - name: Build inspectable acceptance candidate
         env:
           SOURCE_SHA: ${{ github.sha }}
           RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -86,11 +86,19 @@ jobs:
           python tools/build_self_example_site.py \
             --build-dir build \
             --outline outline.md \
+            --source-audit self-example/source-audit.json \
             --output-dir docs \
             --source-sha "$SOURCE_SHA" \
             --model "$OPENAI_MODEL" \
             --target "$TARGET_STYLE" \
             --run-url "$RUN_URL"
+
+      - name: Upload self-example acceptance candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-example-candidate-${{ github.sha }}
+          path: docs
+          retention-days: 90
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
@@ -98,7 +106,7 @@ jobs:
           path: docs
 
   deploy:
-    name: Publish GitHub Pages
+    name: Publish GitHub Pages after human acceptance
     needs: compile
     runs-on: ubuntu-latest
     permissions:
@@ -108,6 +116,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy accepted candidate to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
