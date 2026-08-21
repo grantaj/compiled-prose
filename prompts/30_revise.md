@@ -8,6 +8,7 @@ Constraints:
 - If the stage input has drifted from the authoritative source, repair the drift only when the faithful correction is fully determined by the source; otherwise use the failure branch.
 - Preserve authored order and scope of ideas.
 - Merge or split paragraphs to improve flow when compatible with the selected target; remove bolted-on sentences by integrating their existing authored content.
+- Treat section boundaries and headings in the derived stage input as realisation choices. Consolidate mechanically mirrored outline subsections into coherent publication sections, remove duplicated manual numbering from section titles, and prefer paragraph transitions over unnecessary headings when the authored order and conceptual distinctions remain intact.
 - Preserve citations supplied by the authoritative source and represented in the stage input; keep them tied to claims. You may move citations within adjacent sentences if support remains unambiguous.
 - Apply citation-specific revision only when citations are present. If the selected target requires citation support that the authoritative source does not supply, use the failure branch rather than inventing a citation.
 - Do not treat a citation or claim that appears only in the derived stage input as authored source material.
