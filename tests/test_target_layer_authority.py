@@ -127,7 +127,7 @@ Do not change authored concepts, grouping, order, or scope to create them.
         self.assertIn("Scholarly citations are not required merely by this target", rendered)
         self.assertIn("Source assurance has a target-independent floor", rendered)
         self.assertIn("Ask first whether the claim and argument satisfy the target-independent", rendered)
-        self.assertIn("Do not convert adequate support into an academic-style explanation burden", rendered)
+        self.assertIn("do not convert adequate support into an academic-style explanation burden", rendered)
         self.assertNotIn("unsupported non-trivial claim", rendered)
 
     def test_pipeline_requires_empirical_justification_for_new_model_stages(self):
@@ -136,6 +136,12 @@ Do not change authored concepts, grouping, order, or scope to create them.
         self.assertIn("Architectural separation alone is not sufficient justification", pipeline)
         self.assertIn("empirical evidence", pipeline)
         self.assertIn("an existing stage cannot absorb the responsibility reliably", pipeline)
+
+        makefile = text("Makefile")
+        self.assertEqual(makefile.count("$(call RUN_STAGE,"), 6)
+        for stage in ("draft", "smooth", "revise", "review", "final", "summarize"):
+            with self.subTest(stage=stage):
+                self.assertEqual(makefile.count(f"$(call RUN_STAGE,{stage},"), 1)
 
 
 if __name__ == "__main__":
