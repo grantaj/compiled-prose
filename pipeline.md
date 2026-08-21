@@ -1,388 +1,345 @@
 # Compilation Pipeline Specification
 
-This document defines the **normative semantics** of the compiled-prose pipeline implemented in this repository. It specifies the required stages, invariants, failure conditions, and artefact boundaries. It is **not** an execution script. Orchestration and scheduling are handled externally by the build system (`make`).
+This document is the canonical specification for the compiled-prose pipeline implemented in this repository. It describes the stage graph, authority model, output/failure protocol, review gate, build-directory behaviour, and reproducibility boundary.
 
-The purpose of this specification is to make the behaviour of the pipeline explicit, inspectable, and auditable, independent of any particular execution environment or language model backend.
+The implementation remains intentionally small: GNU Make orchestrates file dependencies, `tools/render_prompt.py` creates one flattened prompt per model-backed stage, `tools/llm_run.sh` selects the backend, `tools/enforce_protocol.py` enforces the common result protocol, and `tools/review_decision.py` enforces the peer-review decision gate.
 
----
+## Normative vocabulary and enforcement boundary
+
+Not every important property of prose can be checked mechanically. This specification therefore distinguishes three kinds of rule.
+
+### Mechanically enforced rules
+
+A rule labelled **mechanically enforced** is implemented by the Makefile or repository tools/tests. RFC-style words such as **MUST** and **MUST NOT** are reserved here for these rules unless a section explicitly says otherwise.
+
+Mechanical enforcement currently covers matters such as:
+
+- stage ordering through Make dependencies;
+- stable prompt composition inputs;
+- declared `tex` versus `md` result routing;
+- the `@@FAIL` sentinel protocol;
+- atomic publication of successful artefacts and external diagnostics;
+- removal of stale nominal outputs on failed rebuilds;
+- peer-review status syntax and status/finding consistency at the final decision gate;
+- deterministic `PASS` promotion from `revise.tex` to `final.tex`;
+- the single bounded final-realisation route;
+- build-directory isolation for generated artefacts and diagnostics.
+
+### Prompt contracts
+
+A **prompt contract** is an executable instruction supplied to the model but not semantically proved by the build system. Source fidelity, absence of invented claims, preservation of scope, and correct classification of a review finding as `SOURCE` or `REALISATION` fall into this category.
+
+The build system can detect malformed transport/output structure. It cannot in general prove that valid-looking prose is faithful. A structurally valid LaTeX result that silently invents a claim is therefore a prompt-contract violation, not something `enforce_protocol.py` can currently discover by itself.
+
+### Design constraints
+
+A **design constraint** states an architectural property future implementation changes are expected to preserve even where no single current test proves it completely. The principal design constraints are backend independence, explicit failure over improvisation, file-driven/Git-friendly operation, and keeping conceptual authority upstream of generated prose.
+
+This distinction is deliberate: the specification does not claim mechanical guarantees that the implementation does not provide.
 
 ## Scope
 
-This specification applies to the compilation of a single essay or essay section from an authoritative outline into publication-ready LaTeX, using a fixed sequence of transformation passes. It governs:
+The core compilation path turns one authoritative conceptual source into publication-ready LaTeX through a fixed forward sequence:
 
-* permitted inputs and outputs
-* stage ordering and responsibilities
-* target-specific rendering constraints
-* file-modification constraints
-* diagnostic and review behaviour
-* failure and retry semantics
+```text
+authoritative source
+      |
+      v
+    draft
+      |
+      v
+    smooth
+      |
+      v
+    revise
+      |
+      v
+ peer review
+      |
+      v
+review decision
+   /       \
+ PASS       REVISE_REALISATION
+  |                 |
+  |                 v
+  |          final realisation
+  |                 |
+  +-----------------+
+          |
+          v
+       final.tex
 
----
+BLOCKED_SOURCE or malformed review -> external diagnostic + failure
+```
 
-## Authoritative Artefacts
+`make summarize` is an independent source-to-LaTeX utility transform. It is not part of the forward `final` dependency chain.
 
-The following artefacts are authoritative by role:
+## Authority model
 
-* **Authoritative source** (`outline.md` or other explicitly authored source material):
+Authority is role-specific.
 
-  * The sole source of conceptual authorship throughout the pipeline.
-  * Defines claims, argument, structure, scope, distinctions, examples, evidence, citations, and unresolved authorial choices.
+### Authoritative conceptual source
 
-* **Stage Artefacts** (`draft.tex`, `smooth.tex`, `revise.tex`):
+The file supplied as `IN=...` is the authoritative conceptual source for the work. In the repository self-example this is `outline.md`.
 
-  * Derived working representations produced by compiler stages.
-  * Are inputs to later transformations but are not conceptual authority.
-  * Must remain faithful to the authoritative source; a claim, citation, example, or scope change appearing only in a stage artefact does not become authored content merely by surviving to a later stage.
+Its role is:
 
-* **Stage Prompts** (`prompts/*.md`):
+- The sole source of conceptual authorship throughout the pipeline.
+- The authority for claims, argument, structure, scope, distinctions, examples, evidence, citations, and unresolved authorial choices.
 
-  * Define the transformation performed at each stage.
-  * May constrain realisation but must not introduce new conceptual content.
+Changing a model-generated artefact does not retroactively change this source.
 
-* **Target Requirements** (`prompts/targets/*.md`):
+### Stage prompts
 
-  * Define venue- or audience-specific realisation constraints such as register, reading level, formatting, citation expectations, and audience assumptions.
-  * Must not introduce claims, arguments, examples, evidence, citations, or conceptual scope.
+`prompts/*.md` define what transformation a stage attempts. They are executable compiler contracts. They may constrain realisation and failure behaviour but are not allowed, by design, to author new conceptual content.
 
-* **Diagnostic Context** (for example `peer_review.md`):
+### Target requirements
 
-  * Identifies possible defects or requested realisation-level changes.
-  * Is advisory and has no authority to change the argument or supply missing authored content.
+`prompts/targets/*.md` define audience- or venue-specific realisation requirements: register, reading level, formatting, citation expectations, and similar constraints.
 
-The language model is treated as an **execution engine**, not an author.
+A target is not conceptual authority. If satisfying it requires a claim, example, item of evidence, citation, or scope choice absent from the source, the prompt contract directs the model to fail rather than invent the missing material.
 
----
+### Derived stage artefacts
 
-## Prompt Authority and Content Authority
+`draft.tex`, `smooth.tex`, and `revise.tex` are working representations. By role they:
 
-The authority relationship remains stable:
+- Are inputs to later transformations but are not conceptual authority.
+- Must remain faithful to the authoritative source; content that exists only because an earlier model invented it does not become authoritative by propagation.
 
-1. system instructions;
-2. stage prompt;
+A downstream stage therefore receives the current representation alongside the original source.
+
+### Diagnostic context
+
+`peer_review.md` and files under `$(BUILD_DIR)/errors/` are diagnostics. They can identify problems or request source/realisation work; they do not supply authored answers.
+
+The model backend is an execution engine, not an authority layer.
+
+## Flattened prompt composition
+
+`tools/render_prompt.py` resolves all file inputs before model execution. Models are never instructed to open repository files themselves.
+
+For each stage the renderer composes one prompt in this stable order:
+
+1. system contract (`prompts/00_system.md`);
+2. stage contract;
 3. target requirements;
 4. authoritative source;
-5. diagnostic context, when present.
+5. derived stage input, only when it differs from the authoritative source;
+6. peer-review diagnostic context, only for the conditional final-realisation stage;
+7. declared output and failure contract.
 
-The prompt renderer composes system, stage, target, and authoritative source in that order. When the current stage input differs from the authoritative source, it is then included as a separately labelled **derived working artefact** before diagnostic context. The stage input is not an additional authority layer. The explicit output contract is protocol-level system instruction and cannot be overridden by any prompt content.
+Draft and summarize normally use the authoritative source as their stage input, so the renderer avoids duplicating that payload.
 
-Instruction precedence is not conceptual authorship. The authoritative source remains the sole authority for what the work says. Higher-priority system, stage, and target instructions may define compiler behaviour or acceptable realisation, but they may not license new conceptual content. A downstream stage must not promote an invention or omission in a derived stage artefact into authored content.
+The order above is mechanically fixed by `render_prompt.py`. Conceptual authority is separate from prompt position: the source remains authoritative for content even though system/stage/target instructions constrain execution and realisation.
 
-In particular:
+## Stage result protocol
 
-* a stage prompt defines **what transformation is being performed**;
-* a target defines **what constitutes acceptable realisation for the selected audience or venue**;
-* the authoritative source defines **what the work says**;
-* a stage artefact is the current working representation to transform and must be checked against that source;
-* diagnostic context may identify defects but cannot supply the missing answer.
+Every model-backed stage declares an output type of `tex` or `md` and produces one raw backend result. The backend output is captured privately before any nominal artefact is published.
 
-If satisfying a target requirement would require evidence, a citation, an example, a new claim, a scope decision, or another authored choice absent from the authoritative source, the relevant prose-producing stage must fail closed rather than inventing it. A diagnostic stage should report such a defect as its normal diagnostic output.
+### Success
 
-The build system carries the original authoritative source alongside each downstream stage artefact. Draft and summarise operate directly on that source; smooth, revise, review, and the optional final realisation revision receive both the original source and the derived artefact they are transforming or inspecting.
+**Mechanically enforced:** a `tex` result MUST be one structurally complete raw LaTeX document: it begins with `\documentclass`, contains an ordered `\begin{document}` / `\end{document}`, and has no non-whitespace content after `\end{document}`.
 
----
+This is a structural protocol check, not a full TeX compilation or semantic validity proof. The prompt contract additionally asks the model to produce valid LaTeX.
 
-## Stage Result Protocol
+**Mechanically enforced:** an `md` result MUST NOT be a complete LaTeX document according to that structural check. `enforce_protocol.py` does not attempt to implement a general Markdown parser.
 
-Every model-backed stage produces exactly one of two results:
+For peer review, the stricter line-oriented review grammar is validated later by `review_decision.py` when the final decision is required.
 
-1. **Success** — a complete artefact of the stage's declared output type (`tex` or `md`).
-2. **Failure** — a Markdown diagnostic beginning in the raw backend response with the sentinel line `@@FAIL`.
+### Explicit stage failure
 
-The sentinel is a transport protocol marker, not part of the diagnostic artefact. The build system removes it and writes the remaining Markdown to `$(BUILD_DIR)/errors/<stage>.md`.
+The prompt contract instructs a stage that cannot faithfully produce its declared artefact to return:
 
-The backend output is never written directly to the nominal stage artefact. It is captured privately and passed through one backend-independent protocol enforcement boundary. A successful result is published only after that check succeeds. The declared success type is enforced at this boundary: current `tex` stages must return one structurally complete raw LaTeX document (`\documentclass` through `\end{document}` with no trailing content), while an `md` stage must not return a complete LaTeX document. This structural check does not replace later LaTeX compilation or semantic validation.
+```text
+@@FAIL
+<Markdown diagnostic>
+```
 
-On failure:
+**Mechanically enforced:** `@@FAIL` MUST be the first line with no leading content. The sentinel itself is transport metadata and is stripped before the diagnostic is written to `$(BUILD_DIR)/errors/<stage>.md`.
 
-* the nominal stage artefact is absent, including any stale result from a previous successful build;
-* the external diagnostic is written under the configured build directory;
-* any diagnostic from a previous attempt at that stage is replaced rather than left deceptively current;
-* the stage exits non-zero and `make` stops;
-* no automatic retry or source-level self-healing is attempted.
+An empty failure payload is replaced by a protocol-error diagnostic rather than accepted as useful output.
 
-If prompt rendering or backend execution exits non-zero before a complete model result exists, the captured partial output is discarded and the same external diagnostic path records an execution failure. Such an infrastructure failure is not misreported as an authorial source defect.
+### Execution or protocol failure
 
-On a later success, the nominal artefact is published and any stale diagnostic for that stage is removed.
+**Mechanically enforced:** if prompt rendering/backend execution exits non-zero, or if the raw result violates the declared transport/output protocol:
 
-For prose-producing stages, source insufficiency is blocking whenever faithful prose would require inventing a claim or warrant, choosing an unresolved interpretation, expanding scope, inventing evidence or citations, satisfying a target-required evidence or citation obligation that the authoritative source does not supply, changing the strength of an authored claim, or resolving a contradiction in the authoritative source without a defined priority rule. Such conditions must not be hidden in LaTeX comments or repaired downstream.
+- the nominal stage output is absent;
+- captured partial output is discarded;
+- a Markdown diagnostic is atomically written under `$(BUILD_DIR)/errors/`;
+- the stage exits non-zero and Make stops the dependency chain.
 
-A diagnostic stage may report defects as its normal Markdown success output; it uses the failure protocol only if the diagnostic stage itself cannot be executed faithfully.
+A subsequent successful rebuild atomically publishes the nominal artefact and removes the stale diagnostic for that stage.
 
----
+There is no backend-specific enforcement path: OpenAI and Ollama feed the same result boundary.
 
-## Peer-review Decision Protocol
-
-Peer review has an additional machine-readable protocol because a successful diagnostic can still determine whether compilation is allowed to continue.
-
-The first non-empty line of `peer_review.md` is exactly one of:
-
-* `STATUS: PASS`
-* `STATUS: REVISE_REALISATION`
-* `STATUS: BLOCKED_SOURCE`
-
-Every subsequent non-empty line is one localised finding of the form:
-
-`- [MAJOR|MINOR][SOURCE|REALISATION] <location> :: <finding>`
-
-The overall status is not discretionary metadata. It is mechanically implied by the findings:
-
-* any `SOURCE` finding implies `BLOCKED_SOURCE`;
-* otherwise one or more `REALISATION` findings imply `REVISE_REALISATION`;
-* no findings imply `PASS`.
-
-The build system validates both the syntax and this consistency rule. A missing, duplicated, unknown, malformed, or inconsistent status fails closed rather than being guessed or repaired.
-
-`SOURCE` means that satisfying the finding requires authorial source work: for example a missing warrant, unsupported non-trivial claim, missing required evidence or citation, contradiction, meaning-changing ambiguity, missing scope boundary, or material expansion. `REALISATION` means that the existing source completely determines the correction and only wording or presentation changes.
-
-If classification is ambiguous, the finding is source-level. A reviewer-suggested citation or evidence item absent from the authoritative source never becomes authority by appearing in the review.
-
-The decision gate acts as follows:
-
-* `PASS`: `revise.tex` is promoted deterministically to `final.tex`; no final model revision is run.
-* `REVISE_REALISATION`: exactly one named final realisation-revision stage may run.
-* `BLOCKED_SOURCE`: compilation stops non-zero before final revision, any nominal `final.tex` is removed, and the review is surfaced under the normal external diagnostic path for human source revision.
-
-There is no review-again flag and no route from this protocol back into peer review automatically.
-
----
-
-## Pipeline Stages (Semantic Order)
-
-The pipeline consists of the following stages and decision gate, applied in order.
+## Core stages
 
 ### 1. Draft
 
-**Purpose**
+**Make target:** `draft`  
+**Stage prompt:** `prompts/10_draft.md`  
+**Input:** authoritative source (`IN`)  
+**Output:** `$(BUILD_DIR)/draft.tex`
 
-* Faithful expansion of the outline into LaTeX prose realised for the selected target.
+**Mechanically enforced:** the source path is required when the draft recipe runs, and a successful result must satisfy the structural `tex` protocol.
 
-**Inputs**
-
-* Outline
-* Draft stage prompt
-* System prompt
-* Target requirements
-
-**Output**
-
-* `draft.tex`
-
-**Constraints**
-
-* Output MUST be valid LaTeX.
-* No commentary or Markdown on success.
-* No claims not grounded in the outline.
-* Target-required citations may only come from the authoritative source; missing required support is blocking.
-
----
+**Prompt contract:** expand the source faithfully for the selected target without inventing claims, evidence, citations, examples, or authorial choices. Source insufficiency that would require invention is a blocking condition to report with `@@FAIL`.
 
 ### 2. Smooth
 
-**Purpose**
+**Make target:** `smooth`  
+**Stage prompt:** `prompts/20_smooth.md`  
+**Inputs:** authoritative source plus `draft.tex` as a derived working artefact  
+**Output:** `$(BUILD_DIR)/smooth.tex`
 
-* Improve local coherence, readability, and flow without altering structure or claims, while preserving the selected target requirements.
+**Mechanically enforced:** Make orders this after draft and applies the same structural `tex` result protocol.
 
-**Inputs**
-
-* authoritative source
-* `draft.tex` (derived stage input)
-
-**Output**
-
-* `smooth.tex`
-
-**Constraints**
-
-* No new claims or sections.
-* Structural order must be preserved.
-* Drift between `draft.tex` and the authoritative source may be repaired only when the correction is fully determined by the source; otherwise the stage must fail closed.
-* Citation handling is conditional on supplied citations and target requirements.
-* Output MUST be valid LaTeX only on success.
-
----
+**Prompt contract:** improve local coherence, readability, and flow without changing conceptual structure or authority. Earlier drift may be repaired only when the source determines the correction; otherwise the stage is instructed to fail closed.
 
 ### 3. Revise
 
-**Purpose**
+**Make target:** `revise`  
+**Stage prompt:** `prompts/30_revise.md`  
+**Inputs:** authoritative source plus `smooth.tex`  
+**Output:** `$(BUILD_DIR)/revise.tex`
 
-* Address redundancy, tighten prose realisation, and ensure global consistency for the selected target.
+**Mechanically enforced:** Make orders this after smooth and applies the structural `tex` protocol.
 
-**Inputs**
+**Prompt contract:** tighten the realised prose and global consistency without expanding scope or turning target conventions into new content authority.
 
-* authoritative source
-* `smooth.tex` (derived stage input)
+### 4. Peer review
 
-**Output**
+**Make target:** `review`  
+**Stage prompt:** `prompts/40_peer_review.md`  
+**Inputs:** authoritative source plus `revise.tex` and target requirements  
+**Output:** `$(BUILD_DIR)/peer_review.md`
 
-* `revise.tex`
+**Mechanically enforced at stage publication:** the result uses the declared `md` transport protocol rather than the `tex` protocol.
 
-**Constraints**
+**Prompt contract:** inspect the revised artefact against both source and target, localise findings, and classify each finding as source-owned or realisation-owned. Review is diagnostic only and is not permitted to rewrite the source.
 
-* No expansion of scope.
-* Drift between `smooth.tex` and the authoritative source may be repaired only when the correction is fully determined by the source; otherwise the stage must fail closed.
-* Citations, labels, and structure must be preserved unless a permitted realisation-level correction is made.
-* No academic or other venue-specific norm may be imposed unless it comes from the selected target.
-* Output MUST be valid LaTeX only on success.
+The exact machine grammar below is mechanically validated by the final review decision gate. Therefore `make review` alone can publish Markdown that later proves malformed; `make final` will fail closed rather than guess how to interpret it.
 
----
+### 5. Review decision gate
 
-### 4. Peer Review (Diagnostic)
+**Implementation:** `tools/review_decision.py`  
+**Inputs:** `peer_review.md`, `revise.tex`  
+**Possible result:** deterministic promotion, one final-realisation permission, or failure
 
-**Purpose**
+The first non-empty review line is exactly one of:
 
-* Produce a critical, classified review of the revised LaTeX against the selected target without modifying it.
+```text
+STATUS: PASS
+STATUS: REVISE_REALISATION
+STATUS: BLOCKED_SOURCE
+```
 
-**Inputs**
+Every later non-empty line has exactly this form:
 
-* authoritative source
-* `revise.tex` (derived stage input)
-* Target requirements
+```text
+- [MAJOR|MINOR][SOURCE|REALISATION] <location> :: <finding>
+```
 
-**Output**
+**Mechanically enforced:** the report MUST contain exactly one status line, it MUST be the first non-empty line, every finding MUST match the grammar, and the declared status MUST agree with the finding tags:
 
-* `peer_review.md`
+- any `SOURCE` finding -> `BLOCKED_SOURCE`;
+- otherwise one or more findings -> `REVISE_REALISATION`;
+- no findings -> `PASS`.
 
-**Constraints**
+The parser enforces the consistency of the supplied tags. Whether the model classified a finding semantically correctly is a prompt-contract matter.
 
-* Successful output MUST be Markdown conforming to the peer-review decision protocol above.
-* MUST NOT rewrite or paraphrase the text.
-* Every finding must be localised and classified by severity and by `SOURCE` versus `REALISATION` ownership.
-* Review must identify material drift between the derived stage input and the authoritative source; such drift does not become authoritative by propagation.
-* Tone, structure, reading level, formatting, citation expectations, and related criteria must be assessed against the selected target rather than an assumed academic venue.
-* Scholarly citation checks apply when the selected target requires them; a non-academic target must not inherit academic reference obligations.
-* Missing target-required evidence or citations are source defects to report, not material for the reviewer to invent.
-* Review content is diagnostic only and has no direct authority.
+Decision behaviour is mechanically enforced:
 
----
+- `PASS` atomically copies the exact contents of `revise.tex` to `final.tex` and makes no model call;
+- `REVISE_REALISATION` permits the one conditional final-realisation stage and does not yet create `final.tex`;
+- `BLOCKED_SOURCE` removes any stale final output, writes `$(BUILD_DIR)/errors/review.md`, and exits non-zero;
+- malformed/inconsistent review likewise writes an external review diagnostic and exits non-zero.
 
-### 5. Review Decision Gate
+Review suggestions never become source authority at this gate.
 
-**Purpose**
+### 6. Final realisation revision
 
-* Validate review syntax and authority classification and choose the only permitted next action.
+**Make target:** reached conditionally through `final`  
+**Stage prompt:** `prompts/50_final.md`  
+**Precondition:** validated `REVISE_REALISATION` review  
+**Inputs:** authoritative source, `revise.tex`, target requirements, and validated peer-review diagnostics  
+**Output:** `$(BUILD_DIR)/final.tex`
 
-**Inputs**
+**Mechanically enforced:** the Makefile exposes only one forward invocation of this model-backed final stage per dependency-chain execution, and its result must satisfy the structural `tex` protocol. There is no automatic route back to peer review.
 
-* `peer_review.md`
-* `revise.tex`
+**Prompt contract:** apply only the validated realisation-level corrections. If a requested correction actually requires authorial source work, the stage is instructed to fail rather than reinterpret diagnostic text as authority.
 
-**Outputs**
+## Auxiliary summarize transform
 
-* on `PASS`, `final.tex` as an exact deterministic promotion of `revise.tex`;
-* on `REVISE_REALISATION`, permission for stage 6 and no nominal `final.tex` yet;
-* on `BLOCKED_SOURCE` or malformed review, a non-zero exit and external diagnostic with no nominal `final.tex`.
+**Make target:** `summarize`  
+**Stage prompt:** `prompts/05_summarize.md`  
+**Input:** authoritative source (`IN`)  
+**Output:** `$(BUILD_DIR)/summary.tex`
 
-**Constraints**
+It uses the same flattened prompt renderer and common stage result protocol but is independent of the core finalisation graph.
 
-* The gate is deterministic and makes no model call.
-* It never converts review suggestions into source authority.
-* It fails closed on malformed or inconsistent review status.
+## Build directory and file lifecycle
 
----
+`BUILD_DIR ?= build` is the single generated-output root used by the Makefile. Callers may override it, for example:
 
-### 6. Final Realisation Revision (Conditional, Bounded)
+```bash
+make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
+```
 
-**Purpose**
+**Mechanically enforced:** nominal stage artefacts, external diagnostics, and private temporary raw captures are placed under the selected build root. Changing `BUILD_DIR` does not relocate the authoritative source, prompts, or target files.
 
-* Apply the validated realisation-only peer-review findings once.
+`make clean` removes the known pipeline outputs plus the errors directory from the selected build root. `make clobber` removes the selected build root entirely.
 
-**Precondition**
+Generated artefacts are therefore disposable build products. The source tree remains the authority surface.
 
-* The review decision gate returned `REVISE_REALISATION`.
+## Blocking semantics
 
-**Inputs**
+The semantic conditions below are **prompt-contract blocking conditions**, not claims of automatic semantic detection. A prose-producing stage is instructed to return `@@FAIL` rather than improvise when faithful output would require it to:
 
-* authoritative source
-* `revise.tex` (derived stage input)
-* target requirements
-* validated `peer_review.md` (diagnostic context containing only `REALISATION` findings)
+- invent a claim, warrant, example, evidence item, or citation;
+- choose between unresolved interpretations or contradictory source instructions;
+- change authored scope or claim strength;
+- satisfy a target-required evidence/citation obligation not supplied by the source;
+- repair conceptual drift when the source does not uniquely determine the repair.
 
-**Output**
+Separately, the following are **mechanical blocking conditions** and stop the Make dependency chain:
 
-* `final.tex`
+- backend/prompt-render execution failure;
+- empty output;
+- malformed or misplaced `@@FAIL` usage;
+- violation of the declared `tex`/`md` structural protocol;
+- malformed or internally inconsistent peer-review machine status at the final gate;
+- a validated `BLOCKED_SOURCE` review;
+- explicit `@@FAIL` from the conditional final-realisation stage.
 
-**Constraints**
+Failures are externalised as diagnostics rather than hidden in generated LaTeX.
 
-* This stage may execute at most once per forward compilation.
-* Successful output MUST be valid LaTeX only.
-* The authoritative source remains authoritative for conceptual content; the LaTeX stage input is only a derived working artefact.
-* Target requirements control acceptable realisation but do not author content.
-* Peer review comments inform changes but do not override specification or source authority.
-* Final revision must correct prior-stage drift when the faithful correction is fully determined by the authoritative source; otherwise it must fail closed.
-* No new claims, sections, citations, evidence, examples, or conceptual scope may be introduced.
-* If a supposedly realisation-level finding turns out to require authorial source changes, the stage must fail closed rather than reinterpret the review as authority.
-* The stage cannot request or trigger another review pass.
+## Iteration and retry policy
 
----
+The implemented core is a single forward compilation path: draft -> smooth -> revise -> peer review -> decision -> optional final realisation.
 
-## File-Modification Rules
+**Mechanically enforced:** there is no review-again edge, recursive Make retry, or automatic source-repair loop in this graph.
 
-* Each stage may publish **only** its designated successful output file or its own external failure diagnostic.
-* The deterministic review decision gate may promote `revise.tex` to `final.tex` on `PASS`, or remove a stale `final.tex` when compilation is blocked.
-* No stage may modify:
+**Design constraint:** source-level blockers return control to the human-authored source or explicit compiler configuration. Backend/provider retry policy should not be allowed to mutate source authority or silently reinterpret a semantic failure as success.
 
-  * the outline
-  * prompts
-  * target requirement files
-  * successful artefacts from other stages
+## Backend independence
 
----
+Backend selection occurs in `tools/llm_run.sh`. Both supported backends consume a rendered prompt on standard input and expose their model result on standard output to the same enforcement layer.
 
-## Determinism and Variance Control
+**Design constraint:** backend adapters may handle provider-specific transport, but stage prompts, authority semantics, result routing, diagnostics, and review policy remain backend-independent.
 
-* Given identical inputs, prompts, constraints, backend configuration, and seed (where supported), the pipeline SHOULD produce equivalent outputs.
-* Variance is permitted only through explicit configuration changes (e.g. target, backend, temperature).
-* A `PASS` review introduces no additional model variance because finalisation is deterministic promotion.
+## Reproducibility boundary
 
----
+The project targets **semantic and specification-level reproducibility**, not byte-level determinism of model-generated prose.
 
-## Failure Conditions
+The stable/reviewable inputs are source files, prompts, target requirements, Make dependencies, backend/model configuration, and the common enforcement rules. Re-running those inputs should preserve the same authority boundaries, stage responsibilities, and failure protocol.
 
-The pipeline MUST halt and report failure if:
+Model-generated wording can vary across runs, backends, model revisions, provider implementations, or platforms. Temperature and seed controls may reduce variance where supported; they do not create a repository-wide guarantee of identical bytes.
 
-* a prose-producing stage cannot be completed faithfully from the authoritative source;
-* a target requirement cannot be met without inventing authored content, evidence, or citations;
-* a stage returns an explicit `@@FAIL` result;
-* a backend returns an empty or malformed failure result;
-* a backend process fails before a complete result is available;
-* a stage violates an enforceable output protocol constraint;
-* peer review returns a malformed or internally inconsistent machine status;
-* peer review exposes a source-level blocker that cannot be resolved without authorial source changes;
-* the bounded final realisation revision discovers that a requested correction actually requires authorial source work.
+One narrow byte-level property is mechanically guaranteed: after a `PASS` review, `final.tex` is an exact copy of `revise.tex` because no final model call occurs.
 
-A failed stage or decision gate must not leave behind a newly written partial artefact or a stale artefact that appears to be the result of the failed rebuild.
+## File-driven toolchain design
 
----
+The repository intentionally uses ordinary files and Make dependencies rather than hidden conversational state. Source, prompts, targets, derived artefacts, and diagnostics can therefore be inspected and diffed with normal development tools.
 
-## Iteration Policy
-
-* The pipeline is a **single forward pass**: draft -> smooth -> revise -> peer review -> decision gate -> optional one-time final realisation revision.
-* Source-level failures require explicit human intervention in authoritative source or compiler configuration.
-* Automatic retries and self-healing for source-level failures are disallowed.
-* `REVISE_REALISATION` permits at most one final realisation-revision pass and never another peer-review pass.
-* `PASS` performs no model-backed revision after peer review.
-* There is no hidden retry loop, recursive make invocation, or reviewer-driven self-improvement cycle.
-
----
-
-## Status Reporting (Optional)
-
-Execution environments MAY report:
-
-* which files were modified
-* a brief summary of changes per stage
-* unresolved issues flagged during peer review
-
-Such reporting is diagnostic and does not alter pipeline semantics.
-
----
-
-## Intent
-
-This specification exists to ensure that the compiled-prose pipeline is:
-
-* explicit rather than implicit
-* inspectable rather than ritualised
-* reproducible rather than gestural
-
-It defines *what must be true* of the process, not *how it is run*.
+This is the surviving intent behind the compiler/toolchain framing: predictable stages, explicit authority, explicit failure, stable prompt composition, and disposable generated outputs. It does not require pretending that probabilistic model execution is literally a deterministic compiler backend.
