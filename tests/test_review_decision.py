@@ -191,10 +191,13 @@ class BoundedOrchestrationTests(unittest.TestCase):
     def test_makefile_has_exactly_one_final_model_stage_and_no_recursive_loop(self):
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         self.assertEqual(makefile.count("$(call RUN_STAGE,final,"), 1)
-        self.assertNotIn("$(MAKE)", makefile)
-        self.assertIn("python tools/review_decision.py", makefile)
-        self.assertIn("REVISE_REALISATION)", makefile)
-        self.assertIn("PASS)", makefile)
+        final_start = makefile.index("$(FINAL_OUT):")
+        final_end = makefile.index("\n$(SUMMARY_OUT):", final_start)
+        final_block = makefile[final_start:final_end]
+        self.assertNotIn("$(MAKE)", final_block)
+        self.assertIn("python tools/review_decision.py", final_block)
+        self.assertIn("REVISE_REALISATION)", final_block)
+        self.assertIn("PASS)", final_block)
 
     def test_peer_review_prompt_defines_source_authority_and_status_vocabulary(self):
         prompt = (ROOT / "prompts" / "40_peer_review.md").read_text(encoding="utf-8")

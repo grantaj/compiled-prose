@@ -17,6 +17,7 @@ REQUIRED_ARTIFACTS = (
     "revise.tex",
     "peer_review.md",
     "final.tex",
+    "final.pdf",
 )
 
 STYLE = """\
@@ -30,6 +31,35 @@ nav a { margin-right: 1rem; }
 code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 pre { overflow-x: auto; padding: 1rem; background: #8881; }
 a { text-underline-offset: 0.15em; }
+"""
+
+ACCEPTANCE = """\
+# Release acceptance review
+
+This page is a **human semantic gate**, not a mechanically generated certificate of fidelity.
+The mechanical gates establish source/citation bookkeeping and protocol cleanliness and, once a
+candidate has been generated, require a real LaTeX compilation. They cannot prove that generated
+prose is materially equivalent to the authored conceptual source.
+
+Before approving publication, compare `artifacts/final.tex` (or the rendered PDF) directly with
+`artifacts/outline.md` and confirm all of the following:
+
+- no material claim appears in the final essay without authority in the outline;
+- no authored proposition has been silently strengthened or weakened;
+- no example, theory, citation, or historical claim was introduced downstream;
+- every source-supplied citation remains present and attached to the claim it supports;
+- peer review did not expand conceptual scope;
+- material qualifications, uncertainty, exclusions, and domain boundaries are preserved;
+- the final peer-review report contains no unresolved source-level blocker;
+- the human-authored conceptual decisions remain inspectable separately from model realisation.
+
+If any item fails, do **not** approve publication. Repair the authoritative source for source defects,
+or the compiler/prompt layer for compiler defects, then recompile. Do not hand-patch conceptual
+content into generated prose.
+
+The source-verification evidence used for this candidate is retained as
+`artifacts/source-audit.json`. It records audit evidence only and is not an additional conceptual
+authority for the compiler.
 """
 
 
@@ -63,6 +93,7 @@ def build_site(
     *,
     build_dir: Path,
     outline: Path,
+    source_audit: Path,
     output_dir: Path,
     source_sha: str,
     model: str,
@@ -70,7 +101,7 @@ def build_site(
     run_url: str,
 ) -> None:
     artifacts = [build_dir / name for name in REQUIRED_ARTIFACTS]
-    _require_files([outline, *artifacts])
+    _require_files([outline, source_audit, *artifacts])
 
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -81,6 +112,7 @@ def build_site(
     for artifact in artifacts:
         shutil.copy2(artifact, raw_dir / artifact.name)
     shutil.copy2(outline, raw_dir / "outline.md")
+    shutil.copy2(source_audit, raw_dir / "source-audit.json")
 
     (output_dir / "style.css").write_text(STYLE, encoding="utf-8")
     (output_dir / ".nojekyll").write_text("", encoding="utf-8")
@@ -95,6 +127,8 @@ def build_site(
         '<a href="index.html">Final essay</a>'
         '<a href="outline.html">Authoritative outline</a>'
         '<a href="peer-review.html">Peer review</a>'
+        '<a href="acceptance.html">Acceptance review</a>'
+        '<a href="artifacts/final.pdf">PDF</a>'
         '<a href="artifacts/final.tex">Raw LaTeX</a>'
         "</nav>"
         '<div class="build-info">'
@@ -119,6 +153,15 @@ def build_site(
         "Peer review diagnostic",
         nav,
     )
+    acceptance_source = output_dir / "_acceptance.md"
+    acceptance_source.write_text(ACCEPTANCE, encoding="utf-8")
+    _run_pandoc(
+        acceptance_source,
+        output_dir / "acceptance.html",
+        "Release acceptance review",
+        nav,
+    )
+    acceptance_source.unlink()
     nav.unlink()
 
     metadata = {
@@ -128,6 +171,8 @@ def build_site(
         "workflow_run": run_url,
         "published_at_utc": datetime.now(timezone.utc).isoformat(),
         "artifacts": list(REQUIRED_ARTIFACTS),
+        "authoritative_source": "outline.md",
+        "source_audit": "source-audit.json",
     }
     (output_dir / "build.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -138,6 +183,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--build-dir", type=Path, required=True)
     parser.add_argument("--outline", type=Path, required=True)
+    parser.add_argument("--source-audit", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--model", required=True)
@@ -147,6 +193,7 @@ def main() -> None:
     build_site(
         build_dir=args.build_dir,
         outline=args.outline,
+        source_audit=args.source_audit,
         output_dir=args.output_dir,
         source_sha=args.source_sha,
         model=args.model,

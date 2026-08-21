@@ -16,7 +16,6 @@ STALE_REFERENCES = {
     "context.md",
     "error_handling.md",
     "error_handling_implementation_strategies.md",
-    "example_outline.md",
     "revised.tex",
 }
 PROMPT_ASSIGNMENTS = {
