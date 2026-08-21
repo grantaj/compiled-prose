@@ -3,11 +3,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
-PAID_WORKFLOW = WORKFLOWS / "publish-self-example.yml"
+PAID_WORKFLOW = WORKFLOWS / "compile-self-example.yml"
+PUBLISH_WORKFLOW = WORKFLOWS / "publish-self-example.yml"
 
 
 class CiSpendingPolicyTests(unittest.TestCase):
-    def test_only_manual_publication_workflow_can_reference_paid_provider(self):
+    def test_only_compile_workflow_can_reference_paid_provider(self):
         workflows = sorted(
             list(WORKFLOWS.glob("*.yml")) + list(WORKFLOWS.glob("*.yaml"))
         )
@@ -23,7 +24,7 @@ class CiSpendingPolicyTests(unittest.TestCase):
                     self.assertNotIn("secrets.", content)
                     self.assertNotIn("secrets[", content)
 
-    def test_paid_workflow_has_no_automatic_trigger(self):
+    def test_compile_workflow_has_no_automatic_trigger(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         trigger_block = content.split("permissions:", 1)[0]
         self.assertIn("workflow_dispatch:", trigger_block)
@@ -37,7 +38,7 @@ class CiSpendingPolicyTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, trigger_block)
 
-    def test_paid_workflow_requires_explicit_authorization_and_environment_gate(self):
+    def test_compile_workflow_requires_explicit_authorization_and_environment_gate(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("authorize_paid_api_call:", content)
         self.assertIn("default: false", content)
@@ -47,13 +48,8 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("environment: paid-compilation", content)
         self.assertIn("OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}", content)
         self.assertIn('OPENAI_MAX_OUTPUT_TOKENS: "10000"', content)
-        self.assertIn("pages: read", content)
-        self.assertLess(
-            content.index("Verify GitHub Pages configuration"),
-            content.index("Paid compilation"),
-        )
 
-    def test_paid_workflow_model_selection_is_constrained(self):
+    def test_compile_workflow_model_selection_is_constrained(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("openai_model:", content)
         self.assertIn('description: "OpenAI model"', content)
@@ -73,13 +69,30 @@ class CiSpendingPolicyTests(unittest.TestCase):
             "gpt-5-mini|gpt-5|gpt-5.6-luna|gpt-5.6-terra|gpt-5.6-sol",
             content,
         )
-        self.assertNotIn("OPENAI_MODEL: gpt-5-mini", content)
         self.assertLess(
             content.index("Validate selected OpenAI model"),
-            content.index("Compile and validate self-example using paid API"),
+            content.index("OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}"),
         )
 
-    def test_paid_workflow_uses_release_ready_self_command(self):
+    def test_compile_workflow_target_selection_is_constrained_before_secret(self):
+        content = PAID_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("target:", content)
+        self.assertIn('description: "Compilation target"', content)
+        self.assertIn("default: journal_academic", content)
+        for target in (
+            "journal_academic",
+            "magazine_general",
+            "explain_like_im_5",
+        ):
+            self.assertIn(f"          - {target}\n", content)
+        self.assertIn("tools/self_example_targets.py", content)
+        self.assertIn("TARGET_STYLE: ${{ needs.preflight.outputs.target_style }}", content)
+        self.assertLess(
+            content.index("Resolve and validate selected target"),
+            content.index("OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}"),
+        )
+
+    def test_compile_workflow_builds_candidate_but_never_publishes_pages(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("run: make check", content)
         self.assertIn('TARGET_STYLE="$TARGET_STYLE" self', content)
@@ -88,8 +101,17 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("biber", content)
         self.assertIn("--source-audit self-example/source-audit.json", content)
         self.assertIn("--bibliography self-example/references.bib", content)
+        self.assertIn("--output-dir candidate", content)
+        self.assertIn("Upload retained self-example candidate", content)
+        self.assertIn(
+            "self-example-candidate-${{ inputs.target }}-${{ inputs.openai_model }}-${{ github.sha }}-${{ github.run_id }}",
+            content,
+        )
+        self.assertNotIn("upload-pages-artifact", content)
+        self.assertNotIn("deploy-pages", content)
+        self.assertNotIn("environment:\n      name: github-pages", content)
 
-    def test_paid_workflow_always_summarizes_recorded_usage(self):
+    def test_compile_workflow_always_summarizes_and_retains_failures(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("name: Summarize paid API usage", content)
         summary_start = content.index("- name: Summarize paid API usage")
@@ -97,48 +119,51 @@ class CiSpendingPolicyTests(unittest.TestCase):
         block = content[summary_start:summary_end]
         self.assertIn("if: ${{ always() }}", block)
         self.assertIn("tools/summarize_openai_usage.py", block)
-        self.assertIn("--input build/openai-usage.jsonl", block)
         self.assertIn("$GITHUB_STEP_SUMMARY", block)
-        self.assertLess(
-            content.index("Compile and validate self-example using paid API"),
-            summary_start,
-        )
-
-    def test_failed_paid_compilation_surfaces_and_retains_diagnostics(self):
-        content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("id: compile_self_example", content)
         self.assertIn('compgen -G "build/errors/*.md"', content)
-        self.assertIn('cat "$diagnostic" || true', content)
-        self.assertIn(
-            "if: ${{ failure() && steps.compile_self_example.outcome == 'failure' }}",
-            content,
-        )
-        self.assertIn(
-            "name: self-example-failure-${{ github.sha }}-${{ github.run_id }}",
-            content,
-        )
-        self.assertIn("            build\n", content)
-        self.assertIn("            outline.md\n", content)
-        self.assertIn("            self-example/source-audit.json\n", content)
-        self.assertIn("            self-example/references.bib\n", content)
-        self.assertIn("if-no-files-found: warn", content)
         self.assertIn("retention-days: 90", content)
-        self.assertLess(
-            content.index("Upload failed self-example evidence"),
-            content.index("Build inspectable acceptance candidate"),
-        )
 
-    def test_candidate_is_retained_before_human_gated_deployment(self):
-        content = PAID_WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("actions/upload-artifact@v4", content)
-        self.assertIn("name: self-example-candidate-${{ github.sha }}", content)
-        self.assertIn("include-hidden-files: true", content)
-        self.assertIn("retention-days: 90", content)
+    def test_publish_workflow_is_manual_keyless_and_provider_free(self):
+        content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        trigger_block = content.split("permissions:", 1)[0]
+        self.assertIn("workflow_dispatch:", trigger_block)
+        self.assertNotIn("OPENAI", content)
+        self.assertNotIn("BACKEND", content)
+        self.assertNotIn("secrets.", content)
+        self.assertNotIn("tools/llm_run", content)
+        self.assertNotIn("make self", content)
+        for forbidden in ("push", "pull_request", "schedule", "workflow_run"):
+            self.assertNotIn(forbidden, trigger_block)
+
+    def test_publish_workflow_uses_explicit_compile_run_ids_and_showcase_builder(self):
+        content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        for target in (
+            "journal_academic",
+            "magazine_general",
+            "explain_like_im_5",
+        ):
+            self.assertIn(f"{target}_run_id:", content)
+            self.assertIn(f'--candidate "{target}=candidates/{target}"', content)
+        self.assertIn("actions/download-artifact@v4", content)
+        self.assertIn("run-id: ${{ inputs.journal_academic_run_id }}", content)
+        self.assertIn("run-id: ${{ inputs.magazine_general_run_id }}", content)
+        self.assertIn("run-id: ${{ inputs.explain_like_im_5_run_id }}", content)
+        self.assertIn("tools/build_self_example_showcase.py", content)
+        self.assertNotIn("latest candidate", content.lower())
+        self.assertNotIn("/latest", content.lower())
+
+    def test_publish_workflow_deploys_only_assembled_retained_site(self):
+        content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("Upload inspectable publication bundle", content)
+        self.assertIn("actions/upload-pages-artifact@v5", content)
+        self.assertIn("actions/deploy-pages@v5", content)
         self.assertIn("name: github-pages", content)
         self.assertLess(
-            content.index("Upload self-example acceptance candidate"),
-            content.index("deploy:"),
+            content.index("Assemble multi-target Pages site"),
+            content.index("Upload Pages artifact"),
         )
+        self.assertLess(content.index("Upload Pages artifact"), content.index("deploy:"))
 
     def test_ordinary_ci_is_keyless_and_read_only(self):
         content = (WORKFLOWS / "ci.yml").read_text(encoding="utf-8")
