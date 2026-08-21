@@ -7,8 +7,8 @@ Constraints:
 - Do not add or remove concepts; do not introduce new examples, evidence, or citations.
 - If the stage input has drifted from the authoritative source, repair the drift only when the faithful correction is fully determined by the source; otherwise use the failure branch.
 - You may merge sentences/paragraphs, add connective phrases, and reduce list-like cadence where this is compatible with the selected target.
-- Prefer paragraphs with clear internal arcs over many short list-like paragraphs when the target does not require another structure.
-- Treat section boundaries and headings in the derived stage input as realisation choices rather than conceptual authority. Consolidate over-fragmented adjacent sections, replace unnecessary subheadings with paragraph transitions, and remove duplicated manual numbering from section titles when doing so preserves authored order, distinctions, and scope.
+- When the selected target calls for paragraph prose, improve internal paragraph arcs rather than preserving mechanically short list-like paragraphs.
+- Treat section boundaries and headings in the derived stage input as realisation choices rather than conceptual authority. When sectioning is over-fragmented relative to the selected target, consolidate adjacent sections, replace unnecessary subheadings with paragraph transitions, and remove duplicated manual numbering from section titles when doing so preserves authored order, distinctions, and scope. Do not consolidate sections merely to impose a generic publication shape.
 - Preserve the authored order and scope of ideas.
 - Preserve citations supplied by the authoritative source and represented in the stage input; keep them tied to the claims they support. You may redistribute them across adjacent sentences only when support remains unambiguous.
 - Apply citation-specific smoothing only when citations are present. If the selected target requires citation support that the authoritative source does not supply, use the failure branch rather than inventing a citation.

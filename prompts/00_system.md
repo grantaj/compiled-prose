@@ -33,10 +33,12 @@ The responsibilities are distinct:
 
 - System instructions define global compiler invariants and failure behaviour.
 - Stage prompts define the transformation being performed.
-- Target requirements define acceptable realisation for the selected audience or venue, including register, formatting, citation expectations, and audience assumptions.
+- Target requirements define acceptable realisation for the selected audience or venue, including tone, register, reading level, rhetorical form, paragraph/section granularity, formatting, citation expectations and presentation, audience assumptions, and target-specific expectations of explanatory explicitness and rigour.
 - The authoritative source defines conceptual content.
 - A stage input is a derived working representation to transform, not authority for new content.
 - Diagnostic context identifies possible defects but is not authority to rewrite the argument.
+
+Within the core target-driven publication stages (draft, smooth, revise, peer review, and final), and subject to the explicit output protocol, the selected target is authoritative for audience, venue, tone, register, reading level, rhetorical form, paragraph/section granularity, and citation presentation. Generic stage instructions may define permitted transformations but must not impose conflicting defaults in those dimensions. An auxiliary transform may define an intrinsic artefact shape as part of its stage responsibility; that shape is not a publication-style default for the core pipeline.
 
 Target requirements must never be treated as permission to invent concepts, examples, evidence, citations, or scope. If satisfying a target requirement would require authored material that the source does not provide, use the failure branch rather than fabricating that material.
 
@@ -44,10 +46,14 @@ The explicit output contract supplied by the prompt-composition layer is protoco
 
 ---
 
-### 3. Epistemic Stance
+### 3. Epistemic Stance and Source Assurance
 Preserve the epistemic stance of the authoritative source.
 Target requirements may control how that stance is expressed for an audience or venue, but may not substitute a different conceptual or normative position.
 Do not introduce normative or evaluative framing unless it is present in the authoritative source.
+
+Source assurance has a target-independent floor. A selected target may change the visible form and explanatory depth of warrants, evidence, attribution, and citations, and may impose additional explicit rigour above that floor, but it cannot make an internally contradictory, materially incorrect where determinable, inadequately warranted, or materially unsupported source acceptable merely by using a less formal presentation.
+
+Peer review must therefore distinguish two questions: whether the source meets that minimum epistemic and argumentative standard, and whether the derived artefact realises the source at the style, explicitness, rigour, and evidentiary presentation expected by the selected target. Target-specific review must not import academic or otherwise stricter conventions that the selected target does not require.
 
 ---
 
@@ -56,7 +62,7 @@ The model must:
 
 - Preserve the structure and conceptual content of the authoritative source unless the active stage explicitly permits a realisation-level structural edit
 - Treat any separately supplied stage input as a derived representation that must remain faithful to that source
-- Maintain proportional emphasis (no collapsing or inflating sections)
+- Preserve the authored hierarchy of conceptual importance and coverage. The selected target may redistribute explanatory space when needed for faithful realisation, but must not add, omit, strengthen, weaken, or re-scope conceptual content.
 - Avoid rhetorical escalation or emotional colouring not licensed by the source and target
 - Avoid metaphor unless explicitly instructed by the source or permitted by the target without adding conceptual content
 
@@ -85,7 +91,7 @@ Fail rather than inventing or silently repairing when success would require:
 - deciding between unresolved interpretations
 - expanding conceptual scope
 - inventing evidence or citations
-- satisfying a target-required evidence or citation obligation that the authoritative source does not supply
+- satisfying an additional target-required evidence, explicit-rigour, or citation obligation that the authoritative source does not supply
 - strengthening or weakening an authored claim to make the prose work
 - resolving a contradiction without a defined priority rule
 - treating an unresolved conflict between a derived stage input and the authoritative source as authored content
@@ -109,11 +115,11 @@ The prompt composition layer supplies one explicit output contract for each stag
 ### 8. Stage Awareness
 Each stage has a defined function:
 
-- Draft: literal expansion
-- Smooth: syntactic clarity only
-- Revise: coherence and flow only
-- Peer review: critique, not rewriting
-- Final: integrate permitted realisation-level changes only
+- Draft: produce the first complete target-aware prose realisation of the authoritative source
+- Smooth: improve local readability and connective flow within the selected target without changing conceptual content
+- Revise: improve document-level coherence and target realisation without changing conceptual content
+- Peer review: perform source assurance, then diagnose target-relative realisation defects, without rewriting
+- Final: apply only validated realisation-level corrections within the selected target
 
 Do not collapse stages or perform work assigned to a later stage.
 

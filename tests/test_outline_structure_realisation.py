@@ -14,10 +14,24 @@ class OutlineStructureRealisationTests(unittest.TestCase):
         draft = text("prompts/10_draft.md")
         self.assertIn("not as a one-to-one publication section map", draft)
         self.assertIn("Do not copy outline navigation numbering or labels", draft)
-        self.assertIn("Prefer a small number of coherent publication sections", draft)
-        self.assertIn("do not create a section or subsection merely because", draft)
+        self.assertIn("Do not create a section or subsection merely because", draft)
+        self.assertIn("according to the selected target", draft)
+        self.assertNotIn("Prefer a small number of coherent publication sections", draft)
         self.assertNotIn(
             "render them as the corresponding level of LaTeX sectioning commands",
+            draft,
+        )
+
+    def test_draft_list_and_item_realisation_is_target_relative(self):
+        draft = text("prompts/10_draft.md")
+        self.assertNotIn("Avoid list formatting by default", draft)
+        self.assertNotIn(
+            "Only emit LaTeX lists when the authoritative source explicitly specifies list structure",
+            draft,
+        )
+        self.assertIn("Do not mechanically preserve or suppress list formatting", draft)
+        self.assertIn(
+            "Do not require one source item to map to one sentence, paragraph, list item, or section",
             draft,
         )
 
@@ -31,6 +45,8 @@ class OutlineStructureRealisationTests(unittest.TestCase):
             with self.subTest(stage=stage[:40]):
                 self.assertIn("realisation choices", stage)
                 self.assertIn("duplicated manual numbering", stage)
+                self.assertIn("selected target", stage)
+                self.assertIn("generic publication shape", stage)
 
         self.assertIn("mechanically mirroring the outline", review)
         self.assertIn("gratuitous one-heading-per-outline-item", review)
