@@ -34,6 +34,31 @@ class OpenAiUsageTests(unittest.TestCase):
         )
         self.assertEqual(estimate, Decimal("0.001160"))
 
+    def test_gpt56_selectable_models_have_current_short_context_pricing(self):
+        cases = (
+            ("gpt-5.6-luna", Decimal("0.000728")),
+            ("gpt-5.6-terra", Decimal("0.007280")),
+            ("gpt-5.6-sol", Decimal("0.018200")),
+        )
+        for model, expected in cases:
+            with self.subTest(model=model):
+                estimate = estimate_cost_usd(
+                    model,
+                    input_tokens=1000,
+                    cached_input_tokens=400,
+                    output_tokens=500,
+                )
+                self.assertEqual(estimate, expected)
+
+    def test_gpt56_long_context_multiplier_is_applied(self):
+        estimate = estimate_cost_usd(
+            "gpt-5.6-sol",
+            input_tokens=300_000,
+            cached_input_tokens=100_000,
+            output_tokens=10_000,
+        )
+        self.assertEqual(estimate, Decimal("2.550000"))
+
     def test_supported_snapshots_keep_family_pricing(self):
         estimate = estimate_cost_usd(
             "gpt-5-mini-2025-08-07",
@@ -46,7 +71,7 @@ class OpenAiUsageTests(unittest.TestCase):
     def test_unknown_or_new_model_family_does_not_reuse_gpt5_price(self):
         self.assertIsNone(
             estimate_cost_usd(
-                "gpt-5.4",
+                "future-model",
                 input_tokens=1000,
                 cached_input_tokens=0,
                 output_tokens=500,
