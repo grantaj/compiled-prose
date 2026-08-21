@@ -12,7 +12,23 @@ USAGE_SCHEMA = "compiled-prose-openai-usage/1"
 
 # Standard API text-token pricing verified 2026-08-21.
 # Values are USD per 1M tokens: input, cached input, output.
+# GPT-5.6 requests above 272K input tokens use the provider's published
+# long-context multipliers: 2x input/cached-input and 1.5x output.
+_GPT56_PATTERN = re.compile(r"^gpt-5\.6-(?:luna|terra|sol)$")
+_GPT56_LONG_CONTEXT_THRESHOLD = 272_000
 _PRICING = (
+    (
+        re.compile(r"^gpt-5\.6-luna$"),
+        (Decimal("0.200"), Decimal("0.020"), Decimal("1.200")),
+    ),
+    (
+        re.compile(r"^gpt-5\.6-terra$"),
+        (Decimal("2.000"), Decimal("0.200"), Decimal("12.000")),
+    ),
+    (
+        re.compile(r"^gpt-5\.6-sol$"),
+        (Decimal("5.000"), Decimal("0.500"), Decimal("30.000")),
+    ),
     (
         re.compile(r"^gpt-5-mini(?:-\d{4}-\d{2}-\d{2})?$"),
         (Decimal("0.250"), Decimal("0.025"), Decimal("2.000")),
@@ -44,11 +60,19 @@ def estimate_cost_usd(
     input_per_million, cached_per_million, output_per_million = pricing
     cached = max(cached_input_tokens, 0)
     uncached = max(input_tokens - cached, 0)
+    input_multiplier = Decimal("1")
+    output_multiplier = Decimal("1")
+    if (
+        _GPT56_PATTERN.fullmatch(model)
+        and input_tokens > _GPT56_LONG_CONTEXT_THRESHOLD
+    ):
+        input_multiplier = Decimal("2")
+        output_multiplier = Decimal("1.5")
     million = Decimal(1_000_000)
     return (
-        Decimal(uncached) * input_per_million
-        + Decimal(cached) * cached_per_million
-        + Decimal(output_tokens) * output_per_million
+        Decimal(uncached) * input_per_million * input_multiplier
+        + Decimal(cached) * cached_per_million * input_multiplier
+        + Decimal(output_tokens) * output_per_million * output_multiplier
     ) / million
 
 
