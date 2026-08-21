@@ -47,6 +47,7 @@ Before approving publication, compare `artifacts/final.tex` (or the rendered PDF
 - no material claim appears in the final essay without authority in the outline;
 - no authored proposition has been silently strengthened or weakened;
 - no example, theory, citation, or historical claim was introduced downstream;
+- every source-supplied citation remains present and attached to the claim it supports;
 - peer review did not expand conceptual scope;
 - material qualifications, uncertainty, exclusions, and domain boundaries are preserved;
 - the final peer-review report contains no unresolved source-level blocker;
