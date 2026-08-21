@@ -4,6 +4,10 @@ Compiled Prose is a small, file-driven compiler pipeline for academic and techni
 
 The compiler analogy is architectural, not a promise of byte-for-byte deterministic generation. The project aims for a predictable, auditable transformation process whose authority and failure rules are stable even when model output varies.
 
+## Published self-example
+
+The repository publishes its own compiled essay as the worked example: [view the current self-example on GitHub Pages](https://grantaj.github.io/compiled-prose/). The Pages site exposes the final essay alongside the authoritative outline, peer-review diagnostic, human acceptance review, PDF/raw LaTeX, and build provenance. It is downstream release evidence; `outline.md` remains the conceptual authority.
+
 ## Canonical documentation
 
 The repository deliberately keeps its documentation authority surface small:
@@ -193,8 +197,11 @@ By default generated files live under `build/`:
 - `build/final.tex`
 - `build/final.pdf` after successful self-example LaTeX validation
 - `build/references.bib` during self-example compilation
+- `build/openai-usage.jsonl` when OpenAI responses report token usage
 - `build/summary.tex` when `summarize` is requested
 - `build/errors/<stage>.md` for blocking diagnostics
+
+The OpenAI usage log is transient observability data. `make clean` and `make clobber` remove it, and it is not part of the accepted Pages candidate.
 
 The build root is configurable without changing source paths:
 
@@ -202,7 +209,7 @@ The build root is configurable without changing source paths:
 make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
 ```
 
-`make validate-latex` validates an already-existing `build/final.tex` and produces `build/final.pdf`; it fails if `final.tex` is absent rather than implicitly invoking a model-backed pipeline. `make clean` removes the known generated artefacts, copied bibliography, and diagnostics from the selected build directory. `make clobber` removes that build directory entirely.
+`make validate-latex` validates an already-existing `build/final.tex` and produces `build/final.pdf`; it fails if `final.tex` is absent rather than implicitly invoking a model-backed pipeline. `make clean` removes the known generated artefacts, copied bibliography, usage log, and diagnostics from the selected build directory. `make clobber` removes that build directory entirely.
 
 ## Peer-review gate
 
@@ -265,6 +272,10 @@ Seeds and low temperatures can reduce variance where supported, but they are con
 Ordinary CI is deliberately keyless. Pushes and pull requests run `make check` and do not reference provider credentials or make model calls.
 
 Paid self-example compilation is a separate manual publication path in `.github/workflows/publish-self-example.yml`. It has only a `workflow_dispatch` trigger, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. A successful approved run executes `make self`, builds the inspectable candidate bundle, and waits at the separately protected `github-pages` environment before deployment; generated prose is not committed to the source tree.
+
+Each successful OpenAI response records its stage, model, and API-reported token usage in the transient build usage log. After every paid compilation attempt, including failures, the workflow renders per-stage and total token usage plus estimated cost into the GitHub Actions step summary. Unknown model pricing is reported as `N/A` rather than guessed, and the estimate is explicitly not a billing record. This accounting makes no additional provider call.
+
+If paid compilation fails, any `build/errors/*.md` diagnostics are printed into the Actions log and the available build/source/audit/bibliography evidence is retained as a 90-day failure artifact. A failed run never proceeds to the publication candidate or Pages deployment.
 
 Recommended repository configuration:
 
