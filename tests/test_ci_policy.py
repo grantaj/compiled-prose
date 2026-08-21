@@ -46,7 +46,8 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("inputs.authorize_paid_api_call == true", content)
         self.assertIn("environment: paid-compilation", content)
         self.assertIn("OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}", content)
-        self.assertIn('OPENAI_MAX_OUTPUT_TOKENS: "20000"', content)
+        self.assertIn("OPENAI_MODEL: gpt-5-mini", content)
+        self.assertIn('OPENAI_MAX_OUTPUT_TOKENS: "10000"', content)
         self.assertIn("pages: read", content)
         self.assertLess(
             content.index("Verify GitHub Pages configuration"),
