@@ -21,12 +21,13 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("may redistribute explanatory space", system)
         self.assertIn("must not add, omit, strengthen, weaken, or re-scope", system)
 
-    def test_system_makes_target_authoritative_for_realisation_dimensions(self):
+    def test_system_makes_target_authoritative_for_core_realisation_dimensions(self):
         system = text("prompts/00_system.md")
         self.assertIn(
-            "Within realisation responsibility, and subject to the explicit output protocol, the selected target is authoritative",
+            "Within the core target-driven publication stages (draft, smooth, revise, peer review, and final)",
             system,
         )
+        self.assertIn("the selected target is authoritative", system)
         for dimension in (
             "audience",
             "venue",
@@ -41,6 +42,14 @@ class TargetLayerAuthorityTests(unittest.TestCase):
                 self.assertIn(dimension, system)
         self.assertIn(
             "Generic stage instructions may define permitted transformations but must not impose conflicting defaults",
+            system,
+        )
+        self.assertIn(
+            "An auxiliary transform may define an intrinsic artefact shape as part of its stage responsibility",
+            system,
+        )
+        self.assertIn(
+            "that shape is not a publication-style default for the core pipeline",
             system,
         )
 
