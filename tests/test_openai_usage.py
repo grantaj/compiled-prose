@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from decimal import Decimal
@@ -10,10 +12,19 @@ from tools.openai_responses import (
     estimate_cost_usd,
     usage_record,
 )
-from tools.summarize_openai_usage import load_records, render_summary
+from tools.summarize_openai_usage import (
+    USAGE_SCHEMA as SUMMARY_USAGE_SCHEMA,
+    load_records,
+    render_summary,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class OpenAiUsageTests(unittest.TestCase):
+    def test_usage_schema_is_shared_by_writer_and_summary_reader(self):
+        self.assertEqual(USAGE_SCHEMA, SUMMARY_USAGE_SCHEMA)
+
     def test_gpt5_mini_cost_uses_cached_input_discount(self):
         estimate = estimate_cost_usd(
             "gpt-5-mini",
@@ -113,6 +124,36 @@ class OpenAiUsageTests(unittest.TestCase):
             records = load_records(Path(tmp) / "missing.jsonl")
         self.assertEqual(records, [])
         self.assertIn("No OpenAI usage was recorded", render_summary(records))
+
+    def test_summary_cli_runs_directly_from_repository_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "usage.jsonl"
+            append_usage_record(
+                path,
+                usage_record(
+                    stage="draft",
+                    model="gpt-5-mini",
+                    input_tokens=10,
+                    cached_input_tokens=0,
+                    output_tokens=5,
+                    total_tokens=15,
+                ),
+            )
+            result = subprocess.run(
+                [sys.executable, "tools/summarize_openai_usage.py", "--input", str(path)],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("| draft | `gpt-5-mini`", result.stdout)
+
+    def test_make_routes_stage_and_usage_log_to_openai_adapter(self):
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+        self.assertIn("OPENAI_USAGE_LOG ?= $(BUILD_DIR)/openai-usage.jsonl", makefile)
+        self.assertIn("COMPILED_PROSE_STAGE=$(1)", makefile)
+        self.assertIn('OPENAI_USAGE_LOG="$(OPENAI_USAGE_LOG)"', makefile)
 
     def test_malformed_log_fails_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
