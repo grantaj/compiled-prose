@@ -27,7 +27,7 @@ A claim \cite{lewitt1967,hyland2008}. Another \cite{hyland2008}.
 \bibitem{hyland2008} Ken Hyland. Genre and academic writing in the disciplines.
 \end{thebibliography}
 \end{document}
-""".replace("\\\\", "\\"),
+""",
                 encoding="utf-8",
             )
 
@@ -55,7 +55,7 @@ Claim \cite{missing}.
 \bibitem{known} Known reference.
 \end{thebibliography}
 \end{document}
-""".replace("\\\\", "\\"),
+""",
                 encoding="utf-8",
             )
             with self.assertRaisesRegex(ValueError, "citation key has no bibitem: missing"):
@@ -70,7 +70,7 @@ Claim \cite{missing}.
 \begin{document}
 Claim \cite{missing}.
 \end{document}
-""".replace("\\\\", "\\"),
+""",
                 encoding="utf-8",
             )
             with self.assertRaisesRegex(ValueError, "without an embedded thebibliography"):
@@ -90,7 +90,7 @@ Claim \cite{missing}.
 \maketitle
 Body.
 \end{document}
-""".replace("\\\\", "\\"),
+""",
                 encoding="utf-8",
             )
             outline = root / "outline.md"
