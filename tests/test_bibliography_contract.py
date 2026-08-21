@@ -26,13 +26,37 @@ class BibliographyContractTests(unittest.TestCase):
             "# Citation Metadata (Bibliographic Only; Non-Conceptual)", rendered
         )
         self.assertIn("BIBLIOGRAPHY_RESOURCE: references.bib", rendered)
-        self.assertIn("\\parencite{key}", rendered)
-        self.assertIn(
-            "\\usepackage[backend=biber,style=authoryear]{biblatex}", rendered
-        )
+        self.assertIn("CITATION_PROTOCOL:", rendered)
+        self.assertIn("Citation presentation is owned by the selected target", rendered)
+        self.assertIn("Use biblatex with `backend=biber`", rendered)
         self.assertIn("\\addbibresource{references.bib}", rendered)
         self.assertIn("\\printbibliography", rendered)
         self.assertIn("Do not emit a `thebibliography` environment", rendered)
+
+    def test_citation_protocol_does_not_hard_code_target_presentation(self):
+        for target_path in (
+            "prompts/targets/journal_academic.md",
+            "prompts/targets/magazine_general.md",
+            "prompts/targets/explain_like_im_5.md",
+        ):
+            with self.subTest(target=target_path):
+                rendered = render_prompt(
+                    system=text("prompts/00_system.md"),
+                    target=text(target_path),
+                    stage=text("prompts/10_draft.md"),
+                    source_text="# Source\nClaim [Known 2020].",
+                    input_text="# Source\nClaim [Known 2020].",
+                    output_type="tex",
+                    bibliography_text="@article{known2020, title={Known}, year={2020}}",
+                    bibliography_name="references.bib",
+                )
+                self.assertNotIn("style=authoryear", rendered)
+                self.assertNotIn("\\parencite{key}", rendered)
+                self.assertNotIn("\\textcite{key}", rendered)
+                self.assertIn(
+                    "Do not hard-code an author-year, numeric, or other presentation",
+                    rendered,
+                )
 
     def test_review_receives_metadata_without_tex_output_directives(self):
         rendered = render_prompt(
@@ -46,7 +70,7 @@ class BibliographyContractTests(unittest.TestCase):
             bibliography_name="references.bib",
         )
         self.assertIn("BIBLIOGRAPHY_RESOURCE: references.bib", rendered)
-        self.assertNotIn("CITATION_FORMAT:", rendered)
+        self.assertNotIn("CITATION_PROTOCOL:", rendered)
         self.assertIn("OUTPUT_TYPE: md", rendered)
 
     def test_bibliography_arguments_must_be_paired(self):
