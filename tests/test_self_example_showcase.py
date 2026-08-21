@@ -76,10 +76,14 @@ class SelfExampleShowcaseTests(unittest.TestCase):
                     output_dir=output,
                 )
 
-            self.assertEqual(pandoc.call_count, 8)
+            self.assertEqual(pandoc.call_count, 10)
             self.assertTrue((output / "index.html").is_file())
             self.assertTrue((output / "outline.html").is_file())
             self.assertTrue((output / "artifacts" / "outline.md").is_file())
+            self.assertTrue((output / "peer-review.html").is_file())
+            self.assertTrue((output / "acceptance.html").is_file())
+            self.assertTrue((output / "artifacts" / "final.pdf").is_file())
+            self.assertTrue((output / "artifacts" / "final.tex").is_file())
             for target in ("journal_academic", "magazine_general"):
                 target_dir = output / "targets" / target
                 self.assertTrue((target_dir / "index.html").is_file())
