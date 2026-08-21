@@ -214,12 +214,16 @@ class TargetAwarePromptTests(unittest.TestCase):
                 self.assertIn("authoritative source", rendered.lower())
                 self.assertIn("invent", rendered.lower())
 
-    def test_draft_avoids_gratuitous_lists(self):
+    def test_draft_defers_list_realisation_to_target_without_inventing_structure(self):
         draft = text("prompts/10_draft.md")
-        self.assertIn(
+        self.assertNotIn("Avoid list formatting by default", draft)
+        self.assertNotIn(
             "Only emit LaTeX lists when the authoritative source explicitly specifies list structure.",
             draft,
         )
+        self.assertIn("Do not mechanically preserve or suppress list formatting", draft)
+        self.assertIn("according to the selected target", draft)
+        self.assertIn("do not invent conceptual grouping or distinctions", draft)
 
     def test_target_requirements_cannot_author_new_conceptual_content(self):
         system = text("prompts/00_system.md")
