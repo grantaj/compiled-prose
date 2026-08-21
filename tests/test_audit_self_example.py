@@ -82,24 +82,27 @@ class SelfExampleAuditTests(unittest.TestCase):
             result = audit(outline, audit_file, final=final)
             self.assertFalse(result.ok)
             self.assertTrue(
-                any("non-authoritative citation labels" in error for error in result.errors)
+                any(
+                    "non-authoritative explicit citation labels" in error
+                    for error in result.errors
+                )
             )
 
-    def test_final_must_preserve_source_citations(self):
+    def test_final_allows_latex_citation_keys_without_guessing_their_identity(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             outline, audit_file, final = self.write_fixture(
                 root,
                 final=(
                     "\\documentclass{article}\n\\begin{document}\n"
-                    "A claim with no citation.\n\\end{document}\n"
+                    "A claim~\\cite{source1}.\n"
+                    "\\begin{thebibliography}{1}\n"
+                    "\\bibitem{source1} A. Author. Useful Source. 2020.\n"
+                    "\\end{thebibliography}\n\\end{document}\n"
                 ),
             )
             result = audit(outline, audit_file, final=final)
-            self.assertFalse(result.ok)
-            self.assertTrue(
-                any("does not preserve detectable" in error for error in result.errors)
-            )
+            self.assertTrue(result.ok, result.errors)
 
     def test_entropy_fixture_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
