@@ -80,9 +80,14 @@ Authority is role-specific.
 
 ### Authoritative conceptual source
 
-The file supplied as `IN=...` is the sole conceptual authority for the work. In the repository self-example this is `outline.md`.
+The file supplied as `IN=...` is the authoritative conceptual source for the work. In the repository self-example this is `outline.md`.
 
-It supplies claims, argument, structure, scope, distinctions, examples, evidence, citations, and unresolved authorial choices. Changing a model-generated artefact does not retroactively change this source.
+Its role is:
+
+- The sole source of conceptual authorship throughout the pipeline.
+- The authority for claims, argument, structure, scope, distinctions, examples, evidence, citations, and unresolved authorial choices.
+
+Changing a model-generated artefact does not retroactively change this source.
 
 ### Stage prompts
 
