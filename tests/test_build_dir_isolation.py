@@ -16,6 +16,7 @@ GENERATED = (
     "final.pdf",
     "summary.tex",
     "references.bib",
+    "openai-usage.jsonl",
 )
 PIPELINE_OUTPUTS = (
     "draft.tex",
