@@ -60,6 +60,29 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("latexmk", content)
         self.assertIn("--source-audit self-example/source-audit.json", content)
 
+    def test_failed_paid_compilation_surfaces_and_retains_diagnostics(self):
+        content = PAID_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("id: compile_self_example", content)
+        self.assertIn('compgen -G "build/errors/*.md"', content)
+        self.assertIn('cat "$diagnostic" || true', content)
+        self.assertIn(
+            "if: ${{ failure() && steps.compile_self_example.outcome == 'failure' }}",
+            content,
+        )
+        self.assertIn(
+            "name: self-example-failure-${{ github.sha }}-${{ github.run_id }}",
+            content,
+        )
+        self.assertIn("            build\n", content)
+        self.assertIn("            outline.md\n", content)
+        self.assertIn("            self-example/source-audit.json\n", content)
+        self.assertIn("if-no-files-found: warn", content)
+        self.assertIn("retention-days: 90", content)
+        self.assertLess(
+            content.index("Upload failed self-example evidence"),
+            content.index("Build inspectable acceptance candidate"),
+        )
+
     def test_candidate_is_retained_before_human_gated_deployment(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("actions/upload-artifact@v4", content)
