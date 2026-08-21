@@ -295,6 +295,40 @@ def build_showcase(
         nav=root_nav,
         title="Authoritative outline",
     )
+
+    # Keep the previously published academic-journal evidence URLs working
+    # while `/` becomes the target showcase. These are compatibility views,
+    # not a declaration that the academic target is the canonical rendering.
+    journal = next(
+        (candidate for candidate in candidates if candidate.spec.identifier == "journal_academic"),
+        None,
+    )
+    if journal is not None:
+        shutil.copytree(journal.artifacts, output_dir / "artifacts", dirs_exist_ok=True)
+        journal_root_nav = output_dir / "_journal_nav.html"
+        journal_root_nav.write_text(
+            _nav_html(candidates, prefix="", info=_candidate_info(journal)),
+            encoding="utf-8",
+        )
+        _run_pandoc(
+            journal.artifacts / "peer_review.md",
+            output_dir / "peer-review.html",
+            css="style.css",
+            nav=journal_root_nav,
+            title="Academic journal: peer review",
+        )
+        root_acceptance = output_dir / "_acceptance.md"
+        root_acceptance.write_text(ACCEPTANCE, encoding="utf-8")
+        _run_pandoc(
+            root_acceptance,
+            output_dir / "acceptance.html",
+            css="style.css",
+            nav=journal_root_nav,
+            title="Academic journal: release acceptance review",
+        )
+        root_acceptance.unlink()
+        journal_root_nav.unlink()
+
     landing.unlink()
     root_nav.unlink()
 
