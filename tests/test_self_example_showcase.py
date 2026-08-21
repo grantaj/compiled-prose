@@ -102,6 +102,75 @@ class SelfExampleShowcaseTests(unittest.TestCase):
                 "new-compiler-commit",
             )
 
+    def test_base_showcase_preserves_existing_target_when_adding_another(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            academic = self.make_candidate(
+                root, "academic", target="journal_academic", model="gpt-5.6-sol"
+            )
+            base = root / "base"
+            with patch(
+                "tools.build_self_example_showcase.subprocess.run",
+                side_effect=self.fake_pandoc,
+            ):
+                build_showcase(
+                    candidate_roots={"journal_academic": academic},
+                    output_dir=base,
+                )
+
+            magazine = self.make_candidate(root, "magazine", target="magazine_general")
+            updated = root / "updated"
+            with patch(
+                "tools.build_self_example_showcase.subprocess.run",
+                side_effect=self.fake_pandoc,
+            ):
+                build_showcase(
+                    candidate_roots={"magazine_general": magazine},
+                    base_showcase=base,
+                    output_dir=updated,
+                )
+
+            manifest = json.loads((updated / "showcase.json").read_text(encoding="utf-8"))
+            self.assertEqual(
+                list(manifest["targets"]), ["journal_academic", "magazine_general"]
+            )
+            self.assertEqual(
+                manifest["targets"]["journal_academic"]["model"], "gpt-5.6-sol"
+            )
+
+    def test_explicit_candidate_replaces_same_target_from_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old = self.make_candidate(
+                root, "old", target="journal_academic", model="old-model"
+            )
+            base = root / "base"
+            with patch(
+                "tools.build_self_example_showcase.subprocess.run",
+                side_effect=self.fake_pandoc,
+            ):
+                build_showcase(
+                    candidate_roots={"journal_academic": old},
+                    output_dir=base,
+                )
+            new = self.make_candidate(
+                root, "new", target="journal_academic", model="new-model"
+            )
+            updated = root / "updated"
+            with patch(
+                "tools.build_self_example_showcase.subprocess.run",
+                side_effect=self.fake_pandoc,
+            ):
+                build_showcase(
+                    candidate_roots={"journal_academic": new},
+                    base_showcase=base,
+                    output_dir=updated,
+                )
+            manifest = json.loads((updated / "showcase.json").read_text(encoding="utf-8"))
+            self.assertEqual(
+                manifest["targets"]["journal_academic"]["model"], "new-model"
+            )
+
     def test_different_authoritative_outline_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
