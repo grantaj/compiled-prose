@@ -275,7 +275,7 @@ Paid self-example compilation is a separate manual publication path in `.github/
 
 Each successful OpenAI response records its stage, model, and API-reported token usage in the transient build usage log. After every paid compilation attempt, including failures, the workflow renders per-stage and total token usage plus estimated cost into the GitHub Actions step summary. Unknown model pricing is reported as `N/A` rather than guessed, and the estimate is explicitly not a billing record. This accounting makes no additional provider call.
 
-If paid compilation fails, any `build/errors/*.md` diagnostics are printed into the Actions log and the available build/source/audit/bibliography evidence is retained as a 90-day failure artifact. A failed run never proceeds to the publication candidate or Pages deployment.
+If paid compilation fails, any `build/errors/*.md` diagnostics are printed into the Actions log and the available build/source/audit/bibliography evidence is retained as a 90-day failure artifact. A failed compilation never proceeds to the publication candidate or Pages deployment.
 
 Recommended repository configuration:
 
