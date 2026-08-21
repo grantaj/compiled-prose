@@ -53,6 +53,17 @@ class TargetLayerAuthorityTests(unittest.TestCase):
             system,
         )
 
+    def test_system_defines_source_assurance_floor_and_target_rigour_overlay(self):
+        system = text("prompts/00_system.md")
+        self.assertIn("Source assurance has a target-independent floor", system)
+        self.assertIn("may impose additional explicit rigour above that floor", system)
+        self.assertIn("cannot make an internally contradictory", system)
+        self.assertIn("less formal presentation", system)
+        self.assertIn(
+            "Target-specific review must not import academic or otherwise stricter conventions",
+            system,
+        )
+
     def test_system_stage_awareness_describes_transformation_boundaries(self):
         system = text("prompts/00_system.md")
         for leaked_summary in (
@@ -65,6 +76,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("Draft: produce the first complete target-aware prose realisation", system)
         self.assertIn("Smooth: improve local readability and connective flow", system)
         self.assertIn("Revise: improve document-level coherence and target realisation", system)
+        self.assertIn("Peer review: perform source assurance, then diagnose target-relative", system)
 
     def test_explicit_target_structural_choice_is_not_overridden_by_draft_defaults(self):
         target = """# Synthetic target
@@ -85,23 +97,25 @@ Do not change authored concepts, grouping, order, or scope to create them.
         self.assertNotIn("Prefer a small number of coherent publication sections", rendered)
         self.assertNotIn("Only emit LaTeX lists when the authoritative source explicitly specifies list structure", rendered)
 
-    def test_peer_review_support_defects_are_target_or_source_relative(self):
+    def test_peer_review_uses_source_assurance_floor_then_target_calibrated_overlay(self):
         review = text("prompts/40_peer_review.md")
         self.assertNotIn("unsupported non-trivial claim", review)
+        self.assertIn("Source assurance has a target-independent floor", review)
+        self.assertIn("Perform the review in this order", review)
+        self.assertIn("1. Source assurance", review)
+        self.assertIn("2. Target realisation assurance", review)
+        self.assertIn("may impose additional explicitness, rigour, evidence, or citation requirements", review)
+        self.assertIn("may not lower the source-assurance floor", review)
         self.assertIn(
-            "support that is required by the selected target, the authoritative source's evidentiary semantics, or the claim's own evidentiary or attribution semantics",
+            "Do not import academic or otherwise stricter venue conventions",
             review,
         )
         self.assertIn(
             "Do not classify a claim as SOURCE merely because it is non-trivial or lacks scholarly citation",
             review,
         )
-        self.assertIn(
-            "only when the selected target, source semantics, or the claim's own evidentiary or attribution semantics establishes that support obligation",
-            review,
-        )
 
-    def test_non_academic_target_composition_does_not_reintroduce_academic_support_default(self):
+    def test_non_academic_target_composition_keeps_support_floor_without_academic_leakage(self):
         rendered = render_prompt(
             system=text("prompts/00_system.md"),
             target=text("prompts/targets/magazine_general.md"),
@@ -111,11 +125,17 @@ Do not change authored concepts, grouping, order, or scope to create them.
             output_type="md",
         )
         self.assertIn("Scholarly citations are not required merely by this target", rendered)
+        self.assertIn("Source assurance has a target-independent floor", rendered)
+        self.assertIn("Ask first whether the claim and argument satisfy the target-independent", rendered)
+        self.assertIn("Do not convert adequate support into an academic-style explanation burden", rendered)
         self.assertNotIn("unsupported non-trivial claim", rendered)
-        self.assertIn(
-            "A support defect exists only when the selected target, the authoritative source's evidentiary semantics",
-            rendered,
-        )
+
+    def test_pipeline_requires_empirical_justification_for_new_model_stages(self):
+        pipeline = text("pipeline.md")
+        self.assertIn("Each model-backed stage incurs user-visible execution cost", pipeline)
+        self.assertIn("Architectural separation alone is not sufficient justification", pipeline)
+        self.assertIn("empirical evidence", pipeline)
+        self.assertIn("an existing stage cannot absorb the responsibility reliably", pipeline)
 
 
 if __name__ == "__main__":
