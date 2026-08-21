@@ -176,7 +176,7 @@ $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(BIBLIOGRAPHY) $(SYSTEM) prompts/05_summariz
 	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
 
 clean:
-	rm -f "$(DRAFT_OUT)" "$(SMOOTH_OUT)" "$(REVISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(FINAL_PDF)" "$(SUMMARY_OUT)"
+	rm -f "$(DRAFT_OUT)" "$(SMOOTH_OUT)" "$(REVISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(FINAL_PDF)" "$(SUMMARY_OUT)" "$(BUILD_BIBLIOGRAPHY)"
 	rm -rf "$(ERROR_DIR)"
 
 clobber:
