@@ -18,6 +18,8 @@ You will need:
 * **Python ≥ 3.9**
 * **curl**
 
+Python 3.9 is the minimum supported runtime. Ordinary CI exercises the keyless preflight on that baseline.
+
 Optional but recommended:
 
 * `jq` (for JSON handling with Ollama)
@@ -148,6 +150,29 @@ OPENAI_SEED=42
 
 ---
 
+## Keyless preflight
+
+Before any provider-backed compile, run the local structural preflight:
+
+```bash
+make check
+```
+
+`make check` requires no API key, running model service, or provider package. It checks Python syntax and helper imports, validates shell syntax, renders a prompt from a tiny synthetic test fixture, and runs the local regressions for prompt contracts, failure routing, target composition, review orchestration, build-directory isolation, and successful artefact sanity.
+
+Provider connectivity/configuration checks remain explicit and separate:
+
+```bash
+make check-ollama
+make openai-check
+```
+
+`check-ollama` contacts the configured local Ollama service. `openai-check` performs a real OpenAI API request and may incur usage charges, so run it only intentionally. Neither is part of `make check` or ordinary CI.
+
+The self-example compile is a separate integration acceptance step because it actually executes the configured model pipeline.
+
+---
+
 ## Running the pipeline
 
 Build the full essay:
@@ -212,7 +237,7 @@ make TARGET_STYLE=prompts/targets/<journal>.md final
 
 ## CI, paid compilation, and the self-example
 
-Ordinary CI is deliberately **keyless**. Pushes and pull requests run the test suite and syntax checks, but the normal CI workflow does not reference provider credentials or make model calls.
+Ordinary CI is deliberately **keyless**. Pushes and pull requests run `make check` on Python 3.9, and the normal CI workflow does not reference provider credentials or make model calls.
 
 Paid API compilation is a separate manual operation. `.github/workflows/publish-self-example.yml` has only a `workflow_dispatch` trigger, requires an explicit paid-usage checkbox, is restricted to `main`, and permits the paid job only when the dispatcher is the repository owner. It also places the provider call inside the `paid-compilation` GitHub Environment. Repository tests enforce that separation.
 
