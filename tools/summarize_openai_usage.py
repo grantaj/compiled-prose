@@ -8,7 +8,8 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Iterable
 
-from tools.openai_responses import USAGE_SCHEMA
+
+USAGE_SCHEMA = "compiled-prose-openai-usage/1"
 
 
 def _escape(value: object) -> str:
