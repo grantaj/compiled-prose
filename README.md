@@ -132,7 +132,7 @@ The self-example source audit can also be run directly:
 make self-preflight
 ```
 
-This checks that every source citation in `outline.md` has a catalog entry, every catalog entry has dated verification evidence in `self-example/source-audit.json`, no unverified/extra source entry is present, and the disposable entropy fixture has not been promoted into the release source tree. The audit file is release-readiness evidence only; it is not passed to model stages and does not add conceptual authority beyond `outline.md`.
+This checks that every source citation in `outline.md` has a catalog entry, every catalog entry has dated verification evidence in `self-example/source-audit.json`, and no unverified or extra source entry is present. The audit file is release-readiness evidence only; it is not passed to model stages and does not add conceptual authority beyond `outline.md`.
 
 Provider connectivity checks are deliberately separate:
 
