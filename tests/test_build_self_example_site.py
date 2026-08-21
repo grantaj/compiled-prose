@@ -19,7 +19,11 @@ class BuildSelfExampleSiteTests(unittest.TestCase):
         source_audit.write_text(
             '{"schema":"compiled-prose-source-audit/1"}\n', encoding="utf-8"
         )
-        return build, outline, source_audit
+        bibliography = root / "references.bib"
+        bibliography.write_text(
+            "@article{known2020, title={Known}, year={2020}}\n", encoding="utf-8"
+        )
+        return build, outline, source_audit, bibliography
 
     def fake_pandoc(self, command, check):
         self.assertTrue(check)
@@ -31,7 +35,7 @@ class BuildSelfExampleSiteTests(unittest.TestCase):
     def test_site_contains_rendered_views_raw_artifacts_and_provenance(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            build, outline, source_audit = self.make_inputs(root)
+            build, outline, source_audit, bibliography = self.make_inputs(root)
             output = root / "docs"
             with patch(
                 "tools.build_self_example_site.subprocess.run",
@@ -41,6 +45,7 @@ class BuildSelfExampleSiteTests(unittest.TestCase):
                     build_dir=build,
                     outline=outline,
                     source_audit=source_audit,
+                    bibliography=bibliography,
                     output_dir=output,
                     source_sha="abc123",
                     model="gpt-test",
@@ -71,6 +76,10 @@ class BuildSelfExampleSiteTests(unittest.TestCase):
                 ),
                 '{"schema":"compiled-prose-source-audit/1"}\n',
             )
+            self.assertEqual(
+                (output / "artifacts" / "references.bib").read_text(encoding="utf-8"),
+                bibliography.read_text(encoding="utf-8"),
+            )
             metadata = json.loads(
                 (output / "build.json").read_text(encoding="utf-8")
             )
@@ -78,12 +87,13 @@ class BuildSelfExampleSiteTests(unittest.TestCase):
             self.assertEqual(metadata["model"], "gpt-test")
             self.assertEqual(metadata["authoritative_source"], "outline.md")
             self.assertEqual(metadata["source_audit"], "source-audit.json")
+            self.assertEqual(metadata["bibliography"], "references.bib")
             self.assertTrue((output / ".nojekyll").is_file())
 
     def test_missing_compilation_artifact_fails_before_pandoc(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            build, outline, source_audit = self.make_inputs(root)
+            build, outline, source_audit, bibliography = self.make_inputs(root)
             (build / "final.pdf").unlink()
             with patch("tools.build_self_example_site.subprocess.run") as pandoc:
                 with self.assertRaisesRegex(FileNotFoundError, "final.pdf"):
@@ -91,6 +101,7 @@ class BuildSelfExampleSiteTests(unittest.TestCase):
                         build_dir=build,
                         outline=outline,
                         source_audit=source_audit,
+                        bibliography=bibliography,
                         output_dir=root / "docs",
                         source_sha="abc",
                         model="model",
@@ -102,7 +113,7 @@ class BuildSelfExampleSiteTests(unittest.TestCase):
     def test_missing_source_audit_fails_before_pandoc(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            build, outline, source_audit = self.make_inputs(root)
+            build, outline, source_audit, bibliography = self.make_inputs(root)
             source_audit.unlink()
             with patch("tools.build_self_example_site.subprocess.run") as pandoc:
                 with self.assertRaisesRegex(FileNotFoundError, "source-audit.json"):
@@ -110,6 +121,27 @@ class BuildSelfExampleSiteTests(unittest.TestCase):
                         build_dir=build,
                         outline=outline,
                         source_audit=source_audit,
+                        bibliography=bibliography,
+                        output_dir=root / "docs",
+                        source_sha="abc",
+                        model="model",
+                        target="target",
+                        run_url="run",
+                    )
+            pandoc.assert_not_called()
+
+    def test_missing_bibliography_fails_before_pandoc(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            build, outline, source_audit, bibliography = self.make_inputs(root)
+            bibliography.unlink()
+            with patch("tools.build_self_example_site.subprocess.run") as pandoc:
+                with self.assertRaisesRegex(FileNotFoundError, "references.bib"):
+                    build_site(
+                        build_dir=build,
+                        outline=outline,
+                        source_audit=source_audit,
+                        bibliography=bibliography,
                         output_dir=root / "docs",
                         source_sha="abc",
                         model="model",
