@@ -11,11 +11,13 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Optional
 
 if __package__:
+    from .build_self_example_site import ACCEPTANCE
     from .self_example_targets import TARGETS, TargetSpec, resolve_target
 else:
+    from build_self_example_site import ACCEPTANCE
     from self_example_targets import TARGETS, TargetSpec, resolve_target
 
 
@@ -33,31 +35,6 @@ nav a { margin-right: 1rem; white-space: nowrap; }
 code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 pre { overflow-x: auto; padding: 1rem; background: #8881; }
 a { text-underline-offset: 0.15em; }
-"""
-
-ACCEPTANCE = """\
-# Release acceptance review
-
-This page is a **human semantic gate**, not a mechanically generated certificate of fidelity.
-The mechanical gates establish source/citation bookkeeping and protocol cleanliness and, once a
-candidate has been generated, require a real LaTeX compilation. They cannot prove that generated
-prose is materially equivalent to the authored conceptual source.
-
-Before approving publication, compare `artifacts/final.tex` (or the rendered PDF) directly with
-`artifacts/outline.md` and confirm all of the following:
-
-- no material claim appears in the final essay without authority in the outline;
-- no authored proposition has been silently strengthened or weakened;
-- no example, theory, citation, or historical claim was introduced downstream;
-- every source-supplied citation remains present and attached to the claim it supports;
-- peer review did not expand conceptual scope;
-- material qualifications, uncertainty, exclusions, and domain boundaries are preserved;
-- the final peer-review report contains no unresolved source-level blocker;
-- the human-authored conceptual decisions remain inspectable separately from model realisation.
-
-If any item fails, do **not** approve publication. Repair the authoritative source for source defects,
-or the compiler/prompt layer for compiler defects, then recompile. Do not hand-patch conceptual
-content into generated prose.
 """
 
 REQUIRED_RAW_ARTIFACTS = (
@@ -135,8 +112,8 @@ def _run_pandoc(
     *,
     css: str,
     nav: Path,
-    title: str | None = None,
-    bibliography: Path | None = None,
+    title: Optional[str] = None,
+    bibliography: Optional[Path] = None,
 ) -> None:
     command = [
         "pandoc",
