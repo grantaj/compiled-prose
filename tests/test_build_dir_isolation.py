@@ -13,6 +13,16 @@ GENERATED = (
     "revise.tex",
     "peer_review.md",
     "final.tex",
+    "final.pdf",
+    "summary.tex",
+    "references.bib",
+)
+PIPELINE_OUTPUTS = (
+    "draft.tex",
+    "smooth.tex",
+    "revise.tex",
+    "peer_review.md",
+    "final.tex",
     "summary.tex",
 )
 
@@ -40,7 +50,7 @@ class BuildDirectoryIsolationTests(unittest.TestCase):
             "-n", "-B", "BUILD_DIR=build-test-a", "IN=outline.md", "final", "summarize"
         )
         self.assertEqual(alternate.returncode, 0, alternate.stderr)
-        for path in GENERATED:
+        for path in PIPELINE_OUTPUTS:
             self.assertIn(f"build-test-a/{path}", alternate.stdout)
         for stage in ("draft", "smooth", "revise", "review", "final", "summarize"):
             self.assertIn(f"build-test-a/errors/{stage}.md", alternate.stdout)

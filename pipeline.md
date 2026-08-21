@@ -25,6 +25,8 @@ Mechanical enforcement currently covers matters such as:
 - the single bounded final-realisation route;
 - build-directory isolation for generated artefacts and diagnostics.
 
+The repository self-example adds release-specific mechanical checks around its audited source catalogue and bibliography keys. Those checks do not make the generic compiler a semantic citation verifier.
+
 ### Prompt contracts
 
 A **prompt contract** is an executable instruction supplied to the model but not semantically proved by the build system. Source fidelity, absence of invented claims, preservation of scope, and correct classification of a review finding as `SOURCE` or `REALISATION` fall into this category.
@@ -72,6 +74,8 @@ review decision
 BLOCKED_SOURCE or malformed review -> external diagnostic + failure
 ```
 
+Optional bibliography metadata may accompany the source through this graph. It supplies stable identifiers and publication metadata for citations already authored in the source; it does not create another conceptual input.
+
 `make summarize` is an independent source-to-LaTeX utility transform. It is not part of the forward `final` dependency chain.
 
 ## Authority model
@@ -99,6 +103,18 @@ Changing a model-generated artefact does not retroactively change this source.
 
 A target is not conceptual authority. If satisfying it requires a claim, example, item of evidence, citation, or scope choice absent from the source, the prompt contract directs the model to fail rather than invent the missing material.
 
+### Bibliographic rendering metadata
+
+When `BIBLIOGRAPHY=...` is supplied, the referenced bibliography is resolved by `tools/render_prompt.py` and included as a distinct non-conceptual metadata section.
+
+Its role is limited to:
+
+- stable citation identifiers for citations already present in the authoritative source;
+- verified bibliographic fields needed by output renderers;
+- a shared rendering input that can be consumed independently by LaTeX/BibLaTeX and Pandoc citeproc.
+
+Bibliographic metadata is **not** authority to introduce a new citation, claim, example, evidence item, theory, or scope choice. A title or other field present only in the bibliography cannot be promoted into essay content merely because the compiler can see it.
+
 ### Derived stage artefacts
 
 `draft.tex`, `smooth.tex`, and `revise.tex` are working representations. By role they:
@@ -124,13 +140,16 @@ For each stage the renderer composes one prompt in this stable order:
 2. stage contract;
 3. target requirements;
 4. authoritative source;
-5. derived stage input, only when it differs from the authoritative source;
-6. peer-review diagnostic context, only for the conditional final-realisation stage;
-7. declared output and failure contract.
+5. bibliographic rendering metadata, only when explicitly supplied;
+6. derived stage input, only when it differs from the authoritative source;
+7. peer-review diagnostic context, only for the conditional final-realisation stage;
+8. declared output and failure contract.
+
+For a `tex` stage with bibliography metadata, the output contract additionally fixes the mechanical citation representation: exact supplied BibTeX keys, BibLaTeX/biber, the supplied bibliography filename, and no model-authored `thebibliography` block. This is a formatting/protocol constraint, not conceptual authority.
 
 Draft and summarize normally use the authoritative source as their stage input, so the renderer avoids duplicating that payload.
 
-The order above is mechanically fixed by `render_prompt.py`. Conceptual authority is separate from prompt position: the source remains authoritative for content even though system/stage/target instructions constrain execution and realisation.
+The order above is mechanically fixed by `render_prompt.py`. Conceptual authority is separate from prompt position: the source remains authoritative for content even though system/stage/target instructions constrain execution and realisation and bibliography metadata constrains citation rendering.
 
 ## Stage result protocol
 
@@ -178,18 +197,18 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Make target:** `draft`  
 **Stage prompt:** `prompts/10_draft.md`  
-**Input:** authoritative source (`IN`)  
+**Input:** authoritative source (`IN`), plus bibliography metadata when explicitly supplied  
 **Output:** `$(BUILD_DIR)/draft.tex`
 
 **Mechanically enforced:** the source path is required when the draft recipe runs, and a successful result must satisfy the structural `tex` protocol.
 
-**Prompt contract:** expand the source faithfully for the selected target without inventing claims, evidence, citations, examples, or authorial choices. Source insufficiency that would require invention is a blocking condition to report with `@@FAIL`.
+**Prompt contract:** expand the source faithfully for the selected target without inventing claims, evidence, citations, examples, or authorial choices. Source insufficiency that would require invention is a blocking condition to report with `@@FAIL`. When bibliography metadata is supplied, use only its exact citation keys for source-authored citations.
 
 ### 2. Smooth
 
 **Make target:** `smooth`  
 **Stage prompt:** `prompts/20_smooth.md`  
-**Inputs:** authoritative source plus `draft.tex` as a derived working artefact  
+**Inputs:** authoritative source plus `draft.tex` as a derived working artefact, and bibliography metadata when supplied  
 **Output:** `$(BUILD_DIR)/smooth.tex`
 
 **Mechanically enforced:** Make orders this after draft and applies the same structural `tex` result protocol.
@@ -200,7 +219,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Make target:** `revise`  
 **Stage prompt:** `prompts/30_revise.md`  
-**Inputs:** authoritative source plus `smooth.tex`  
+**Inputs:** authoritative source plus `smooth.tex`, and bibliography metadata when supplied  
 **Output:** `$(BUILD_DIR)/revise.tex`
 
 **Mechanically enforced:** Make orders this after smooth and applies the structural `tex` protocol.
@@ -211,7 +230,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Make target:** `review`  
 **Stage prompt:** `prompts/40_peer_review.md`  
-**Inputs:** authoritative source plus `revise.tex` and target requirements  
+**Inputs:** authoritative source plus `revise.tex`, target requirements, and bibliography metadata when supplied  
 **Output:** `$(BUILD_DIR)/peer_review.md`
 
 **Mechanically enforced at stage publication:** the result uses the declared `md` transport protocol rather than the `tex` protocol.
@@ -262,7 +281,7 @@ Review suggestions never become source authority at this gate.
 **Make target:** reached conditionally through `final`  
 **Stage prompt:** `prompts/50_final.md`  
 **Precondition:** validated `REVISE_REALISATION` review  
-**Inputs:** authoritative source, `revise.tex`, target requirements, and validated peer-review diagnostics  
+**Inputs:** authoritative source, `revise.tex`, target requirements, validated peer-review diagnostics, and bibliography metadata when supplied  
 **Output:** `$(BUILD_DIR)/final.tex`
 
 **Mechanically enforced:** the Makefile exposes only one forward invocation of this model-backed final stage per dependency-chain execution, and its result must satisfy the structural `tex` protocol. There is no automatic route back to peer review.
@@ -273,7 +292,7 @@ Review suggestions never become source authority at this gate.
 
 **Make target:** `summarize`  
 **Stage prompt:** `prompts/05_summarize.md`  
-**Input:** authoritative source (`IN`)  
+**Input:** authoritative source (`IN`), plus bibliography metadata when explicitly supplied  
 **Output:** `$(BUILD_DIR)/summary.tex`
 
 It uses the same flattened prompt renderer and common stage result protocol but is independent of the core finalisation graph.
@@ -286,9 +305,11 @@ It uses the same flattened prompt renderer and common stage result protocol but 
 make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
 ```
 
-**Mechanically enforced:** nominal stage artefacts, external diagnostics, and private temporary raw captures are placed under the selected build root. Changing `BUILD_DIR` does not relocate the authoritative source, prompts, or target files.
+**Mechanically enforced:** nominal stage artefacts, external diagnostics, and private temporary raw captures are placed under the selected build root. Changing `BUILD_DIR` does not relocate the authoritative source, prompts, target files, or an explicitly supplied source bibliography.
 
-`make clean` removes the known pipeline outputs plus the errors directory from the selected build root. `make clobber` removes the selected build root entirely.
+The self-example copies its audited `self-example/references.bib` into the selected build root so the generated LaTeX can resolve a local `references.bib`. That copy is a disposable build artefact; the source bibliography remains under `self-example/`.
+
+`make clean` removes the known pipeline outputs, copied self-example bibliography, and errors directory from the selected build root. `make clobber` removes the selected build root entirely.
 
 Generated artefacts are therefore disposable build products. The source tree remains the authority surface.
 
@@ -312,6 +333,8 @@ Separately, the following are **mechanical blocking conditions** and stop the Ma
 - a validated `BLOCKED_SOURCE` review;
 - explicit `@@FAIL` from the conditional final-realisation stage.
 
+The self-example release path additionally fails closed if its audited bibliography keys do not match `references.bib`, if the final LaTeX invents an unknown citation key, or if it drops a source-supplied citation. Citation placement and semantic support remain part of human acceptance rather than being falsely claimed as mechanically proved.
+
 Failures are externalised as diagnostics rather than hidden in generated LaTeX.
 
 ## Iteration and retry policy
@@ -332,7 +355,7 @@ Backend selection occurs in `tools/llm_run.sh`. Both supported backends consume 
 
 The project targets **semantic and specification-level reproducibility**, not byte-level determinism of model-generated prose.
 
-The stable/reviewable inputs are source files, prompts, target requirements, Make dependencies, backend/model configuration, and the common enforcement rules. Re-running those inputs should preserve the same authority boundaries, stage responsibilities, and failure protocol.
+The stable/reviewable inputs are source files, prompts, target requirements, optional bibliography metadata, Make dependencies, backend/model configuration, and the common enforcement rules. Re-running those inputs should preserve the same authority boundaries, stage responsibilities, citation identifiers, and failure protocol.
 
 Model-generated wording can vary across runs, backends, model revisions, provider implementations, or platforms. Temperature and seed controls may reduce variance where supported; they do not create a repository-wide guarantee of identical bytes.
 
@@ -340,6 +363,6 @@ One narrow byte-level property is mechanically guaranteed: after a `PASS` review
 
 ## File-driven toolchain design
 
-The repository intentionally uses ordinary files and Make dependencies rather than hidden conversational state. Source, prompts, targets, derived artefacts, and diagnostics can therefore be inspected and diffed with normal development tools.
+The repository intentionally uses ordinary files and Make dependencies rather than hidden conversational state. Source, prompts, targets, optional bibliography metadata, derived artefacts, and diagnostics can therefore be inspected and diffed with normal development tools.
 
 This is the surviving intent behind the compiler/toolchain framing: predictable stages, explicit authority, explicit failure, stable prompt composition, and disposable generated outputs. It does not require pretending that probabilistic model execution is literally a deterministic compiler backend.

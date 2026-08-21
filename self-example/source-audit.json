@@ -6,6 +6,7 @@
   "sources": [
     {
       "citation": "LeWitt 1967",
+      "bib_key": "lewitt1967",
       "metadata_status": "verified",
       "claim_support_status": "verified",
       "checked_against": [
@@ -16,6 +17,7 @@
     },
     {
       "citation": "LeWitt 1971",
+      "bib_key": "lewitt1971",
       "metadata_status": "verified",
       "claim_support_status": "verified",
       "checked_against": [
@@ -26,6 +28,7 @@
     },
     {
       "citation": "Lippard and Chandler 1968",
+      "bib_key": "lippard-chandler1968",
       "metadata_status": "verified",
       "claim_support_status": "verified",
       "checked_against": [
@@ -35,6 +38,7 @@
     },
     {
       "citation": "Hyland 2008",
+      "bib_key": "hyland2008",
       "metadata_status": "verified",
       "claim_support_status": "verified",
       "checked_against": [
@@ -43,6 +47,7 @@
     },
     {
       "citation": "Hyland 2012",
+      "bib_key": "hyland2012",
       "metadata_status": "verified",
       "claim_support_status": "verified",
       "checked_against": [
@@ -51,6 +56,7 @@
     },
     {
       "citation": "Hyland 2013",
+      "bib_key": "hyland2013",
       "metadata_status": "verified",
       "claim_support_status": "verified",
       "checked_against": [
@@ -59,6 +65,7 @@
     },
     {
       "citation": "ICMJE 2026",
+      "bib_key": "icmje2026",
       "metadata_status": "verified",
       "claim_support_status": "verified",
       "checked_against": [

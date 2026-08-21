@@ -15,6 +15,7 @@ Constraints:
 - Do not edit or rewrite the supplied stage input.
 - Identify any material drift between the derived stage input and the authoritative source, including invented, dropped, strengthened, weakened, or mis-scoped content. Material drift is SOURCE unless the faithful correction is completely determined by the source.
 - Assess argument thread, clarity, flow, coherence, structure, density, repetition, and omissions visible in the stage input.
+- Assess whether publication sectioning serves the selected target rather than mechanically mirroring the outline. Treat gratuitous one-heading-per-outline-item structure, unnecessary subsection fragmentation, or duplicated manual-plus-LaTeX section numbering as REALISATION defects when they can be corrected without changing authored order, distinctions, or scope.
 - Assess tone, register, reading level, paragraphing, formatting, and related realisation choices against the selected target rather than an assumed academic venue.
 - Apply scholarly citation expectations only when the selected target requires them.
 - When the target requires citations, check source-supplied citations for support and placement in the stage input. Missing required source support is SOURCE.

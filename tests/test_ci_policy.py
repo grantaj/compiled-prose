@@ -59,7 +59,10 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("run: make check", content)
         self.assertIn('TARGET_STYLE="$TARGET_STYLE" self', content)
         self.assertIn("latexmk", content)
+        self.assertIn("texlive-bibtex-extra", content)
+        self.assertIn("biber", content)
         self.assertIn("--source-audit self-example/source-audit.json", content)
+        self.assertIn("--bibliography self-example/references.bib", content)
 
     def test_failed_paid_compilation_surfaces_and_retains_diagnostics(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
@@ -77,6 +80,7 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("            build\n", content)
         self.assertIn("            outline.md\n", content)
         self.assertIn("            self-example/source-audit.json\n", content)
+        self.assertIn("            self-example/references.bib\n", content)
         self.assertIn("if-no-files-found: warn", content)
         self.assertIn("retention-days: 90", content)
         self.assertLess(

@@ -27,6 +27,7 @@ class SelfExampleAuditTests(unittest.TestCase):
                     "sources": [
                         {
                             "citation": "Known 2020",
+                            "bib_key": "known2020",
                             "metadata_status": "verified",
                             "claim_support_status": "verified",
                             "checked_against": ["https://example.invalid/source"],
@@ -36,42 +37,66 @@ class SelfExampleAuditTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
+        bibliography = root / "references.bib"
+        bibliography.write_text(
+            "@article{known2020,\n"
+            "  author = {Author, A.},\n"
+            "  title = {Useful Source},\n"
+            "  year = {2020},\n"
+            "}\n",
+            encoding="utf-8",
+        )
         final_path = None
         if final is not None:
             final_path = root / "final.tex"
             final_path.write_text(final, encoding="utf-8")
-        return outline, audit_file, final_path
+        return outline, audit_file, bibliography, final_path
 
-    def test_verified_catalog_passes(self):
+    def test_verified_catalog_and_bibliography_pass(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            outline, audit_file, _ = self.write_fixture(root)
-            result = audit(outline, audit_file)
+            outline, audit_file, bibliography, _ = self.write_fixture(root)
+            result = audit(outline, audit_file, bibliography=bibliography)
             self.assertTrue(result.ok, result.errors)
 
     def test_unknown_outline_citation_fails_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            outline, audit_file, _ = self.write_fixture(root, body_citation="Invented 2024")
-            result = audit(outline, audit_file)
+            outline, audit_file, bibliography, _ = self.write_fixture(
+                root, body_citation="Invented 2024"
+            )
+            result = audit(outline, audit_file, bibliography=bibliography)
             self.assertFalse(result.ok)
             self.assertTrue(any("without catalog entries" in error for error in result.errors))
 
     def test_unverified_source_record_fails_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            outline, audit_file, _ = self.write_fixture(root)
+            outline, audit_file, bibliography, _ = self.write_fixture(root)
             data = json.loads(audit_file.read_text(encoding="utf-8"))
             data["sources"][0]["claim_support_status"] = "unchecked"
             audit_file.write_text(json.dumps(data), encoding="utf-8")
-            result = audit(outline, audit_file)
+            result = audit(outline, audit_file, bibliography=bibliography)
             self.assertFalse(result.ok)
             self.assertIn("Known 2020: claim_support_status is not verified", result.errors)
 
-    def test_final_unknown_explicit_citation_is_rejected(self):
+    def test_bibliography_must_match_audited_keys(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            outline, audit_file, final = self.write_fixture(
+            outline, audit_file, bibliography, _ = self.write_fixture(root)
+            bibliography.write_text(
+                "@article{different2020, title={Different}, year={2020}}\n",
+                encoding="utf-8",
+            )
+            result = audit(outline, audit_file, bibliography=bibliography)
+            self.assertFalse(result.ok)
+            self.assertTrue(any("missing from .bib" in error for error in result.errors))
+            self.assertTrue(any("absent from source audit" in error for error in result.errors))
+
+    def test_final_unknown_explicit_citation_label_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
                 root,
                 final=(
                     "\\documentclass{article}\n\\begin{document}\n"
@@ -79,7 +104,9 @@ class SelfExampleAuditTests(unittest.TestCase):
                     "\\end{document}\n"
                 ),
             )
-            result = audit(outline, audit_file, final=final)
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
             self.assertFalse(result.ok)
             self.assertTrue(
                 any(
@@ -88,21 +115,82 @@ class SelfExampleAuditTests(unittest.TestCase):
                 )
             )
 
-    def test_final_allows_latex_citation_keys_without_guessing_their_identity(self):
+    def test_final_unknown_bibtex_key_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            outline, audit_file, final = self.write_fixture(
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\usepackage[backend=biber,style=authoryear]{biblatex}\n"
+                    "\\addbibresource{references.bib}\n"
+                    "\\begin{document}\n"
+                    "Claim \\parencite{invented2024}.\n"
+                    "\\printbibliography\n\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
+            self.assertFalse(result.ok)
+            self.assertTrue(any("unknown bibliography citation keys" in error for error in result.errors))
+
+    def test_final_dropped_source_citation_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\usepackage[backend=biber,style=authoryear]{biblatex}\n"
+                    "\\addbibresource{references.bib}\n"
+                    "\\begin{document}\nClaim without citation.\n"
+                    "\\printbibliography\n\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
+            self.assertFalse(result.ok)
+            self.assertTrue(any("dropped source-supplied citations" in error for error in result.errors))
+
+    def test_final_with_supplied_bibliography_contract_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\usepackage[backend=biber,style=authoryear]{biblatex}\n"
+                    "\\addbibresource{references.bib}\n"
+                    "\\begin{document}\n"
+                    "A claim \\parencite{known2020}.\n"
+                    "\\printbibliography\n\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
+            self.assertTrue(result.ok, result.errors)
+
+    def test_manual_thebibliography_is_rejected_when_metadata_is_supplied(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
                 root,
                 final=(
                     "\\documentclass{article}\n\\begin{document}\n"
-                    "A claim~\\cite{source1}.\n"
+                    "A claim \\cite{known2020}.\n"
                     "\\begin{thebibliography}{1}\n"
-                    "\\bibitem{source1} A. Author. Useful Source. 2020.\n"
+                    "\\bibitem{known2020} A. Author. Useful Source. 2020.\n"
                     "\\end{thebibliography}\n\\end{document}\n"
                 ),
             )
-            result = audit(outline, audit_file, final=final)
-            self.assertTrue(result.ok, result.errors)
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
+            self.assertFalse(result.ok)
+            self.assertTrue(any("must not hand-render" in error for error in result.errors))
 
 
 if __name__ == "__main__":

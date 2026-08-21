@@ -20,7 +20,9 @@ Constraints (strict and must be followed):
 - Sentences should work within the context of surrounding sentences.
 - Do not produce stilted, mechanical text. Translate the source into high quality prose appropriate to the selected target.
 - Do not include text before or after the LaTeX document text.
-- If the source uses headings, render them as the corresponding level of LaTeX sectioning commands with fully written prose under each heading.
+- Treat source headings as authored navigation and conceptual-grouping cues, not as a one-to-one publication section map. Preserve the order and distinctions they express, but choose publication section boundaries appropriate to the selected target.
+- Do not copy outline navigation numbering or labels (for example `I.`, `I.1`, or `2.3`) into LaTeX section titles when LaTeX will number sections automatically. Retain a literal label only when the authoritative source clearly makes that label part of the intended published text.
+- Prefer a small number of coherent publication sections. Adjacent source subsections may be realised as paragraphs within a broader section when this preserves their order, distinctions, and scope; do not create a section or subsection merely because an outline item has a heading.
 - Do not include meta-commentary, model thoughts, or messages to the user; output only the LaTeX content on success.
 - Do not introduce terminology, interpretations, or examples that are not explicitly present in the authoritative source.
 - Do not add analogies or explanatory metaphors unless the source contains them; target permission alone is not conceptual authority to invent one.

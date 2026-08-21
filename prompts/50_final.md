@@ -12,6 +12,7 @@ Constraints:
 - Follow the selected target's tone, register, reading level, structure, formatting, and citation expectations without changing what the authoritative source says.
 - Do not add or remove concepts; do not introduce new examples, claims, evidence, citations, or scope.
 - Preserve authored order and scope of ideas unless a purely realisation-level reordering is permitted by the stage and remains faithful to the authoritative source.
+- Treat section boundaries and headings in the derived stage input as realisation choices. When required by validated REALISATION findings, consolidate over-fragmented adjacent sections, replace unnecessary subheadings with paragraph transitions, and remove duplicated manual numbering from section titles without changing authored order, distinctions, or scope.
 - Preserve citations supplied by the authoritative source and represented in the stage input; keep them tied to the claims they support.
 - Do not treat a citation, claim, example, or scope change that appears only in the derived stage input or diagnostic context as authored source material.
 - If the selected target requires citation or evidence support that the authoritative source does not supply, use the failure branch rather than inventing or substituting material.

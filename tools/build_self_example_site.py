@@ -8,7 +8,7 @@ import shutil
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Optional
 
 
 REQUIRED_ARTIFACTS = (
@@ -58,8 +58,8 @@ or the compiler/prompt layer for compiler defects, then recompile. Do not hand-p
 content into generated prose.
 
 The source-verification evidence used for this candidate is retained as
-`artifacts/source-audit.json`. It records audit evidence only and is not an additional conceptual
-authority for the compiler.
+`artifacts/source-audit.json`. Stable bibliographic rendering metadata is retained separately as
+`artifacts/references.bib`. Neither file adds conceptual authority beyond `outline.md`.
 """
 
 
@@ -69,24 +69,35 @@ def _require_files(paths: Iterable[Path]) -> None:
         raise FileNotFoundError("missing publication inputs: " + ", ".join(missing))
 
 
-def _run_pandoc(source: Path, output: Path, title: str, nav: Path) -> None:
-    subprocess.run(
+def _run_pandoc(
+    source: Path,
+    output: Path,
+    title: Optional[str],
+    nav: Path,
+    *,
+    bibliography: Optional[Path] = None,
+) -> None:
+    command = [
+        "pandoc",
+        str(source),
+        "--standalone",
+        "--to=html5",
+        "--mathjax",
+    ]
+    if bibliography is not None:
+        command.extend(["--citeproc", f"--bibliography={bibliography}"])
+    if title is not None:
+        command.extend(["--metadata", f"title={title}"])
+    command.extend(
         [
-            "pandoc",
-            str(source),
-            "--standalone",
-            "--to=html5",
-            "--mathjax",
-            "--metadata",
-            f"title={title}",
             "--css=style.css",
             "--include-before-body",
             str(nav),
             "-o",
             str(output),
-        ],
-        check=True,
+        ]
     )
+    subprocess.run(command, check=True)
 
 
 def build_site(
@@ -94,6 +105,7 @@ def build_site(
     build_dir: Path,
     outline: Path,
     source_audit: Path,
+    bibliography: Path,
     output_dir: Path,
     source_sha: str,
     model: str,
@@ -101,7 +113,7 @@ def build_site(
     run_url: str,
 ) -> None:
     artifacts = [build_dir / name for name in REQUIRED_ARTIFACTS]
-    _require_files([outline, source_audit, *artifacts])
+    _require_files([outline, source_audit, bibliography, *artifacts])
 
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -113,6 +125,7 @@ def build_site(
         shutil.copy2(artifact, raw_dir / artifact.name)
     shutil.copy2(outline, raw_dir / "outline.md")
     shutil.copy2(source_audit, raw_dir / "source-audit.json")
+    shutil.copy2(bibliography, raw_dir / "references.bib")
 
     (output_dir / "style.css").write_text(STYLE, encoding="utf-8")
     (output_dir / ".nojekyll").write_text("", encoding="utf-8")
@@ -140,11 +153,16 @@ def build_site(
         encoding="utf-8",
     )
 
+    # Use the same bibliographic metadata as LaTeX, through Pandoc's native
+    # citation processor. Do not rewrite citation commands or bibliography text.
+    # Do not override final.tex metadata: its paper title must remain identical
+    # between PDF and HTML renderings.
     _run_pandoc(
         build_dir / "final.tex",
         output_dir / "index.html",
-        "Compiled Prose — self-example",
+        None,
         nav,
+        bibliography=bibliography,
     )
     _run_pandoc(outline, output_dir / "outline.html", "Authoritative outline", nav)
     _run_pandoc(
@@ -173,6 +191,7 @@ def build_site(
         "artifacts": list(REQUIRED_ARTIFACTS),
         "authoritative_source": "outline.md",
         "source_audit": "source-audit.json",
+        "bibliography": "references.bib",
     }
     (output_dir / "build.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -184,6 +203,7 @@ def main() -> None:
     parser.add_argument("--build-dir", type=Path, required=True)
     parser.add_argument("--outline", type=Path, required=True)
     parser.add_argument("--source-audit", type=Path, required=True)
+    parser.add_argument("--bibliography", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--model", required=True)
@@ -194,6 +214,7 @@ def main() -> None:
         build_dir=args.build_dir,
         outline=args.outline,
         source_audit=args.source_audit,
+        bibliography=args.bibliography,
         output_dir=args.output_dir,
         source_sha=args.source_sha,
         model=args.model,
