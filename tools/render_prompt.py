@@ -21,12 +21,13 @@ def read(path: str) -> str:
 
 
 def _citation_output_contract(bibliography_name: str) -> str:
-    return f"""CITATION_FORMAT:
+    return f"""CITATION_PROTOCOL:
 - Citation metadata is supplied separately from the authoritative source. It provides only verified bibliographic rendering metadata and stable citation keys; it does not add claims, evidence, or conceptual authority.
 - Use only BibTeX keys present in that supplied metadata. Never invent, rename, or infer a citation key.
-- Preserve source-supplied citations and keep them attached to the claims they support.
-- In LaTeX output, use `\\parencite{{key}}` for ordinary parenthetical citations and `\\textcite{{key}}` only where the citation is grammatically part of the sentence.
-- Configure biblatex with `\\usepackage[backend=biber,style=authoryear]{{biblatex}}` and `\\addbibresource{{{bibliography_name}}}`.
+- Preserve source-supplied citations and keep them attached to the claims they support. Do not add, drop, or relocate a citation merely to fit a target presentation preference.
+- Citation presentation is owned by the selected target. Parenthetical versus narrative form, author-year versus numeric presentation, and other citation-style choices must follow the target rather than this protocol.
+- Use biblatex with `backend=biber`; add target-appropriate presentation options only when they are consistent with the selected target. Do not hard-code an author-year, numeric, or other presentation merely because bibliography metadata is present.
+- Add `\\addbibresource{{{bibliography_name}}}` and cite only supplied keys using biblatex citation commands compatible with the selected target.
 - Include `\\printbibliography` exactly once near the end of the document.
 - Do not emit a `thebibliography` environment or hand-write bibliography entries; the supplied bibliography file is the rendering source."""
 
