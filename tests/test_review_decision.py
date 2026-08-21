@@ -204,7 +204,9 @@ class BoundedOrchestrationTests(unittest.TestCase):
         self.assertIn("STATUS: PASS", prompt)
         self.assertIn("STATUS: REVISE_REALISATION", prompt)
         self.assertIn("STATUS: BLOCKED_SOURCE", prompt)
-        self.assertIn("missing required evidence or citation", prompt)
+        self.assertNotIn("unsupported non-trivial claim", prompt)
+        self.assertIn("support that is required by the selected target", prompt)
+        self.assertIn("claim's own evidentiary or attribution semantics", prompt)
         self.assertIn("absent from the source is a SOURCE action", prompt)
         self.assertNotIn('"REVIEW AGAIN: YES"', prompt)
 
