@@ -24,9 +24,10 @@ Constraints:
 - Assess whether publication sectioning serves the selected target rather than mechanically mirroring the outline. Treat gratuitous one-heading-per-outline-item structure, unnecessary subsection fragmentation, or duplicated manual-plus-LaTeX section numbering as REALISATION defects when they can be corrected without changing authored order, distinctions, or scope.
 - Assess tone, register, reading level, paragraphing, formatting, explanatory explicitness, and visible evidentiary treatment against the selected target rather than an assumed academic venue.
 - Do not classify a claim as SOURCE merely because it is non-trivial or lacks scholarly citation. Ask first whether the claim and argument satisfy the target-independent source-assurance floor; citation form is a separate target-level presentation question.
+- Apply scholarly citation expectations only when the selected target requires them.
 - Apply target-specific rigour, attribution, and citation expectations after source assurance. A target may raise these expectations but may not lower the source-assurance floor.
 - When the target requires citations or explicit evidence presentation, check source-supplied support and placement in the stage input. Missing target-required source material is SOURCE.
-- When the target does not require scholarly citations or extensive evidentiary exposition, do not demand them merely because a more academic treatment would normally contain them. Do not convert adequate support into an academic-style explanation burden that exceeds the selected target.
+- When the target does not require scholarly citations, do not demand references merely because a more academic treatment would normally contain them. If the target also does not require extensive evidentiary exposition, do not convert adequate support into an academic-style explanation burden that exceeds the selected target.
 - Never invent, supply, or recommend a specific new citation as though it were authoritative source material. A useful new citation or evidence request absent from the source is a SOURCE action for the human author only when the source-assurance floor or an explicit selected-target requirement establishes that support obligation.
 - Keep findings concise and localised to a section, label, paragraph, or quoted short passage where possible.
 
