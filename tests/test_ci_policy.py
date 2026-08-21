@@ -138,6 +138,10 @@ class CiSpendingPolicyTests(unittest.TestCase):
 
     def test_publish_workflow_uses_explicit_compile_run_ids_and_showcase_builder(self):
         content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("base_publish_run_id:", content)
+        self.assertIn("pattern: self-example-showcase-*", content)
+        self.assertIn("run-id: ${{ inputs.base_publish_run_id }}", content)
+        self.assertIn("--base-showcase base-showcase", content)
         for target in (
             "journal_academic",
             "magazine_general",
