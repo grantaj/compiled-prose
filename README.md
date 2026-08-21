@@ -6,7 +6,7 @@ The compiler analogy is architectural, not a promise of byte-for-byte determinis
 
 ## Published self-example
 
-The repository publishes its own compiled essay as the worked example: [view the current self-example on GitHub Pages](https://grantaj.github.io/compiled-prose/). The Pages site exposes the final essay alongside the authoritative outline, peer-review diagnostic, human acceptance review, PDF/raw LaTeX, and build provenance. It is downstream release evidence; `outline.md` remains the conceptual authority.
+The repository publishes its own compiled essay as the worked example: [view the current self-example on GitHub Pages](https://grantaj.github.io/compiled-prose/). The Pages site makes the authoritative `outline.md` a first-class view and can present several target renderings of that same authored source side-by-side. The initial public targets are `journal_academic`, `magazine_general`, and `explain_like_im_5`. They are audience/genre contracts, not quality levels. Each rendering retains its own model, compilation commit, workflow-run, peer-review, PDF/raw LaTeX, and acceptance provenance while `outline.md` remains the conceptual authority.
 
 ## Canonical documentation
 
@@ -225,13 +225,15 @@ Malformed or internally inconsistent review status also fails closed. The review
 
 Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final essay with `outline.md` and confirm that no material claim was introduced without source authority, no proposition was silently strengthened or weakened, no example/theory/citation/historical claim was added downstream, every source-supplied citation remains present and attached to the claim it supports, peer review did not expand scope, and important qualifications and uncertainty were preserved.
 
-The publication workflow exposes that review as an `acceptance.html` checklist in the candidate bundle. Configure the `github-pages` GitHub Environment with the repository owner as a required reviewer. The compile job uploads `self-example-candidate-<source-sha>` before the deployment job reaches that environment, allowing the candidate to be inspected before Pages publication is approved. A failed semantic check goes back to `outline.md` for a source defect or to the compiler/prompt layer for a compiler defect; conceptual content must not be hand-patched into generated prose.
+Compilation and publication are deliberately separate. **Compile self-example target** creates and retains one candidate artifact but cannot deploy Pages. **Publish self-example** accepts explicit compilation run IDs, downloads those retained candidates, verifies target identity and source compatibility, assembles the showcase, and deploys only after the `github-pages` environment gate. A candidate therefore never becomes public merely because it was generated, and publishing an already-accepted candidate does not invoke the model again.
+
+The publication assembler treats the exact `outline.md` bytes as the shared authoritative revision. Candidates compiled at different repository commits may be combined when their authored outline is byte-identical; this is what allows an already-good rendering to survive later compiler/workflow changes without an unnecessary paid rerun. Each rendering still exposes its own compilation commit, model, target, and originating run.
 
 For the paper view, PDF and HTML deliberately share the same `references.bib`: LaTeX resolves it through BibLaTeX/biber, while Pages passes it directly to Pandoc `--citeproc`. The HTML builder does not parse or rewrite citation commands or manufacture bibliography entries. The paper title likewise comes from `final.tex` rather than a Pages-specific replacement title.
 
 ## Retained self-example artefacts
 
-`build/` remains transient and generated prose is not committed to the source tree. The canonical current worked-example evidence is the accepted Pages deployment and its inspectable candidate bundle. It contains:
+`build/` remains transient and generated prose is not committed to the source tree. Each successful paid compilation retains a self-contained candidate containing:
 
 - the authoritative `outline.md`;
 - dated `source-audit.json` evidence for the supplied references;
@@ -240,9 +242,9 @@ For the paper view, PDF and HTML deliberately share the same `references.bib`: L
 - the final peer-review report;
 - final generated LaTeX;
 - the PDF produced by the documented LaTeX toolchain;
-- source commit, model, target, workflow-run metadata, and the human acceptance checklist.
+- compilation commit, model, target, workflow-run metadata, and the human acceptance checklist.
 
-The workflow also retains the candidate as a normal Actions artifact for 90 days so the exact pre-deployment bundle can be inspected independently of Pages. The Pages `build.json` records the source commit and workflow run. None of these downstream artefacts becomes conceptual authority, and no secret or provider state is retained.
+Candidate artifacts are retained for 90 days. The keyless publish workflow selects candidates by explicit compile run ID rather than guessing a newest artifact. It can reuse an existing target while adding another, and it rejects a candidate whose target metadata does not match the slot it was selected for. The assembled Pages site records an SHA-256 digest of the authoritative outline and preserves per-target build metadata and raw artifacts. None of these downstream artefacts becomes conceptual authority, and no secret or provider state is retained.
 
 ## Switching backend or target
 
@@ -271,23 +273,26 @@ Seeds and low temperatures can reduce variance where supported, but they are con
 
 Ordinary CI is deliberately keyless. Pushes and pull requests run `make check` and do not reference provider credentials or make model calls.
 
-Paid self-example compilation is a separate manual publication path in `.github/workflows/publish-self-example.yml`. It has only a `workflow_dispatch` trigger, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. A successful approved run executes `make self`, builds the inspectable candidate bundle, and waits at the separately protected `github-pages` environment before deployment; generated prose is not committed to the source tree.
+Paid self-example compilation lives only in `.github/workflows/compile-self-example.yml`. It has only a `workflow_dispatch` trigger, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. It compiles exactly one selected target and uploads a retained candidate; it has no Pages deployment step.
 
-Manual dispatch includes an allowlisted OpenAI model selector. It currently offers `gpt-5-mini`, `gpt-5`, `gpt-5.6-luna`, `gpt-5.6-terra`, and `gpt-5.6-sol`; `gpt-5-mini` remains the default so adding the selector does not silently increase spending. The selected value is validated again before the provider-call step, so an unexpected model identifier fails before any paid request.
+Manual compilation dispatch includes allowlisted selectors for both model and target. Models currently offered are `gpt-5-mini`, `gpt-5`, `gpt-5.6-luna`, `gpt-5.6-terra`, and `gpt-5.6-sol`; `gpt-5-mini` remains the default. Targets initially offered are `journal_academic`, `magazine_general`, and `explain_like_im_5`, with `journal_academic` as the default. Model and target are both validated before the API-key-bearing step, and target identifiers are mapped through `tools/self_example_targets.py` rather than accepting arbitrary prompt paths.
 
 Each successful OpenAI response records its stage, model, and API-reported token usage in the transient build usage log. After every paid compilation attempt, including failures, the workflow renders per-stage and total token usage plus estimated cost into the GitHub Actions step summary. Unknown model pricing is reported as `N/A` rather than guessed, and the estimate is explicitly not a billing record. This accounting makes no additional provider call. Pricing for the selectable GPT-5.6 family follows the provider's published short-context rates and applies the published long-context multiplier above 272,000 input tokens.
 
-If paid compilation fails, any `build/errors/*.md` diagnostics are printed into the Actions log and the available build/source/audit/bibliography evidence is retained as a 90-day failure artifact. A failed compilation never proceeds to the publication candidate or Pages deployment.
+If paid compilation fails, any `build/errors/*.md` diagnostics are printed into the Actions log and the available build/source/audit/bibliography evidence is retained as a 90-day failure artifact. A failed compilation never produces a publication candidate.
+
+Publication lives separately in `.github/workflows/publish-self-example.yml`. That workflow is manual and strictly keyless: it has no provider credential or model-backed path. Its inputs are explicit compile run IDs for the target candidates to publish. It downloads only retained candidate artifacts from those runs, fails if a selected download is ambiguous or carries the wrong target metadata, requires all selected candidates to contain the same authoritative outline bytes, builds the outline-first multi-target Pages site, and deploys through the protected `github-pages` environment.
 
 Recommended repository configuration:
 
 1. Create the `paid-compilation` environment, require the repository owner as reviewer, and restrict it to `main`.
 2. Store `OPENAI_API_KEY` as an environment secret under `paid-compilation` rather than exposing it to ordinary CI.
 3. Configure GitHub Pages to publish from **GitHub Actions**.
-4. Configure the `github-pages` environment to require the repository owner as reviewer, so the compiled candidate can be adversarially checked before deployment.
-5. Start publication manually from **Actions -> Compile and publish self-example -> Run workflow**, select the OpenAI model, explicitly authorize paid compilation, approve the `paid-compilation` environment, inspect the uploaded acceptance candidate after compilation, and approve `github-pages` only if the source-authority checklist passes.
+4. Configure the `github-pages` environment to require the repository owner as reviewer.
+5. To generate a new rendering, start **Actions -> Compile self-example target -> Run workflow**, choose one target and model, explicitly authorize paid compilation, and approve the `paid-compilation` environment. Inspect the retained candidate artifact after compilation.
+6. To publish without recompiling, start **Actions -> Publish self-example -> Run workflow** and enter the explicit compile run ID for each target candidate to include. Reuse the same run ID for an existing accepted rendering unless you deliberately mean to replace it, then approve `github-pages` after inspecting the assembled publication bundle.
 
-One approved successful compilation invokes the selected model for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The workflow defaults to `gpt-5-mini`, caps each model-backed stage at 10,000 output tokens, and performs no automatic retry.
+One approved successful compilation invokes the selected model for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The compile workflow defaults to `gpt-5-mini`, caps each model-backed stage at 10,000 output tokens, and performs no automatic retry. The publish workflow makes no provider call at all.
 
 ## Project intent
 

@@ -111,6 +111,8 @@ def build_site(
     model: str,
     target: str,
     run_url: str,
+    target_id: Optional[str] = None,
+    run_id: Optional[str] = None,
 ) -> None:
     artifacts = [build_dir / name for name in REQUIRED_ARTIFACTS]
     _require_files([outline, source_audit, bibliography, *artifacts])
@@ -133,7 +135,7 @@ def build_site(
     nav = output_dir / "_nav.html"
     safe_sha = html.escape(source_sha)
     safe_model = html.escape(model)
-    safe_target = html.escape(target)
+    safe_target = html.escape(target_id or target)
     safe_run_url = html.escape(run_url, quote=True)
     nav.write_text(
         "<nav>"
@@ -185,14 +187,21 @@ def build_site(
     metadata = {
         "source_sha": source_sha,
         "model": model,
+        # Keep the legacy field for retained candidates produced before target IDs
+        # were first-class metadata, while also recording the explicit layers.
         "target": target,
+        "target_file": target,
         "workflow_run": run_url,
-        "published_at_utc": datetime.now(timezone.utc).isoformat(),
+        "built_at_utc": datetime.now(timezone.utc).isoformat(),
         "artifacts": list(REQUIRED_ARTIFACTS),
         "authoritative_source": "outline.md",
         "source_audit": "source-audit.json",
         "bibliography": "references.bib",
     }
+    if target_id is not None:
+        metadata["target_id"] = target_id
+    if run_id is not None:
+        metadata["workflow_run_id"] = run_id
     (output_dir / "build.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -208,7 +217,9 @@ def main() -> None:
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--model", required=True)
     parser.add_argument("--target", required=True)
+    parser.add_argument("--target-id")
     parser.add_argument("--run-url", required=True)
+    parser.add_argument("--run-id")
     args = parser.parse_args()
     build_site(
         build_dir=args.build_dir,
@@ -219,7 +230,9 @@ def main() -> None:
         source_sha=args.source_sha,
         model=args.model,
         target=args.target,
+        target_id=args.target_id,
         run_url=args.run_url,
+        run_id=args.run_id,
     )
 
 

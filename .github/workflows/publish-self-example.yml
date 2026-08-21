@@ -1,41 +1,48 @@
-name: Compile and publish self-example
+name: Publish self-example
 
-# Spending invariant: this workflow is the only workflow allowed to reference
-# OPENAI_API_KEY, and it must never gain an automatic trigger.
+# Publication is intentionally separate from compilation. This workflow is
+# keyless: it only reuses explicitly selected retained candidate artifacts.
 on:
   workflow_dispatch:
     inputs:
-      authorize_paid_api_call:
-        description: "I authorize one full paid compilation (draft/smooth/revise/review/final)"
-        required: true
-        type: boolean
-        default: false
-      openai_model:
-        description: "OpenAI model"
-        required: true
-        type: choice
-        default: gpt-5-mini
-        options:
-          - gpt-5-mini
-          - gpt-5
-          - gpt-5.6-luna
-          - gpt-5.6-terra
-          - gpt-5.6-sol
+      base_publish_run_id:
+        description: "Prior Publish self-example run ID to reuse (blank for first publication)"
+        required: false
+        type: string
+      journal_academic_run_id:
+        description: "Compile run ID for journal_academic (required unless base preserves it)"
+        required: false
+        type: string
+      magazine_general_run_id:
+        description: "Compile run ID for magazine_general (blank to preserve base/omit)"
+        required: false
+        type: string
+      explain_like_im_5_run_id:
+        description: "Compile run ID for explain_like_im_5 (blank to preserve base/omit)"
+        required: false
+        type: string
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
-  group: compiled-prose-self-example
+  group: compiled-prose-self-example-publish
   cancel-in-progress: false
 
 jobs:
-  preflight:
-    name: Keyless preflight
+  assemble:
+    name: Assemble retained candidates
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
       pages: read
+    env:
+      BASE_PUBLISH_RUN_ID: ${{ inputs.base_publish_run_id }}
+      JOURNAL_RUN_ID: ${{ inputs.journal_academic_run_id }}
+      MAGAZINE_RUN_ID: ${{ inputs.magazine_general_run_id }}
+      ELI5_RUN_ID: ${{ inputs.explain_like_im_5_run_id }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -45,137 +52,112 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run keyless release-readiness checks
-        run: make check
+      - name: Validate explicit artifact selections
+        run: |
+          selected=0
+          for value in "$BASE_PUBLISH_RUN_ID" "$JOURNAL_RUN_ID" "$MAGAZINE_RUN_ID" "$ELI5_RUN_ID"; do
+            if [ -n "$value" ]; then
+              selected=$((selected + 1))
+              if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+                echo "Selected workflow run IDs must be numeric: $value" >&2
+                exit 2
+              fi
+            fi
+          done
+          if [ "$selected" -eq 0 ]; then
+            echo "Select a prior publish run or at least one explicit compile run ID." >&2
+            exit 2
+          fi
+          if [ -z "$BASE_PUBLISH_RUN_ID" ] && [ -z "$JOURNAL_RUN_ID" ]; then
+            echo "A first publication must explicitly include journal_academic so legacy top-level URLs remain valid." >&2
+            exit 2
+          fi
 
-      - name: Verify GitHub Pages configuration
+      - name: Install keyless publication dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes pandoc
+          pandoc --version
+
+      - name: Download prior published showcase
+        if: ${{ inputs.base_publish_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: self-example-showcase-*
+          path: base-showcase
+          run-id: ${{ inputs.base_publish_run_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Download journal_academic candidate
+        if: ${{ inputs.journal_academic_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: self-example-candidate-*
+          path: candidates/journal_academic
+          run-id: ${{ inputs.journal_academic_run_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Download magazine_general candidate
+        if: ${{ inputs.magazine_general_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: self-example-candidate-*
+          path: candidates/magazine_general
+          run-id: ${{ inputs.magazine_general_run_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Download explain_like_im_5 candidate
+        if: ${{ inputs.explain_like_im_5_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: self-example-candidate-*
+          path: candidates/explain_like_im_5
+          run-id: ${{ inputs.explain_like_im_5_run_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Assemble multi-target Pages site
+        run: |
+          args=(--output-dir site --expected-outline outline.md)
+          if [ -n "$BASE_PUBLISH_RUN_ID" ]; then
+            args+=(--base-showcase base-showcase)
+          fi
+          if [ -n "$JOURNAL_RUN_ID" ]; then
+            args+=(--candidate "journal_academic=candidates/journal_academic")
+            args+=(--candidate-run-id "journal_academic=$JOURNAL_RUN_ID")
+          fi
+          if [ -n "$MAGAZINE_RUN_ID" ]; then
+            args+=(--candidate "magazine_general=candidates/magazine_general")
+            args+=(--candidate-run-id "magazine_general=$MAGAZINE_RUN_ID")
+          fi
+          if [ -n "$ELI5_RUN_ID" ]; then
+            args+=(--candidate "explain_like_im_5=candidates/explain_like_im_5")
+            args+=(--candidate-run-id "explain_like_im_5=$ELI5_RUN_ID")
+          fi
+          python tools/build_self_example_showcase.py "${args[@]}"
+
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-  compile:
-    name: Paid compilation
-    needs: preflight
-    if: ${{ github.actor == github.repository_owner && github.ref == 'refs/heads/main' && inputs.authorize_paid_api_call == true }}
-    runs-on: ubuntu-latest
-    environment: paid-compilation
-    permissions:
-      contents: read
-    env:
-      BACKEND: openai
-      OPENAI_MODEL: ${{ inputs.openai_model }}
-      TARGET_STYLE: prompts/targets/journal_academic.md
-      OPENAI_MAX_OUTPUT_TOKENS: "10000"
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-
-      - name: Validate selected OpenAI model
-        run: |
-          case "$OPENAI_MODEL" in
-            gpt-5-mini|gpt-5|gpt-5.6-luna|gpt-5.6-terra|gpt-5.6-sol) ;;
-            *) echo "Unsupported OpenAI model: $OPENAI_MODEL" >&2; exit 2 ;;
-          esac
-
-      - name: Install compiler and release-validation dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          sudo apt-get update
-          sudo apt-get install --yes pandoc latexmk texlive-latex-extra texlive-bibtex-extra biber
-          pandoc --version
-          latexmk -v
-          biber --version
-
-      - name: Compile and validate self-example using paid API
-        id: compile_self_example
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          test -n "$OPENAI_API_KEY"
-          set +e
-          make BACKEND="$BACKEND" OPENAI_MODEL="$OPENAI_MODEL" TARGET_STYLE="$TARGET_STYLE" self
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ]; then
-            echo "::group::Self-example diagnostics"
-            if compgen -G "build/errors/*.md" > /dev/null; then
-              for diagnostic in build/errors/*.md; do
-                echo "==> $diagnostic <=="
-                cat "$diagnostic" || true
-                echo
-              done
-            else
-              echo "No build/errors/*.md diagnostic was produced."
-            fi
-            echo "::endgroup::"
-            exit "$status"
-          fi
-
-      - name: Summarize paid API usage
-        if: ${{ always() }}
-        run: |
-          summary="$(mktemp)"
-          if python tools/summarize_openai_usage.py --input build/openai-usage.jsonl > "$summary"; then
-            cat "$summary"
-            cat "$summary" >> "$GITHUB_STEP_SUMMARY"
-          else
-            {
-              echo "## OpenAI compilation usage"
-              echo
-              echo "Usage summary could not be rendered; inspect the paid compilation logs."
-            } | tee -a "$GITHUB_STEP_SUMMARY"
-          fi
-          rm -f "$summary"
-
-      - name: Upload failed self-example evidence
-        if: ${{ failure() && steps.compile_self_example.outcome == 'failure' }}
+      - name: Upload inspectable publication bundle
         uses: actions/upload-artifact@v4
         with:
-          name: self-example-failure-${{ github.sha }}-${{ github.run_id }}
-          path: |
-            build
-            outline.md
-            self-example/source-audit.json
-            self-example/references.bib
-          if-no-files-found: warn
-          retention-days: 90
-
-      - name: Build inspectable acceptance candidate
-        env:
-          SOURCE_SHA: ${{ github.sha }}
-          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          python tools/build_self_example_site.py \
-            --build-dir build \
-            --outline outline.md \
-            --source-audit self-example/source-audit.json \
-            --bibliography self-example/references.bib \
-            --output-dir docs \
-            --source-sha "$SOURCE_SHA" \
-            --model "$OPENAI_MODEL" \
-            --target "$TARGET_STYLE" \
-            --run-url "$RUN_URL"
-
-      - name: Upload self-example acceptance candidate
-        uses: actions/upload-artifact@v4
-        with:
-          name: self-example-candidate-${{ github.sha }}
-          path: docs
+          name: self-example-showcase-${{ github.run_id }}
+          path: site
           include-hidden-files: true
           retention-days: 90
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: docs
+          path: site
 
   deploy:
-    name: Publish GitHub Pages after human acceptance
-    needs: compile
+    name: Publish selected retained candidates
+    needs: assemble
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -184,6 +166,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy accepted candidate to GitHub Pages
+      - name: Deploy accepted showcase to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
