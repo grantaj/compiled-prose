@@ -4,7 +4,6 @@
 import argparse
 import html
 import json
-import re
 import shutil
 import subprocess
 from datetime import datetime, timezone
@@ -20,16 +19,6 @@ REQUIRED_ARTIFACTS = (
     "final.tex",
     "final.pdf",
 )
-
-_BIBLIOGRAPHY_RE = re.compile(
-    r"\\begin\{thebibliography\}\{[^{}]*\}(.*?)\\end\{thebibliography\}",
-    re.DOTALL,
-)
-_BIBITEM_RE = re.compile(
-    r"\\bibitem(?:\[(?P<label>[^\]]+)\])?\{(?P<key>[^{}]+)\}"
-)
-_SIMPLE_CITE_RE = re.compile(r"\\cite\s*\{(?P<keys>[^{}]+)\}")
-_ANY_CITE_RE = re.compile(r"\\cite[a-zA-Z*]*\s*(?:\[|\{)")
 
 STYLE = """\
 :root { color-scheme: light dark; }
@@ -69,8 +58,8 @@ or the compiler/prompt layer for compiler defects, then recompile. Do not hand-p
 content into generated prose.
 
 The source-verification evidence used for this candidate is retained as
-`artifacts/source-audit.json`. It records audit evidence only and is not an additional conceptual
-authority for the compiler.
+`artifacts/source-audit.json`. Stable bibliographic rendering metadata is retained separately as
+`artifacts/references.bib`. Neither file adds conceptual authority beyond `outline.md`.
 """
 
 
@@ -80,95 +69,13 @@ def _require_files(paths: Iterable[Path]) -> None:
         raise FileNotFoundError("missing publication inputs: " + ", ".join(missing))
 
 
-def _prepare_final_tex_for_html(source: Path, output: Path) -> None:
-    """Make Pandoc's HTML view preserve embedded LaTeX citation semantics.
-
-    Pandoc can read ``thebibliography`` text but, without separate structured
-    bibliography data, emits empty spans for ``\\cite{...}`` and may collapse
-    adjacent ``\\bibitem`` entries.  The validated LaTeX/PDF remains canonical;
-    this creates only a temporary HTML-rendering copy with explicit linked
-    citation labels and reference entries.
-    """
-
-    tex = source.read_text(encoding="utf-8")
-    bibliography_matches = list(_BIBLIOGRAPHY_RE.finditer(tex))
-
-    if not bibliography_matches:
-        if _ANY_CITE_RE.search(tex):
-            raise ValueError(
-                "HTML rendering found LaTeX citations without an embedded "
-                "thebibliography environment"
-            )
-        output.write_text(tex, encoding="utf-8")
-        return
-
-    if len(bibliography_matches) != 1:
-        raise ValueError("HTML rendering supports exactly one thebibliography environment")
-
-    bibliography = bibliography_matches[0]
-    body = bibliography.group(1)
-    item_matches = list(_BIBITEM_RE.finditer(body))
-    if not item_matches:
-        raise ValueError("thebibliography contains no bibitem entries")
-
-    entries = []
-    by_key = {}
-    for index, item in enumerate(item_matches, start=1):
-        key = item.group("key").strip()
-        if not key:
-            raise ValueError("thebibliography contains an empty bibitem key")
-        if key in by_key:
-            raise ValueError(f"duplicate bibitem key: {key}")
-
-        next_start = (
-            item_matches[index].start() if index < len(item_matches) else len(body)
-        )
-        reference = body[item.end() : next_start].strip()
-        if not reference:
-            raise ValueError(f"bibitem has no reference text: {key}")
-
-        label = (item.group("label") or str(index)).strip()
-        entries.append((key, label, reference))
-        by_key[key] = (index, label)
-
-    def replace_cite(match: re.Match) -> str:
-        keys = [key.strip() for key in match.group("keys").split(",")]
-        if not keys or any(not key for key in keys):
-            raise ValueError("empty citation key in final LaTeX")
-
-        links = []
-        for key in keys:
-            if key not in by_key:
-                raise ValueError(f"citation key has no bibitem: {key}")
-            number, label = by_key[key]
-            links.append(f"\\href{{#ref-{number}}}{{[{label}]}}")
-        return ", ".join(links)
-
-    converted = _SIMPLE_CITE_RE.sub(replace_cite, tex)
-    if _ANY_CITE_RE.search(converted):
-        raise ValueError(
-            "HTML rendering encountered an unsupported LaTeX citation command; "
-            "only simple \\cite{...} is supported"
-        )
-
-    references = ["\\section*{References}", "\\begin{description}"]
-    for number, (_, label, reference) in enumerate(entries, start=1):
-        references.append(
-            f"\\item[{{[{label}]}}] \\hypertarget{{ref-{number}}}{{}} {reference}"
-        )
-    references.append("\\end{description}")
-    rendered_bibliography = "\n".join(references)
-
-    converted = (
-        converted[: bibliography.start()]
-        + rendered_bibliography
-        + converted[bibliography.end() :]
-    )
-    output.write_text(converted, encoding="utf-8")
-
-
 def _run_pandoc(
-    source: Path, output: Path, title: Optional[str], nav: Path
+    source: Path,
+    output: Path,
+    title: Optional[str],
+    nav: Path,
+    *,
+    bibliography: Optional[Path] = None,
 ) -> None:
     command = [
         "pandoc",
@@ -177,6 +84,8 @@ def _run_pandoc(
         "--to=html5",
         "--mathjax",
     ]
+    if bibliography is not None:
+        command.extend(["--citeproc", f"--bibliography={bibliography}"])
     if title is not None:
         command.extend(["--metadata", f"title={title}"])
     command.extend(
@@ -196,6 +105,7 @@ def build_site(
     build_dir: Path,
     outline: Path,
     source_audit: Path,
+    bibliography: Path,
     output_dir: Path,
     source_sha: str,
     model: str,
@@ -203,7 +113,7 @@ def build_site(
     run_url: str,
 ) -> None:
     artifacts = [build_dir / name for name in REQUIRED_ARTIFACTS]
-    _require_files([outline, source_audit, *artifacts])
+    _require_files([outline, source_audit, bibliography, *artifacts])
 
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -215,6 +125,7 @@ def build_site(
         shutil.copy2(artifact, raw_dir / artifact.name)
     shutil.copy2(outline, raw_dir / "outline.md")
     shutil.copy2(source_audit, raw_dir / "source-audit.json")
+    shutil.copy2(bibliography, raw_dir / "references.bib")
 
     (output_dir / "style.css").write_text(STYLE, encoding="utf-8")
     (output_dir / ".nojekyll").write_text("", encoding="utf-8")
@@ -242,15 +153,17 @@ def build_site(
         encoding="utf-8",
     )
 
-    final_html_source = output_dir / "_final_for_html.tex"
-    _prepare_final_tex_for_html(build_dir / "final.tex", final_html_source)
-    try:
-        # Do not override final.tex metadata: its authored/generated paper title
-        # must be the same title readers see in both the PDF and HTML views.
-        _run_pandoc(final_html_source, output_dir / "index.html", None, nav)
-    finally:
-        final_html_source.unlink(missing_ok=True)
-
+    # Use the same bibliographic metadata as LaTeX, through Pandoc's native
+    # citation processor. Do not rewrite citation commands or bibliography text.
+    # Do not override final.tex metadata: its paper title must remain identical
+    # between PDF and HTML renderings.
+    _run_pandoc(
+        build_dir / "final.tex",
+        output_dir / "index.html",
+        None,
+        nav,
+        bibliography=bibliography,
+    )
     _run_pandoc(outline, output_dir / "outline.html", "Authoritative outline", nav)
     _run_pandoc(
         build_dir / "peer_review.md",
@@ -278,6 +191,7 @@ def build_site(
         "artifacts": list(REQUIRED_ARTIFACTS),
         "authoritative_source": "outline.md",
         "source_audit": "source-audit.json",
+        "bibliography": "references.bib",
     }
     (output_dir / "build.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -289,6 +203,7 @@ def main() -> None:
     parser.add_argument("--build-dir", type=Path, required=True)
     parser.add_argument("--outline", type=Path, required=True)
     parser.add_argument("--source-audit", type=Path, required=True)
+    parser.add_argument("--bibliography", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--model", required=True)
@@ -299,6 +214,7 @@ def main() -> None:
         build_dir=args.build_dir,
         outline=args.outline,
         source_audit=args.source_audit,
+        bibliography=args.bibliography,
         output_dir=args.output_dir,
         source_sha=args.source_sha,
         model=args.model,
