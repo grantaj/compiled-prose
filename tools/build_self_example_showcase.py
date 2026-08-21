@@ -79,6 +79,19 @@ def locate_candidate(root: Path) -> Path:
     return matches[0]
 
 
+def locate_showcase(root: Path) -> Path:
+    """Resolve an artifact-download directory to exactly one prior showcase root."""
+    direct = root / "showcase.json"
+    if direct.is_file():
+        return root
+    matches = sorted(path.parent for path in root.rglob("showcase.json"))
+    if len(matches) != 1:
+        raise ValueError(
+            f"expected exactly one retained showcase under {root}, found {len(matches)}"
+        )
+    return matches[0]
+
+
 def load_candidate(identifier: str, root: Path) -> Candidate:
     spec = resolve_target(identifier)
     candidate_root = locate_candidate(root)
@@ -170,18 +183,44 @@ def _candidate_info(candidate: Candidate) -> str:
     )
 
 
-def build_showcase(*, candidate_roots: dict[str, Path], output_dir: Path) -> None:
-    if not candidate_roots:
-        raise ValueError("at least one retained self-example candidate is required")
-
+def build_showcase(
+    *,
+    candidate_roots: dict[str, Path],
+    output_dir: Path,
+    base_showcase: Optional[Path] = None,
+) -> None:
     unknown = set(candidate_roots) - set(TARGETS)
     if unknown:
         raise ValueError("unsupported target(s): " + ", ".join(sorted(unknown)))
 
+    selected_roots: dict[str, Path] = {}
+    if base_showcase is not None:
+        base_root = locate_showcase(base_showcase)
+        manifest = json.loads((base_root / "showcase.json").read_text(encoding="utf-8"))
+        if manifest.get("schema") != "compiled-prose-self-example-showcase/1":
+            raise ValueError("unsupported retained showcase schema")
+        base_targets = manifest.get("targets")
+        if not isinstance(base_targets, dict) or not base_targets:
+            raise ValueError("retained showcase has no target manifest")
+        unknown_base = set(base_targets) - set(TARGETS)
+        if unknown_base:
+            raise ValueError(
+                "retained showcase contains unsupported target(s): "
+                + ", ".join(sorted(unknown_base))
+            )
+        for identifier in base_targets:
+            selected_roots[identifier] = base_root / "targets" / identifier
+
+    # Explicit candidates add missing targets or deliberately replace the same
+    # target from the retained base. Unmentioned base targets are preserved.
+    selected_roots.update(candidate_roots)
+    if not selected_roots:
+        raise ValueError("at least one retained self-example candidate is required")
+
     candidates = [
-        load_candidate(identifier, candidate_roots[identifier])
+        load_candidate(identifier, selected_roots[identifier])
         for identifier in TARGETS
-        if identifier in candidate_roots
+        if identifier in selected_roots
     ]
     authoritative_digest = candidates[0].outline_sha256
     for candidate in candidates[1:]:
@@ -329,6 +368,7 @@ def main() -> None:
         type=_parse_candidate,
         metavar="TARGET=PATH",
     )
+    parser.add_argument("--base-showcase", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     candidate_roots: dict[str, Path] = {}
@@ -336,7 +376,11 @@ def main() -> None:
         if identifier in candidate_roots:
             parser.error(f"candidate target supplied more than once: {identifier}")
         candidate_roots[identifier] = path
-    build_showcase(candidate_roots=candidate_roots, output_dir=args.output_dir)
+    build_showcase(
+        candidate_roots=candidate_roots,
+        output_dir=args.output_dir,
+        base_showcase=args.base_showcase,
+    )
 
 
 if __name__ == "__main__":
