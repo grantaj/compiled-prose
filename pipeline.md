@@ -4,6 +4,8 @@ This document is the canonical specification for the compiled-prose pipeline imp
 
 The implementation remains intentionally small: GNU Make orchestrates file dependencies, `tools/render_prompt.py` creates one flattened prompt per model-backed stage, `tools/llm_run.sh` selects the backend, `tools/enforce_protocol.py` enforces the common result protocol, and `tools/review_decision.py` enforces the peer-review decision gate.
 
+Model-backed stage count is part of the user-visible cost surface, not merely an internal architectural choice. Each model-backed stage incurs user-visible execution cost. The existing staged decomposition is retained because empirical use showed that reliable source-to-paper compilation required multiple transformations rather than a one-shot generation. Architectural separation alone is not sufficient justification for adding another model-backed stage: a new stage requires empirical evidence that an existing stage cannot absorb the responsibility reliably without materially degrading compilation quality.
+
 ## Normative vocabulary and enforcement boundary
 
 Not every important property of prose can be checked mechanically. This specification therefore distinguishes three kinds of rule.
@@ -35,7 +37,9 @@ The build system can detect malformed transport/output structure. It cannot in g
 
 ### Design constraints
 
-A **design constraint** states an architectural property future implementation changes are expected to preserve even where no single current test proves it completely. The principal design constraints are backend independence, explicit failure over improvisation, file-driven/Git-friendly operation, and keeping conceptual authority upstream of generated prose.
+A **design constraint** states an architectural property future implementation changes are expected to preserve even where no single current test proves it completely. The principal design constraints are backend independence, explicit failure over improvisation, file-driven/Git-friendly operation, keeping conceptual authority upstream of generated prose, and model-stage economy.
+
+Model-stage economy means a conceptual responsibility should be folded into an existing model-backed stage when that stage can perform it reliably. New model-backed stages require empirical justification from compilation quality or failure behaviour; cleaner conceptual decomposition by itself is insufficient because every additional stage increases user cost.
 
 This distinction is deliberate: the specification does not claim mechanical guarantees that the implementation does not provide.
 
@@ -99,9 +103,9 @@ Changing a model-generated artefact does not retroactively change this source.
 
 ### Target requirements
 
-`prompts/targets/*.md` define audience- or venue-specific realisation requirements: register, reading level, formatting, citation expectations and presentation, and similar constraints.
+`prompts/targets/*.md` define audience- or venue-specific realisation requirements: register, reading level, formatting, citation expectations and presentation, explanatory explicitness, level of rigour, and similar constraints.
 
-A target is not conceptual authority. If satisfying it requires a claim, example, item of evidence, citation, or scope choice absent from the source, the prompt contract directs the model to fail rather than invent the missing material.
+A target is not conceptual authority. It may require greater explicitness, rigour, evidence visibility, attribution, or citation apparatus than the target-independent source-assurance floor, but it may not lower that floor or make an inadequately warranted or materially unsupported source acceptable through a less formal presentation. If satisfying a target requires a claim, example, item of evidence, citation, warrant, or scope choice absent from the source, the prompt contract directs the model to fail or report a `SOURCE` defect rather than invent the missing material.
 
 ### Bibliographic rendering metadata
 
@@ -235,7 +239,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced at stage publication:** the result uses the declared `md` transport protocol rather than the `tex` protocol.
 
-**Prompt contract:** inspect the revised artefact against both source and target, localise findings, and classify each finding as source-owned or realisation-owned. Review is diagnostic only and is not permitted to rewrite the source.
+**Prompt contract:** use this existing review pass for two ordered responsibilities rather than adding another model-backed stage. First perform source assurance against a target-independent floor: inspect the authoritative source for coherent argument, necessary warrants, contradictions, scope, and support appropriate to the nature of its claims. Then review the revised artefact at the style, explanatory depth, rigour, and evidentiary presentation expected by the selected target. The target may raise explicit rigour or evidence requirements above the source-assurance floor, but may not lower that floor. The review must not import academic or otherwise stricter venue conventions into a target that does not require them. Findings remain diagnostic and are classified as source-owned or realisation-owned; review is not permitted to rewrite the source.
 
 The exact machine grammar below is mechanically validated by the final review decision gate. Therefore `make review` alone can publish Markdown that later proves malformed; `make final` will fail closed rather than guess how to interpret it.
 
@@ -320,7 +324,7 @@ The semantic conditions below are **prompt-contract blocking conditions**, not c
 - invent a claim, warrant, example, evidence item, or citation;
 - choose between unresolved interpretations or contradictory source instructions;
 - change authored scope or claim strength;
-- satisfy a target-required evidence/citation obligation not supplied by the source;
+- satisfy an additional target-required evidence, explicit-rigour, or citation obligation not supplied by the source;
 - repair conceptual drift when the source does not uniquely determine the repair.
 
 Separately, the following are **mechanical blocking conditions** and stop the Make dependency chain:
@@ -344,6 +348,8 @@ The implemented core is a single forward compilation path: draft -> smooth -> re
 **Mechanically enforced:** there is no review-again edge, recursive Make retry, or automatic source-repair loop in this graph.
 
 **Design constraint:** source-level blockers return control to the human-authored source or explicit compiler configuration. Backend/provider retry policy should not be allowed to mutate source authority or silently reinterpret a semantic failure as success.
+
+**Design constraint:** adding another model-backed stage is not an ordinary refactor. It changes the user's execution cost and therefore requires empirical evidence that the responsibility cannot be handled reliably within the existing bounded stages.
 
 ## Backend independence
 
