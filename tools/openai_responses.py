@@ -68,6 +68,9 @@ def usage_record(
         output_tokens=output_tokens,
     )
     pricing = pricing_for_model(model)
+    normalized_total = (
+        total_tokens if total_tokens is not None else input_tokens + output_tokens
+    )
     record = {
         "schema": USAGE_SCHEMA,
         "stage": stage,
@@ -75,7 +78,7 @@ def usage_record(
         "input_tokens": input_tokens,
         "cached_input_tokens": cached_input_tokens,
         "output_tokens": output_tokens,
-        "total_tokens": total_tokens,
+        "total_tokens": normalized_total,
         "estimated_cost_usd": str(estimate) if estimate is not None else None,
     }
     if pricing is not None:
