@@ -20,10 +20,13 @@ OLLAMA_HOST ?= http://localhost:11434
 
 # Inputs
 IN ?=
+BIBLIOGRAPHY ?=
 SYSTEM := prompts/00_system.md
 TARGET_STYLE ?= prompts/targets/journal_academic.md
 SELF_SOURCE := outline.md
 SELF_SOURCE_AUDIT := self-example/source-audit.json
+SELF_BIBLIOGRAPHY := self-example/references.bib
+BUILD_BIBLIOGRAPHY := $(BUILD_DIR)/references.bib
 
 P_DRAFT := prompts/10_draft.md
 P_SMOOTH := prompts/20_smooth.md
@@ -51,17 +54,19 @@ final: $(FINAL_OUT)
 summarize: $(SUMMARY_OUT)
 
 # Provider-free release-readiness checks for the repository's authoritative
-# self-example source. This command performs no network access.
+# self-example source and its non-conceptual bibliography metadata.
 self-preflight:
-	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)"
+	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)" --bibliography "$(SELF_BIBLIOGRAPHY)"
 
 # One obvious end-to-end self-example command. This deliberately performs a
 # fresh build. The selected BACKEND controls whether model execution is local
 # or paid; self-preflight always runs before any backend invocation.
 self: self-preflight
 	@$(MAKE) --no-print-directory clobber
-	@$(MAKE) --no-print-directory IN="$(SELF_SOURCE)" final
-	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)" --final "$(FINAL_OUT)"
+	@mkdir -p "$(BUILD_DIR)"
+	@cp "$(SELF_BIBLIOGRAPHY)" "$(BUILD_BIBLIOGRAPHY)"
+	@$(MAKE) --no-print-directory IN="$(SELF_SOURCE)" BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final
+	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)" --bibliography "$(BUILD_BIBLIOGRAPHY)" --final "$(FINAL_OUT)"
 	@$(MAKE) --no-print-directory validate-latex
 
 # Validation is intentionally non-compiling at the prose-pipeline level: if
@@ -93,6 +98,7 @@ openai-check:
 
 print-vars:
 	@echo "IN=$(IN)"
+	@echo "BIBLIOGRAPHY=$(BIBLIOGRAPHY)"
 	@echo "MAKEFLAGS=$(MAKEFLAGS)"
 
 
@@ -101,7 +107,8 @@ $(BUILD_DIR):
 
 define RUN_LLM
 python tools/render_prompt.py \
-  --system $(SYSTEM) --stage $(1) --target $(TARGET_STYLE) --source $(IN) --in $(2) --output-type $(3) $(4) \
+  --system $(SYSTEM) --stage $(1) --target $(TARGET_STYLE) --source $(IN) --in $(2) --output-type $(3) \
+  $(if $(strip $(BIBLIOGRAPHY)),--bibliography $(BIBLIOGRAPHY),) $(4) \
 | BACKEND=$(BACKEND) \
   OPENAI_MODEL=$(OPENAI_MODEL) OPENAI_TEMPERATURE=$(OPENAI_TEMPERATURE) OPENAI_SEED=$(OPENAI_SEED) \
   OLLAMA_MODEL=$(OLLAMA_MODEL) OLLAMA_HOST=$(OLLAMA_HOST) \
@@ -130,24 +137,24 @@ endef
 
 DRAFT_IN := $(IN)
 
-$(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(SYSTEM) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(BIBLIOGRAPHY) $(SYSTEM) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make draft IN=outline.md" >&2; exit 1; fi
 	@echo "Draft input: $(DRAFT_IN)"
 	@$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)
 
-$(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(SYSTEM) $(P_SMOOTH) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(P_SMOOTH) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@$(call RUN_STAGE,smooth,$(P_SMOOTH),$(DRAFT_OUT),tex,$@)
 
-$(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(SYSTEM) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@$(call RUN_STAGE,revise,$(P_REVISE),$(SMOOTH_OUT),tex,$@)
 
 # review: LaTeX in -> structured Markdown diagnostic out
-$(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(SYSTEM) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@$(call RUN_STAGE,review,$(P_REVIEW),$(REVISE_OUT),md,$@)
 
 # final: validate peer-review authority first. PASS promotes revise.tex without
 # another model call; only REVISE_REALISATION may invoke one bounded final pass.
-$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/review_decision.py tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(P_FINAL) $(TARGET_STYLE) tools/review_decision.py tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@decision="$$(python tools/review_decision.py \
 	  --review "$(REVIEW_OUT)" --revised "$(REVISE_OUT)" \
 	  --output "$(FINAL_OUT)" --diagnostic "$(ERROR_DIR)/review.md" \
@@ -163,7 +170,7 @@ $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TA
 	    ;; \
 	esac
 
-$(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(BIBLIOGRAPHY) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=outline.md" >&2; exit 1; fi
 	@echo "Summarize input: $(IN)"
 	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
