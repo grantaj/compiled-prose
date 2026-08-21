@@ -99,7 +99,7 @@ Changing a model-generated artefact does not retroactively change this source.
 
 ### Target requirements
 
-`prompts/targets/*.md` define audience- or venue-specific realisation requirements: register, reading level, formatting, citation expectations, and similar constraints.
+`prompts/targets/*.md` define audience- or venue-specific realisation requirements: register, reading level, formatting, citation expectations and presentation, and similar constraints.
 
 A target is not conceptual authority. If satisfying it requires a claim, example, item of evidence, citation, or scope choice absent from the source, the prompt contract directs the model to fail rather than invent the missing material.
 
@@ -145,7 +145,7 @@ For each stage the renderer composes one prompt in this stable order:
 7. peer-review diagnostic context, only for the conditional final-realisation stage;
 8. declared output and failure contract.
 
-For a `tex` stage with bibliography metadata, the output contract additionally fixes the mechanical citation representation: exact supplied BibTeX keys, BibLaTeX/biber, the supplied bibliography filename, and no model-authored `thebibliography` block. This is a formatting/protocol constraint, not conceptual authority.
+For a `tex` stage with bibliography metadata, the output contract additionally fixes mechanical citation plumbing: exact supplied BibTeX keys, BibLaTeX/biber, the supplied bibliography filename, and no model-authored `thebibliography` block. Citation presentation remains target-owned; parenthetical versus narrative form, author-year versus numeric presentation, and related style choices follow the selected target rather than the protocol. This is a protocol constraint, not conceptual authority.
 
 Draft and summarize normally use the authoritative source as their stage input, so the renderer avoids duplicating that payload.
 
