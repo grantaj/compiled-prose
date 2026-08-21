@@ -2,6 +2,7 @@ import re
 import shlex
 import unittest
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
@@ -12,8 +13,11 @@ MODEL_TARGETS = {"draft", "smooth", "revise", "review", "final", "summarize"}
 STALE_REFERENCES = {
     "PIPELINE_SPEC.md",
     "ERROR_HANDLING.md",
+    "context.md",
+    "error_handling.md",
     "error_handling_implementation_strategies.md",
     "example_outline.md",
+    "revised.tex",
 }
 PROMPT_ASSIGNMENTS = {
     "SYSTEM",
@@ -42,7 +46,7 @@ def _documented_make_commands(readme: str):
         yield stripped, shlex.split(stripped)
 
 
-def _command_target(tokens: list[str]) -> str | None:
+def _command_target(tokens: list[str]) -> Optional[str]:
     for token in tokens[1:]:
         if "=" in token and not token.startswith("-"):
             continue
