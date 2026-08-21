@@ -101,7 +101,12 @@ A target is not conceptual authority. If satisfying it requires a claim, example
 
 ### Derived stage artefacts
 
-`draft.tex`, `smooth.tex`, and `revise.tex` are working representations. A downstream stage receives the current representation but also receives the original source. Content that exists only because an earlier model invented it does not become authoritative by propagation.
+`draft.tex`, `smooth.tex`, and `revise.tex` are working representations. By role they:
+
+- Are inputs to later transformations but are not conceptual authority.
+- Must remain faithful to the authoritative source; content that exists only because an earlier model invented it does not become authoritative by propagation.
+
+A downstream stage therefore receives the current representation alongside the original source.
 
 ### Diagnostic context
 
