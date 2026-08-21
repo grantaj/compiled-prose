@@ -161,7 +161,7 @@ It is not authorised to:
 - invent citations;
 - resolve ambiguity without instruction.
 
-Current LLMs can violate these constraints. Calling them compilers describes the role imposed on them, not a claim that they provide formal compilation guarantees.
+The pipeline therefore treats compliance with these constraints as something to verify rather than assume. Calling an LLM a compiler describes the role imposed on it, not a claim that model execution provides formal compilation guarantees.
 
 ---
 
@@ -170,7 +170,7 @@ Current LLMs can violate these constraints. Calling them compilers describes the
 ### III.1 Conceptual art and prior conception
 
 - Conceptual art provides a precedent for locating substantial authorship in conception and specification rather than fabrication alone.
-- LeWitt states that in conceptual art planning and decisions are made beforehand and that "the idea becomes a machine that makes the art." [LeWitt 1967]
+- LeWitt characterises conceptual art as work in which planning and decisions precede execution and the idea functions as the generative mechanism for the work. [LeWitt 1967]
 - The importance of the precedent is structural: a work can be substantially conceived before its physical execution.
 
 ### III.2 Instruction and delegated execution
@@ -243,26 +243,27 @@ The problem is not convention itself but the difficulty of distinguishing what i
 
 ### IV.3 Sacred execution
 
-The original claim that academic prose treats execution as "sacred" is retained as an interpretive proposition, not as a historical fact.
+The original claim that academic prose treats execution as "sacred" is retained as an authored critical hypothesis, not as a historical or prevalence claim.
 
-- Academic culture often treats competent sentence-level production as evidence of intellectual authorship rather than merely as one means of realising it.
-- Compiled prose tests what remains of authorship when the surface prose is made replaceable while the argument is held fixed.
+- The discourse account above supports the premise that disciplinary forms participate in recognition, standing, and academic identity. [Hyland 2008; Hyland 2012; Hyland 2013]
+- The further inference made here is explicitly interpretive: where recognition attaches to competent performance of accepted prose forms, sentence-level execution can be taken as evidence of intellectual authorship rather than merely as one means of realising it.
+- Compiled prose tests that inference by making the surface prose replaceable while holding the authored argument fixed and separately inspectable.
 - In this limited sense, the experiment desacralises execution: prose remains important, but it is no longer automatically the authoritative object.
 
 ### IV.4 Liturgical prose
 
-The liturgical analogy is a deliberately critical limit case, not a description of academic writing as a whole.
+The liturgical analogy is an authored critical limit case derived from the same disciplinary-recognition premise, not a claim that academic writing generally behaves this way.
 
-In pathological cases:
+Consider a pathological case in which:
 
 - inherited linguistic forms acquire authority through correct performance;
 - insider recognition depends partly on mastery of those forms;
-- deviation can be penalised independently of underlying argument;
-- surface performance can therefore contribute to legitimacy as well as communication.
+- deviation is penalised independently of underlying argument;
+- surface performance therefore contributes to legitimacy as well as communication.
 
-Proposition: academic style can become sufficiently ritualised that correct performance partly substitutes for inspectable argumentative structure.
+Conditional proposition: if academic style becomes sufficiently ritualised in this sense, correct performance can partly substitute for inspectable argumentative structure.
 
-The claim is not that all specialised or difficult prose is ritual. Difficulty may be conceptually necessary.
+This is a critical possibility the experiment is designed to make inspectable, not a claim about how frequently academic prose behaves this way. The claim is also not that all specialised or difficult prose is ritual. Difficulty may be conceptually necessary.
 
 ### IV.5 Gesture as noise, borrowed weight, or camouflage
 
@@ -337,9 +338,9 @@ Conventional prose editing often mixes these categories in one surface operation
 
 ### VI.1 Writing can itself be thinking
 
-- Ideas often emerge through sentence-level composition.
+- A central objection is that, for some writers or kinds of work, sentence-level composition may be constitutive of thinking rather than downstream execution.
 - In exploratory, literary, philosophical, poetic, or otherwise language-dependent work, conception may not precede execution cleanly.
-- Compiled prose does not deny this; it applies where explicit upstream specification is both possible and useful.
+- Compiled prose does not deny this possibility; it applies where explicit upstream specification is both possible and useful.
 
 ### VI.2 Meaning is not fully separable from wording
 
@@ -465,7 +466,7 @@ The final essay is itself the test. If its argument remains attributable to the 
 **LeWitt 1967**  
 Sol LeWitt, "Paragraphs on Conceptual Art," *Artforum* 5, no. 10 (June 1967): 79–83.
 
-Supports the priority of conception and prior planning in conceptual art, including the formulation that "the idea becomes a machine that makes the art."
+Supports the priority of conception and prior planning in conceptual art, including LeWitt's characterization of the idea as the work's generative mechanism.
 
 **LeWitt 1971**  
 Sol LeWitt, "Doing Wall Drawings," *Art Now: New York* 3, no. 2 (June 1971).
