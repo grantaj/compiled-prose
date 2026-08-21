@@ -3,7 +3,7 @@ SHELL := /usr/bin/env bash
 
 # Load .env outside of Make (e.g., export vars in your shell) if needed.
 
-BUILD_DIR := build
+BUILD_DIR ?= build
 
 # Backend selection (can be overridden: make BACKEND=openai final)
 BACKEND ?= ollama
@@ -62,7 +62,7 @@ print-vars:
 
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	mkdir -p "$(BUILD_DIR)"
 
 define RUN_LLM
 python tools/render_prompt.py \
@@ -134,8 +134,8 @@ $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_ST
 	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
 
 clean:
-	rm -f $(DRAFT_OUT) $(SMOOTH_OUT) $(REVISE_OUT) $(REVIEW_OUT) $(FINAL_OUT) $(SUMMARY_OUT)
-	rm -rf $(ERROR_DIR)
+	rm -f "$(DRAFT_OUT)" "$(SMOOTH_OUT)" "$(REVISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(SUMMARY_OUT)"
+	rm -rf "$(ERROR_DIR)"
 
 clobber:
-	rm -rf $(BUILD_DIR)
+	rm -rf "$(BUILD_DIR)"
