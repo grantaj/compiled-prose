@@ -13,7 +13,7 @@ The repository deliberately keeps its documentation authority surface small:
 - `prompts/*.md` and `prompts/targets/*.md` — executable stage and target contracts;
 - `outline.md` — the authored conceptual source for the repository's self-example, not compiler documentation.
 
-Generated artefacts, source-audit evidence, and diagnostics are outputs or evidence about compilation, not authorities for what the source says.
+Generated artefacts, source-audit evidence, bibliography metadata, and diagnostics are outputs or evidence about compilation, not authorities for what the source says.
 
 ## Architecture
 
@@ -24,6 +24,7 @@ system contract
   + stage contract
   + target requirements
   + authoritative source
+  + optional bibliographic rendering metadata
   + derived stage input, when distinct from the source
   + diagnostic context, when applicable
   + output/failure contract
@@ -38,7 +39,7 @@ backend-independent protocol enforcement
         `--> build/errors/<stage>.md
 ```
 
-The original authoritative source is carried alongside downstream derived artefacts. Target files constrain realisation for a venue or audience; they do not supply claims, evidence, citations, examples, or scope. Peer review is diagnostic and likewise cannot become conceptual authority.
+The original authoritative source is carried alongside downstream derived artefacts. Target files constrain realisation for a venue or audience; they do not supply claims, evidence, citations, examples, or scope. Optional bibliography metadata provides stable identifiers and verified publication metadata for citations that already exist in the authoritative source; it cannot author a new citation or claim. Peer review is diagnostic and likewise cannot become conceptual authority.
 
 See `pipeline.md` for the exact stage and failure semantics.
 
@@ -55,12 +56,12 @@ You need:
 
 `jq` is optional. Python 3.9 is the minimum runtime exercised by ordinary CI.
 
-For release-candidate LaTeX validation of the self-example, also install `latexmk` and a working LaTeX distribution. Publication additionally uses `pandoc` to build the inspectable Pages site.
+For release-candidate LaTeX validation of the self-example, also install `latexmk`, `biber`, and a working LaTeX distribution with BibLaTeX support. Publication additionally uses `pandoc` to build the inspectable Pages site.
 
 For Debian/Ubuntu:
 
 ```bash
-sudo apt install make python3 curl jq latexmk texlive-latex-extra pandoc
+sudo apt install make python3 curl jq latexmk texlive-latex-extra texlive-bibtex-extra biber pandoc
 ```
 
 For macOS with Homebrew:
@@ -69,7 +70,7 @@ For macOS with Homebrew:
 brew install make python curl jq pandoc
 ```
 
-A TeX distribution that provides `latexmk` (for example MacTeX) is also required on macOS for PDF validation.
+A TeX distribution that provides `latexmk`, BibLaTeX, and `biber` (for example MacTeX) is also required on macOS for PDF validation.
 
 ## Configuration
 
@@ -132,7 +133,7 @@ The self-example source audit can also be run directly:
 make self-preflight
 ```
 
-This checks that every source citation in `outline.md` has a catalog entry, every catalog entry has dated verification evidence in `self-example/source-audit.json`, and no unverified or extra source entry is present. The audit file is release-readiness evidence only; it is not passed to model stages and does not add conceptual authority beyond `outline.md`.
+This checks that every source citation in `outline.md` has a catalog entry, every catalog entry has dated verification evidence in `self-example/source-audit.json`, and every audited source maps one-to-one to a stable entry in `self-example/references.bib`. The audit and bibliography files are release-readiness/rendering metadata only; neither adds conceptual authority beyond `outline.md`.
 
 Provider connectivity checks are deliberately separate:
 
@@ -151,13 +152,21 @@ The repository self-example has one obvious end-to-end command:
 make self
 ```
 
-`make self` first runs the keyless source preflight, deletes the transient build directory, compiles `outline.md` through the normal pipeline using the selected backend, rejects non-authoritative explicit citation labels that can be checked mechanically, and then requires `latexmk` to produce `build/final.pdf`. It does not hide or bypass the ordinary stage contracts. If `BACKEND=openai` is selected, the command makes paid API calls; no paid invocation is part of the keyless preflight.
+`make self` first runs the keyless source preflight, deletes the transient build directory, copies the audited bibliography metadata into the build, compiles `outline.md` through the normal pipeline using the selected backend, mechanically rejects invented or dropped citation keys, and then requires `latexmk`/biber to produce `build/final.pdf`. It does not hide or bypass the ordinary stage contracts. If `BACKEND=openai` is selected, the command makes paid API calls; no paid invocation is part of the keyless preflight.
 
 For generic compilation, `IN` names the authoritative conceptual source and is required for a fresh model-backed build:
 
 ```bash
 make final IN=outline.md
 ```
+
+When a project has separately verified bibliography metadata, pass it explicitly:
+
+```bash
+make final IN=outline.md BIBLIOGRAPHY=references.bib
+```
+
+The bibliography supplies rendering metadata and stable citation keys only. The authoritative source must already supply the citations and the claims they support.
 
 Run individual stages with the same source explicitly supplied:
 
@@ -183,6 +192,7 @@ By default generated files live under `build/`:
 - `build/peer_review.md`
 - `build/final.tex`
 - `build/final.pdf` after successful self-example LaTeX validation
+- `build/references.bib` during self-example compilation
 - `build/summary.tex` when `summarize` is requested
 - `build/errors/<stage>.md` for blocking diagnostics
 
@@ -192,7 +202,7 @@ The build root is configurable without changing source paths:
 make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
 ```
 
-`make validate-latex` validates an already-existing `build/final.tex` and produces `build/final.pdf`; it fails if `final.tex` is absent rather than implicitly invoking a model-backed pipeline. `make clean` removes the known generated artefacts and diagnostics from the selected build directory. `make clobber` removes that build directory entirely.
+`make validate-latex` validates an already-existing `build/final.tex` and produces `build/final.pdf`; it fails if `final.tex` is absent rather than implicitly invoking a model-backed pipeline. `make clean` removes the known generated artefacts, copied bibliography, and diagnostics from the selected build directory. `make clobber` removes that build directory entirely.
 
 ## Peer-review gate
 
@@ -210,12 +220,15 @@ Mechanical checks deliberately stop short of claiming semantic equivalence. Afte
 
 The publication workflow exposes that review as an `acceptance.html` checklist in the candidate bundle. Configure the `github-pages` GitHub Environment with the repository owner as a required reviewer. The compile job uploads `self-example-candidate-<source-sha>` before the deployment job reaches that environment, allowing the candidate to be inspected before Pages publication is approved. A failed semantic check goes back to `outline.md` for a source defect or to the compiler/prompt layer for a compiler defect; conceptual content must not be hand-patched into generated prose.
 
+For the paper view, PDF and HTML deliberately share the same `references.bib`: LaTeX resolves it through BibLaTeX/biber, while Pages passes it directly to Pandoc `--citeproc`. The HTML builder does not parse or rewrite citation commands or manufacture bibliography entries. The paper title likewise comes from `final.tex` rather than a Pages-specific replacement title.
+
 ## Retained self-example artefacts
 
 `build/` remains transient and generated prose is not committed to the source tree. The canonical current worked-example evidence is the accepted Pages deployment and its inspectable candidate bundle. It contains:
 
 - the authoritative `outline.md`;
 - dated `source-audit.json` evidence for the supplied references;
+- `references.bib`, containing the stable verified bibliographic rendering metadata;
 - draft, smooth, and revise stage artefacts;
 - the final peer-review report;
 - final generated LaTeX;
@@ -261,7 +274,7 @@ Recommended repository configuration:
 4. Configure the `github-pages` environment to require the repository owner as reviewer, so the compiled candidate can be adversarially checked before deployment.
 5. Start publication manually from **Actions -> Compile and publish self-example -> Run workflow**, explicitly authorize paid compilation, approve the `paid-compilation` environment, inspect the uploaded acceptance candidate after compilation, and approve `github-pages` only if the source-authority checklist passes.
 
-One approved successful compilation invokes the configured provider for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The workflow currently caps each model-backed stage at 20,000 output tokens and performs no automatic retry.
+One approved successful compilation invokes the configured provider for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The end-to-end test workflow currently uses `gpt-5-mini`, caps each model-backed stage at 10,000 output tokens, and performs no automatic retry.
 
 ## Project intent
 
