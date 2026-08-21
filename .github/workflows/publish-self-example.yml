@@ -10,6 +10,17 @@ on:
         required: true
         type: boolean
         default: false
+      openai_model:
+        description: "OpenAI model"
+        required: true
+        type: choice
+        default: gpt-5-mini
+        options:
+          - gpt-5-mini
+          - gpt-5
+          - gpt-5.6-luna
+          - gpt-5.6-terra
+          - gpt-5.6-sol
 
 permissions:
   contents: read
@@ -50,9 +61,7 @@ jobs:
       contents: read
     env:
       BACKEND: openai
-      # End-to-end release-plumbing test: prefer the cheaper capable model.
-      # Release-quality prose can deliberately use a stronger model in a later change.
-      OPENAI_MODEL: gpt-5-mini
+      OPENAI_MODEL: ${{ inputs.openai_model }}
       TARGET_STYLE: prompts/targets/journal_academic.md
       OPENAI_MAX_OUTPUT_TOKENS: "10000"
     steps:
@@ -63,6 +72,13 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+
+      - name: Validate selected OpenAI model
+        run: |
+          case "$OPENAI_MODEL" in
+            gpt-5-mini|gpt-5|gpt-5.6-luna|gpt-5.6-terra|gpt-5.6-sol) ;;
+            *) echo "Unsupported OpenAI model: $OPENAI_MODEL" >&2; exit 2 ;;
+          esac
 
       - name: Install compiler and release-validation dependencies
         run: |

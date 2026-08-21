@@ -4,6 +4,10 @@ Compiled Prose is a small, file-driven compiler pipeline for academic and techni
 
 The compiler analogy is architectural, not a promise of byte-for-byte deterministic generation. The project aims for a predictable, auditable transformation process whose authority and failure rules are stable even when model output varies.
 
+## Published self-example
+
+The repository publishes its own compiled essay as the worked example: [view the current self-example on GitHub Pages](https://grantaj.github.io/compiled-prose/). The Pages site exposes the final essay alongside the authoritative outline, peer-review diagnostic, human acceptance review, PDF/raw LaTeX, and build provenance. It is downstream release evidence; `outline.md` remains the conceptual authority.
+
 ## Canonical documentation
 
 The repository deliberately keeps its documentation authority surface small:
@@ -193,8 +197,11 @@ By default generated files live under `build/`:
 - `build/final.tex`
 - `build/final.pdf` after successful self-example LaTeX validation
 - `build/references.bib` during self-example compilation
+- `build/openai-usage.jsonl` when OpenAI responses report token usage
 - `build/summary.tex` when `summarize` is requested
 - `build/errors/<stage>.md` for blocking diagnostics
+
+The OpenAI usage log is transient observability data. `make clean` and `make clobber` remove it, and it is not part of the accepted Pages candidate.
 
 The build root is configurable without changing source paths:
 
@@ -202,7 +209,7 @@ The build root is configurable without changing source paths:
 make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
 ```
 
-`make validate-latex` validates an already-existing `build/final.tex` and produces `build/final.pdf`; it fails if `final.tex` is absent rather than implicitly invoking a model-backed pipeline. `make clean` removes the known generated artefacts, copied bibliography, and diagnostics from the selected build directory. `make clobber` removes that build directory entirely.
+`make validate-latex` validates an already-existing `build/final.tex` and produces `build/final.pdf`; it fails if `final.tex` is absent rather than implicitly invoking a model-backed pipeline. `make clean` removes the known generated artefacts, copied bibliography, usage log, and diagnostics from the selected build directory. `make clobber` removes that build directory entirely.
 
 ## Peer-review gate
 
@@ -266,15 +273,21 @@ Ordinary CI is deliberately keyless. Pushes and pull requests run `make check` a
 
 Paid self-example compilation is a separate manual publication path in `.github/workflows/publish-self-example.yml`. It has only a `workflow_dispatch` trigger, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. A successful approved run executes `make self`, builds the inspectable candidate bundle, and waits at the separately protected `github-pages` environment before deployment; generated prose is not committed to the source tree.
 
+Manual dispatch includes an allowlisted OpenAI model selector. It currently offers `gpt-5-mini`, `gpt-5`, `gpt-5.6-luna`, `gpt-5.6-terra`, and `gpt-5.6-sol`; `gpt-5-mini` remains the default so adding the selector does not silently increase spending. The selected value is validated again before the provider-call step, so an unexpected model identifier fails before any paid request.
+
+Each successful OpenAI response records its stage, model, and API-reported token usage in the transient build usage log. After every paid compilation attempt, including failures, the workflow renders per-stage and total token usage plus estimated cost into the GitHub Actions step summary. Unknown model pricing is reported as `N/A` rather than guessed, and the estimate is explicitly not a billing record. This accounting makes no additional provider call. Pricing for the selectable GPT-5.6 family follows the provider's published short-context rates and applies the published long-context multiplier above 272,000 input tokens.
+
+If paid compilation fails, any `build/errors/*.md` diagnostics are printed into the Actions log and the available build/source/audit/bibliography evidence is retained as a 90-day failure artifact. A failed compilation never proceeds to the publication candidate or Pages deployment.
+
 Recommended repository configuration:
 
 1. Create the `paid-compilation` environment, require the repository owner as reviewer, and restrict it to `main`.
 2. Store `OPENAI_API_KEY` as an environment secret under `paid-compilation` rather than exposing it to ordinary CI.
 3. Configure GitHub Pages to publish from **GitHub Actions**.
 4. Configure the `github-pages` environment to require the repository owner as reviewer, so the compiled candidate can be adversarially checked before deployment.
-5. Start publication manually from **Actions -> Compile and publish self-example -> Run workflow**, explicitly authorize paid compilation, approve the `paid-compilation` environment, inspect the uploaded acceptance candidate after compilation, and approve `github-pages` only if the source-authority checklist passes.
+5. Start publication manually from **Actions -> Compile and publish self-example -> Run workflow**, select the OpenAI model, explicitly authorize paid compilation, approve the `paid-compilation` environment, inspect the uploaded acceptance candidate after compilation, and approve `github-pages` only if the source-authority checklist passes.
 
-One approved successful compilation invokes the configured provider for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The end-to-end test workflow currently uses `gpt-5-mini`, caps each model-backed stage at 10,000 output tokens, and performs no automatic retry.
+One approved successful compilation invokes the selected model for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The workflow defaults to `gpt-5-mini`, caps each model-backed stage at 10,000 output tokens, and performs no automatic retry.
 
 ## Project intent
 
