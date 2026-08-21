@@ -4,67 +4,12 @@
   "verified_on": "2026-08-21",
   "purpose": "Release-readiness evidence only. This file does not add conceptual authority; outline.md remains the source used by the compiler.",
   "sources": [
-    {
-      "citation": "LeWitt 1967",
-      "metadata_status": "verified",
-      "claim_support_status": "verified",
-      "checked_against": [
-        "https://www.moma.org/moma_learning/docs/MAI8_Full.pdf",
-        "https://plato.stanford.edu/archives/spr2024/entries/conceptual-art/",
-        "https://monoskop.org/images/3/3d/LeWitt_Sol_1967_1999_Paragraphs_on_Conceptual_Art.pdf"
-      ]
-    },
-    {
-      "citation": "LeWitt 1971",
-      "metadata_status": "verified",
-      "claim_support_status": "verified",
-      "checked_against": [
-        "https://www.moma.org/documents/moma_catalogue_1971_300297572.pdf",
-        "https://www.pacegallery.com/artists/sol-lewitt/",
-        "https://digital.nga.gov.au/archive/americanmasters/works.cfm.html"
-      ]
-    },
-    {
-      "citation": "Lippard and Chandler 1968",
-      "metadata_status": "verified",
-      "claim_support_status": "verified",
-      "checked_against": [
-        "https://www.themodern.org/sites/default/files/lippard1968.pdf",
-        "https://www.max-neuhaus.estate/en/bibliography/press/lippard-lucy-and-john-chandler-the-dematerialization-of-art-art-international-12-no-2-february-1968-31-36-"
-      ]
-    },
-    {
-      "citation": "Hyland 2008",
-      "metadata_status": "verified",
-      "claim_support_status": "verified",
-      "checked_against": [
-        "https://www.cambridge.org/core/journals/language-teaching/article/abs/genre-and-academic-writing-in-the-disciplines/20C6FE151804E313CB52D7C92F31B311"
-      ]
-    },
-    {
-      "citation": "Hyland 2012",
-      "metadata_status": "verified",
-      "claim_support_status": "verified",
-      "checked_against": [
-        "https://www.cambridge.org/core/books/disciplinary-identities/E019C5D492BFF1243FB836AC9B669C26"
-      ]
-    },
-    {
-      "citation": "Hyland 2013",
-      "metadata_status": "verified",
-      "claim_support_status": "verified",
-      "checked_against": [
-        "https://www.cambridge.org/core/journals/language-teaching/article/abs/writing-in-the-university-education-knowledge-and-reputation/7B492A172022246498AEEC470DA461D8"
-      ]
-    },
-    {
-      "citation": "ICMJE 2026",
-      "metadata_status": "verified",
-      "claim_support_status": "verified",
-      "checked_against": [
-        "https://www.icmje.org/recommendations/",
-        "https://www.icmje.org/recommendations/browse/artificial-intelligence/ai-use-by-authors.html"
-      ]
-    }
+    {"citation":"LeWitt 1967","bib_key":"lewitt1967","metadata_status":"verified","claim_support_status":"verified","checked_against":["https://www.moma.org/moma_learning/docs/MAI8_Full.pdf","https://plato.stanford.edu/archives/spr2024/entries/conceptual-art/","https://monoskop.org/images/3/3d/LeWitt_Sol_1967_1999_Paragraphs_on_Conceptual_Art.pdf"]},
+    {"citation":"LeWitt 1971","bib_key":"lewitt1971","metadata_status":"verified","claim_support_status":"verified","checked_against":["https://www.moma.org/documents/moma_catalogue_1971_300297572.pdf","https://www.pacegallery.com/artists/sol-lewitt/","https://digital.nga.gov.au/archive/americanmasters/works.cfm.html"]},
+    {"citation":"Lippard and Chandler 1968","bib_key":"lippard-chandler1968","metadata_status":"verified","claim_support_status":"verified","checked_against":["https://www.themodern.org/sites/default/files/lippard1968.pdf","https://www.max-neuhaus.estate/en/bibliography/press/lippard-lucy-and-john-chandler-the-dematerialization-of-art-art-international-12-no-2-february-1968-31-36-"]},
+    {"citation":"Hyland 2008","bib_key":"hyland2008","metadata_status":"verified","claim_support_status":"verified","checked_against":["https://www.cambridge.org/core/journals/language-teaching/article/abs/genre-and-academic-writing-in-the-disciplines/20C6FE151804E313CB52D7C92F31B311"]},
+    {"citation":"Hyland 2012","bib_key":"hyland2012","metadata_status":"verified","claim_support_status":"verified","checked_against":["https://www.cambridge.org/core/books/disciplinary-identities/E019C5D492BFF1243FB836AC9B669C26"]},
+    {"citation":"Hyland 2013","bib_key":"hyland2013","metadata_status":"verified","claim_support_status":"verified","checked_against":["https://www.cambridge.org/core/journals/language-teaching/article/abs/writing-in-the-university-education-knowledge-and-reputation/7B492A172022246498AEEC470DA461D8"]},
+    {"citation":"ICMJE 2026","bib_key":"icmje2026","metadata_status":"verified","claim_support_status":"verified","checked_against":["https://www.icmje.org/recommendations/","https://www.icmje.org/recommendations/browse/artificial-intelligence/ai-use-by-authors.html"]}
   ]
 }
