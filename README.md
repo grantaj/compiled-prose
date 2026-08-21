@@ -151,7 +151,7 @@ The repository self-example has one obvious end-to-end command:
 make self
 ```
 
-`make self` first runs the keyless source preflight, deletes the transient build directory, compiles `outline.md` through the normal pipeline using the selected backend, checks the final artefact against the supplied citation authority, and then requires `latexmk` to produce `build/final.pdf`. It does not hide or bypass the ordinary stage contracts. If `BACKEND=openai` is selected, the command makes paid API calls; no paid invocation is part of the keyless preflight.
+`make self` first runs the keyless source preflight, deletes the transient build directory, compiles `outline.md` through the normal pipeline using the selected backend, rejects non-authoritative explicit citation labels that can be checked mechanically, and then requires `latexmk` to produce `build/final.pdf`. It does not hide or bypass the ordinary stage contracts. If `BACKEND=openai` is selected, the command makes paid API calls; no paid invocation is part of the keyless preflight.
 
 For generic compilation, `IN` names the authoritative conceptual source and is required for a fresh model-backed build:
 
@@ -206,7 +206,7 @@ Malformed or internally inconsistent review status also fails closed. The review
 
 ## Self-example release acceptance
 
-Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final essay with `outline.md` and confirm that no material claim was introduced without source authority, no proposition was silently strengthened or weakened, no example/theory/citation/historical claim was added downstream, peer review did not expand scope, and important qualifications and uncertainty were preserved.
+Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final essay with `outline.md` and confirm that no material claim was introduced without source authority, no proposition was silently strengthened or weakened, no example/theory/citation/historical claim was added downstream, every source-supplied citation remains present and attached to the claim it supports, peer review did not expand scope, and important qualifications and uncertainty were preserved.
 
 The publication workflow exposes that review as an `acceptance.html` checklist in the candidate bundle. Configure the `github-pages` GitHub Environment with the repository owner as a required reviewer. The compile job uploads `self-example-candidate-<source-sha>` before the deployment job reaches that environment, allowing the candidate to be inspected before Pages publication is approved. A failed semantic check goes back to `outline.md` for a source defect or to the compiler/prompt layer for a compiler defect; conceptual content must not be hand-patched into generated prose.
 
