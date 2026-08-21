@@ -440,16 +440,22 @@ Compiled prose is simultaneously:
 - a model of writing;
 - a small technical system;
 - an art-informed experiment in the location of authorship;
-- a critical instrument for examining academic prose;
-- a method for making conceptual revision more explicit.
+- a critical instrument for examining academic prose.
 
-The central claim is limited but consequential:
+Its central claim is limited but consequential:
 
-**in forms of writing where conceptual structure can be made sufficiently explicit, the authoritative intellectual artefact need not be identical with its surface prose realisation.**
+**In forms of writing where conceptual structure can be made sufficiently explicit, the authoritative intellectual artefact need not be identical with its surface prose realisation.**
 
-The broader critical claim is that treating prose as compilable exposes which parts of academic writing are conceptually necessary and which are conventional performance.
+Conceptual art supplies a precedent for separating conception from execution. Academic discourse research shows that linguistic form also performs disciplinary and social functions, so surface prose cannot simply be treated as a neutral container. Compiled prose brings these observations together by making conceptual source and linguistic performance independently visible.
 
-The essay does not need to prove that all execution is dispensable. It needs to make the distinction inspectable.
+The objective is not to abolish prose, style, convention, or authorship. It is to separate concerns that conventional writing often fuses:
+
+- conception from execution;
+- semantic structure from linguistic realisation;
+- intellectual responsibility from causal production of sentences;
+- disciplinary convention from conceptual necessity.
+
+The final essay is itself the test. If its argument remains attributable to the human author while its sentences are machine-realised from a public specification, the experiment has made its central question concrete: where, exactly, is the work?
 
 ---
 
@@ -470,42 +476,28 @@ Supports the distinction among artist, plan, draftsman, and realised work; deleg
 **Lippard and Chandler 1968**  
 Lucy R. Lippard and John Chandler, "The Dematerialization of Art," *Art International* 12, no. 2 (February 1968): 31–36.
 
-Supports the wider conceptual-art context in which material execution or objecthood was displaced from being the sole locus of artistic work.
+Provides contemporary context for the wider conceptual-art movement away from treating the material object as the sole locus of artistic work.
 
-### Academic discourse and disciplinary writing
+### Academic discourse
 
 **Hyland 2008**  
 Ken Hyland, "Genre and Academic Writing in the Disciplines," *Language Teaching* 41, no. 4 (2008): 543–562. DOI: 10.1017/S0261444808005235.
 
-Supports the claim that academic genres are community-based conventions and that successful texts use forms familiar and convincing to disciplinary communities.
+Supports the account of genre as community-based convention and the role of familiar disciplinary forms in successful academic texts.
 
 **Hyland 2012**  
-Ken Hyland, *Disciplinary Identities: Individuality and Community in Academic Discourse*. Cambridge University Press, 2012.
+Ken Hyland, *Disciplinary Identities: Individuality and Community in Academic Discourse*. Cambridge: Cambridge University Press, 2012.
 
-Supports the relation among academic discourse, disciplinary practice, community, identity, and professional participation.
+Supports the account of disciplinary discourse as a site of identity, positioning, conformity, individuality, and legitimate participation in academic communities.
 
 **Hyland 2013**  
 Ken Hyland, "Writing in the University: Education, Knowledge and Reputation," *Language Teaching* 46, no. 1 (2013): 53–70. DOI: 10.1017/S0261444811000036.
 
-Supports the claim that specialised academic literacies are embedded in disciplinary beliefs and practices and participate in constructing knowledge, professional standing, and academic identity.
+Supports the claim that specialist academic literacies are embedded in disciplinary practice and central to knowledge construction and professional academic life.
 
-### Publishing and responsibility
+### AI-assisted academic authorship
 
 **ICMJE 2026**  
-International Committee of Medical Journal Editors, "Use of Artificial Intelligence in Publishing," in *Recommendations for the Conduct, Reporting, Editing, and Publication of Scholarly Work in Medical Journals*, updated January 2026.
+International Committee of Medical Journal Editors, *Recommendations for the Conduct, Reporting, Editing, and Publication of Scholarly Work in Medical Journals*, current 2026 recommendations, sections on authorship and use of artificial intelligence in publishing.
 
-Supports the practical distinction between AI assistance and accountable human authorship: AI systems are not authors; use should be disclosed; human authors remain responsible for generated material.
-
----
-
-## Compilation notes for this source
-
-These notes are source-level constraints, not compiler prompts.
-
-- Do not inflate the argument into a universal claim about writing.
-- Preserve the distinction between interpretive propositions and externally supported claims.
-- Do not present the liturgical or gesture vocabulary as established empirical terminology unless a source explicitly supports that move.
-- Do not imply that conceptual art straightforwardly proves the prose model; it supplies precedent and provocation.
-- Do not treat replaceability of prose as proof that prose is aesthetically unimportant.
-- Maintain the distinction between authorship and responsibility.
-- Treat failure to compile faithfully as diagnostically useful rather than as something to hide.
+Supports the limited contemporary example that AI assistance does not transfer responsibility away from human authors and should be disclosed. It is not treated as a universal account of academic authorship.
