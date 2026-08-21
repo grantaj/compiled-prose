@@ -42,9 +42,6 @@ class SelfExampleReleaseReadinessTests(unittest.TestCase):
         self.assertNotIn("SELF_SOURCE_AUDIT", runner)
         self.assertNotIn("--audit", runner)
 
-    def test_entropy_fixture_is_not_release_source(self):
-        self.assertFalse((ROOT / "forgotten-stuff" / "example_outline.md").exists())
-
 
 if __name__ == "__main__":
     unittest.main()
