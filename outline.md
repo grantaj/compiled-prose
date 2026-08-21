@@ -161,7 +161,7 @@ It is not authorised to:
 - invent citations;
 - resolve ambiguity without instruction.
 
-Current LLMs can violate these constraints. Calling them compilers describes the role imposed on them, not a claim that they provide formal compilation guarantees.
+The pipeline therefore treats compliance with these constraints as something to verify rather than assume. Calling an LLM a compiler describes the role imposed on it, not a claim that model execution provides formal compilation guarantees.
 
 ---
 
@@ -170,7 +170,7 @@ Current LLMs can violate these constraints. Calling them compilers describes the
 ### III.1 Conceptual art and prior conception
 
 - Conceptual art provides a precedent for locating substantial authorship in conception and specification rather than fabrication alone.
-- LeWitt states that in conceptual art planning and decisions are made beforehand and that "the idea becomes a machine that makes the art." [LeWitt 1967]
+- LeWitt characterises conceptual art as work in which planning and decisions precede execution and the idea functions as the generative mechanism for the work. [LeWitt 1967]
 - The importance of the precedent is structural: a work can be substantially conceived before its physical execution.
 
 ### III.2 Instruction and delegated execution
@@ -243,26 +243,27 @@ The problem is not convention itself but the difficulty of distinguishing what i
 
 ### IV.3 Sacred execution
 
-The original claim that academic prose treats execution as "sacred" is retained as an interpretive proposition, not as a historical fact.
+The original claim that academic prose treats execution as "sacred" is retained as an authored critical hypothesis, not as a historical or prevalence claim.
 
-- Academic culture often treats competent sentence-level production as evidence of intellectual authorship rather than merely as one means of realising it.
-- Compiled prose tests what remains of authorship when the surface prose is made replaceable while the argument is held fixed.
+- The discourse account above supports the premise that disciplinary forms participate in recognition, standing, and academic identity. [Hyland 2008; Hyland 2012; Hyland 2013]
+- The further inference made here is explicitly interpretive: where recognition attaches to competent performance of accepted prose forms, sentence-level execution can be taken as evidence of intellectual authorship rather than merely as one means of realising it.
+- Compiled prose tests that inference by making the surface prose replaceable while holding the authored argument fixed and separately inspectable.
 - In this limited sense, the experiment desacralises execution: prose remains important, but it is no longer automatically the authoritative object.
 
 ### IV.4 Liturgical prose
 
-The liturgical analogy is a deliberately critical limit case, not a description of academic writing as a whole.
+The liturgical analogy is an authored critical limit case derived from the same disciplinary-recognition premise, not a claim that academic writing generally behaves this way.
 
-In pathological cases:
+Consider a pathological case in which:
 
 - inherited linguistic forms acquire authority through correct performance;
 - insider recognition depends partly on mastery of those forms;
-- deviation can be penalised independently of underlying argument;
-- surface performance can therefore contribute to legitimacy as well as communication.
+- deviation is penalised independently of underlying argument;
+- surface performance therefore contributes to legitimacy as well as communication.
 
-Proposition: academic style can become sufficiently ritualised that correct performance partly substitutes for inspectable argumentative structure.
+Conditional proposition: if academic style becomes sufficiently ritualised in this sense, correct performance can partly substitute for inspectable argumentative structure.
 
-The claim is not that all specialised or difficult prose is ritual. Difficulty may be conceptually necessary.
+This is a critical possibility the experiment is designed to make inspectable, not a claim about how frequently academic prose behaves this way. The claim is also not that all specialised or difficult prose is ritual. Difficulty may be conceptually necessary.
 
 ### IV.5 Gesture as noise, borrowed weight, or camouflage
 
@@ -337,9 +338,9 @@ Conventional prose editing often mixes these categories in one surface operation
 
 ### VI.1 Writing can itself be thinking
 
-- Ideas often emerge through sentence-level composition.
+- A central objection is that, for some writers or kinds of work, sentence-level composition may be constitutive of thinking rather than downstream execution.
 - In exploratory, literary, philosophical, poetic, or otherwise language-dependent work, conception may not precede execution cleanly.
-- Compiled prose does not deny this; it applies where explicit upstream specification is both possible and useful.
+- Compiled prose does not deny this possibility; it applies where explicit upstream specification is both possible and useful.
 
 ### VI.2 Meaning is not fully separable from wording
 
@@ -439,22 +440,16 @@ Compiled prose is simultaneously:
 - a model of writing;
 - a small technical system;
 - an art-informed experiment in the location of authorship;
-- a critical instrument for examining academic prose.
+- a critical instrument for examining academic prose;
+- a method for making conceptual revision more explicit.
 
-Its central claim is limited but consequential:
+The central claim is limited but consequential:
 
-**In forms of writing where conceptual structure can be made sufficiently explicit, the authoritative intellectual artefact need not be identical with its surface prose realisation.**
+**in forms of writing where conceptual structure can be made sufficiently explicit, the authoritative intellectual artefact need not be identical with its surface prose realisation.**
 
-Conceptual art supplies a precedent for separating conception from execution. Academic discourse research shows that linguistic form also performs disciplinary and social functions, so surface prose cannot simply be treated as a neutral container. Compiled prose brings these observations together by making conceptual source and linguistic performance independently visible.
+The broader critical claim is that treating prose as compilable exposes which parts of academic writing are conceptually necessary and which are conventional performance.
 
-The objective is not to abolish prose, style, convention, or authorship. It is to separate concerns that conventional writing often fuses:
-
-- conception from execution;
-- semantic structure from linguistic realisation;
-- intellectual responsibility from causal production of sentences;
-- disciplinary convention from conceptual necessity.
-
-The final essay is itself the test. If its argument remains attributable to the human author while its sentences are machine-realised from a public specification, the experiment has made its central question concrete: where, exactly, is the work?
+The essay does not need to prove that all execution is dispensable. It needs to make the distinction inspectable.
 
 ---
 
@@ -475,28 +470,42 @@ Supports the distinction among artist, plan, draftsman, and realised work; deleg
 **Lippard and Chandler 1968**  
 Lucy R. Lippard and John Chandler, "The Dematerialization of Art," *Art International* 12, no. 2 (February 1968): 31–36.
 
-Provides contemporary context for the wider conceptual-art movement away from treating the material object as the sole locus of artistic work.
+Supports the wider conceptual-art context in which material execution or objecthood was displaced from being the sole locus of artistic work.
 
-### Academic discourse
+### Academic discourse and disciplinary writing
 
 **Hyland 2008**  
 Ken Hyland, "Genre and Academic Writing in the Disciplines," *Language Teaching* 41, no. 4 (2008): 543–562. DOI: 10.1017/S0261444808005235.
 
-Supports the account of genre as community-based convention and the role of familiar disciplinary forms in successful academic texts.
+Supports the claim that academic genres are community-based conventions and that successful texts use forms familiar and convincing to disciplinary communities.
 
 **Hyland 2012**  
-Ken Hyland, *Disciplinary Identities: Individuality and Community in Academic Discourse*. Cambridge: Cambridge University Press, 2012.
+Ken Hyland, *Disciplinary Identities: Individuality and Community in Academic Discourse*. Cambridge University Press, 2012.
 
-Supports the account of disciplinary discourse as a site of identity, positioning, conformity, individuality, and legitimate participation in academic communities.
+Supports the relation among academic discourse, disciplinary practice, community, identity, and professional participation.
 
 **Hyland 2013**  
 Ken Hyland, "Writing in the University: Education, Knowledge and Reputation," *Language Teaching* 46, no. 1 (2013): 53–70. DOI: 10.1017/S0261444811000036.
 
-Supports the claim that specialist academic literacies are embedded in disciplinary practice and central to knowledge construction and professional academic life.
+Supports the claim that specialised academic literacies are embedded in disciplinary beliefs and practices and participate in constructing knowledge, professional standing, and academic identity.
 
-### AI-assisted academic authorship
+### Publishing and responsibility
 
 **ICMJE 2026**  
-International Committee of Medical Journal Editors, *Recommendations for the Conduct, Reporting, Editing, and Publication of Scholarly Work in Medical Journals*, current 2026 recommendations, sections on authorship and use of artificial intelligence in publishing.
+International Committee of Medical Journal Editors, "Use of Artificial Intelligence in Publishing," in *Recommendations for the Conduct, Reporting, Editing, and Publication of Scholarly Work in Medical Journals*, updated January 2026.
 
-Supports the limited contemporary example that AI assistance does not transfer responsibility away from human authors and should be disclosed. It is not treated as a universal account of academic authorship.
+Supports the practical distinction between AI assistance and accountable human authorship: AI systems are not authors; use should be disclosed; human authors remain responsible for generated material.
+
+---
+
+## Compilation notes for this source
+
+These notes are source-level constraints, not compiler prompts.
+
+- Do not inflate the argument into a universal claim about writing.
+- Preserve the distinction between interpretive propositions and externally supported claims.
+- Do not present the liturgical or gesture vocabulary as established empirical terminology unless a source explicitly supports that move.
+- Do not imply that conceptual art straightforwardly proves the prose model; it supplies precedent and provocation.
+- Do not treat replaceability of prose as proof that prose is aesthetically unimportant.
+- Maintain the distinction between authorship and responsibility.
+- Treat failure to compile faithfully as diagnostically useful rather than as something to hide.
