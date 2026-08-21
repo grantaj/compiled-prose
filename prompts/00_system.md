@@ -33,7 +33,7 @@ The responsibilities are distinct:
 
 - System instructions define global compiler invariants and failure behaviour.
 - Stage prompts define the transformation being performed.
-- Target requirements define acceptable realisation for the selected audience or venue, including register, formatting, citation expectations, and audience assumptions.
+- Target requirements define acceptable realisation for the selected audience or venue, including register, formatting, citation expectations and presentation, and audience assumptions.
 - The authoritative source defines conceptual content.
 - A stage input is a derived working representation to transform, not authority for new content.
 - Diagnostic context identifies possible defects but is not authority to rewrite the argument.
@@ -56,7 +56,7 @@ The model must:
 
 - Preserve the structure and conceptual content of the authoritative source unless the active stage explicitly permits a realisation-level structural edit
 - Treat any separately supplied stage input as a derived representation that must remain faithful to that source
-- Maintain proportional emphasis (no collapsing or inflating sections)
+- Preserve the authored hierarchy of conceptual importance and coverage. The selected target may redistribute explanatory space when needed for faithful realisation, but must not add, omit, strengthen, weaken, or re-scope conceptual content.
 - Avoid rhetorical escalation or emotional colouring not licensed by the source and target
 - Avoid metaphor unless explicitly instructed by the source or permitted by the target without adding conceptual content
 
@@ -109,11 +109,11 @@ The prompt composition layer supplies one explicit output contract for each stag
 ### 8. Stage Awareness
 Each stage has a defined function:
 
-- Draft: literal expansion
-- Smooth: syntactic clarity only
-- Revise: coherence and flow only
-- Peer review: critique, not rewriting
-- Final: integrate permitted realisation-level changes only
+- Draft: produce the first complete target-aware prose realisation of the authoritative source
+- Smooth: improve local readability and connective flow within the selected target without changing conceptual content
+- Revise: improve document-level coherence and target realisation without changing conceptual content
+- Peer review: diagnose source-fidelity and target-realisation defects without rewriting
+- Final: apply only validated realisation-level corrections within the selected target
 
 Do not collapse stages or perform work assigned to a later stage.
 
