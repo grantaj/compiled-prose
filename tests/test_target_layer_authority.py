@@ -21,6 +21,29 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("may redistribute explanatory space", system)
         self.assertIn("must not add, omit, strengthen, weaken, or re-scope", system)
 
+    def test_system_makes_target_authoritative_for_realisation_dimensions(self):
+        system = text("prompts/00_system.md")
+        self.assertIn(
+            "Within realisation responsibility, and subject to the explicit output protocol, the selected target is authoritative",
+            system,
+        )
+        for dimension in (
+            "audience",
+            "venue",
+            "tone",
+            "register",
+            "reading level",
+            "rhetorical form",
+            "paragraph/section granularity",
+            "citation presentation",
+        ):
+            with self.subTest(dimension=dimension):
+                self.assertIn(dimension, system)
+        self.assertIn(
+            "Generic stage instructions may define permitted transformations but must not impose conflicting defaults",
+            system,
+        )
+
     def test_system_stage_awareness_describes_transformation_boundaries(self):
         system = text("prompts/00_system.md")
         for leaked_summary in (
@@ -33,6 +56,25 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("Draft: produce the first complete target-aware prose realisation", system)
         self.assertIn("Smooth: improve local readability and connective flow", system)
         self.assertIn("Revise: improve document-level coherence and target realisation", system)
+
+    def test_explicit_target_structural_choice_is_not_overridden_by_draft_defaults(self):
+        target = """# Synthetic target
+Use frequent short sections and LaTeX lists when they improve this target's readability.
+Do not change authored concepts, grouping, order, or scope to create them.
+"""
+        rendered = render_prompt(
+            system=text("prompts/00_system.md"),
+            target=target,
+            stage=text("prompts/10_draft.md"),
+            source_text="# Source\n- First authored step.\n- Second authored step.",
+            input_text="# Source\n- First authored step.\n- Second authored step.",
+            output_type="tex",
+        )
+        self.assertIn("Use frequent short sections and LaTeX lists", rendered)
+        self.assertIn("the selected target is authoritative", rendered)
+        self.assertNotIn("Avoid list formatting by default", rendered)
+        self.assertNotIn("Prefer a small number of coherent publication sections", rendered)
+        self.assertNotIn("Only emit LaTeX lists when the authoritative source explicitly specifies list structure", rendered)
 
     def test_peer_review_support_defects_are_target_or_source_relative(self):
         review = text("prompts/40_peer_review.md")
