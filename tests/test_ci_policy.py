@@ -53,6 +53,24 @@ class CiSpendingPolicyTests(unittest.TestCase):
             content.index("Paid compilation"),
         )
 
+    def test_paid_workflow_uses_release_ready_self_command(self):
+        content = PAID_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("run: make check", content)
+        self.assertIn('TARGET_STYLE="$TARGET_STYLE" self', content)
+        self.assertIn("latexmk", content)
+        self.assertIn("--source-audit self-example/source-audit.json", content)
+
+    def test_candidate_is_retained_before_human_gated_deployment(self):
+        content = PAID_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("actions/upload-artifact@v4", content)
+        self.assertIn("name: self-example-candidate-${{ github.sha }}", content)
+        self.assertIn("retention-days: 90", content)
+        self.assertIn("name: github-pages", content)
+        self.assertLess(
+            content.index("Upload self-example acceptance candidate"),
+            content.index("deploy:"),
+        )
+
     def test_ordinary_ci_is_keyless_and_read_only(self):
         content = (WORKFLOWS / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("contents: read", content)
