@@ -1,102 +1,88 @@
-# Introduction
+# Compiled Prose
 
-This essay concerns academic and technical writing: forms of prose whose primary function is the reliable transmission of concepts, arguments, and procedures. In these contexts, clarity is primal. Expressive gesture is not merely optional but often counterproductive—at best introducing noise, and at worst functioning as borrowed weight, rhetorical camouflage, or obfuscation. The essay proposes compiled prose as a model in which conceptual structure is authored explicitly and upstream, while natural language is treated as a compiled artefact rather than a site of primary expression. In this model, the detailed outline functions as source code, encoding the logic, dependencies, and invariants of the argument; prose becomes machine code, a deterministic rendering optimised for legibility and compatibility with disciplinary norms, institutional conventions, and reader expectations. This is not a claim that prose is unimportant, nor that meaning is fully reducible to structure, nor that expressive writing is obsolete. It is a claim about separation of concerns: in domains where misunderstanding carries real epistemic or material cost, treating style, voice, and register as externalised constraints—akin to compilation targets or stylesheets—improves reproducibility, auditability, and revision without erasing conceptual authorship. The essay is descriptive rather than prescriptive. It names a practice already emerging, often implicitly and unevenly, under the pressures of scale, collaboration, and AI-assisted execution, and asks what follows if we acknowledge it explicitly rather than continuing to treat linguistic execution as a sacred site of authorship.
+Compiled Prose is a small, file-driven compiler pipeline for academic and technical prose. The human-authored source carries the claims, argument, structure, evidence, citations, and unresolved choices. Model-backed stages realise that source as prose for a selected target, but their outputs remain derived artefacts rather than new conceptual authority.
 
+The compiler analogy is architectural, not a promise of byte-for-byte deterministic generation. The project aims for a predictable, auditable transformation process whose authority and failure rules are stable even when model output varies.
+
+## Canonical documentation
+
+The repository deliberately keeps its documentation authority surface small:
+
+- `README.md` — project concept, setup, quick start, and release-facing operation;
+- `pipeline.md` — normative pipeline semantics and the boundary between mechanically enforced rules, prompt contracts, and design constraints;
+- `prompts/*.md` and `prompts/targets/*.md` — executable stage and target contracts;
+- `outline.md` — the authored conceptual source for the repository's self-example, not compiler documentation.
+
+Generated artefacts and diagnostics are outputs of compilation, not authorities for what the source says.
+
+## Architecture
+
+A stage is assembled as one flattened prompt before the backend is invoked:
+
+```text
+system contract
+  + stage contract
+  + target requirements
+  + authoritative source
+  + derived stage input, when distinct from the source
+  + diagnostic context, when applicable
+  + output/failure contract
+        |
+        v
+model backend
+        |
+        v
+backend-independent protocol enforcement
+        |
+        +--> build/<stage artefact>
+        `--> build/errors/<stage>.md
+```
+
+The original authoritative source is carried alongside downstream derived artefacts. Target files constrain realisation for a venue or audience; they do not supply claims, evidence, citations, examples, or scope. Peer review is diagnostic and likewise cannot become conceptual authority.
+
+See `pipeline.md` for the exact stage and failure semantics.
 
 # Build & Installation Guide
 
-This repository implements a **make-based compilation pipeline for prose**. Conceptual structure is treated as source code; prose is treated as a compiled artefact. The system supports either a **local model backend (Ollama)** or the **OpenAI API**, selectable via configuration.
+## Prerequisites
 
----
+You need:
 
-## Prerequisites (all modes)
+- GNU Make
+- Bash
+- Python >= 3.9
+- `curl`
 
-You will need:
+`jq` is optional. Python 3.9 is the minimum runtime exercised by ordinary CI.
 
-* **GNU Make**
-* **Bash**
-* **Python ≥ 3.9**
-* **curl**
-
-Python 3.9 is the minimum supported runtime. Ordinary CI exercises the keyless preflight on that baseline.
-
-Optional but recommended:
-
-* `jq` (for JSON handling with Ollama)
-
-### Installing prerequisites
-
-**Debian / Ubuntu**
+For Debian/Ubuntu:
 
 ```bash
 sudo apt install make python3 curl jq
 ```
 
-**macOS (Homebrew)**
+For macOS with Homebrew:
 
 ```bash
 brew install make python curl jq
 ```
 
----
-
-## Clone the repository
-
-```bash
-git clone <repo-url>
-cd <repo-name>
-```
-
----
-
 ## Configuration
 
-Copy the example environment file and edit as required:
+Copy the example environment file and edit it as required:
 
 ```bash
 cp .env.example .env
-```
-
-The `.env` file controls:
-
-* backend selection (`ollama` or `openai`)
-* model choice
-* temperature and seed
-* target style (journal / venue)
-
-The `.env` file is **not committed**.
-
-To load it into your shell:
-
-```bash
 set -a
 source .env
 set +a
 ```
 
----
+`.env` is not committed. It selects the backend, model configuration, and target style.
 
-## Option A: Local backend (Ollama)
+### Local backend: Ollama
 
-### Install Ollama
-
-Follow instructions at:
-
-[https://ollama.com](https://ollama.com)
-
-Pull a model (example):
-
-```bash
-ollama pull llama3.1
-```
-
-Ensure the Ollama service is running:
-
-```bash
-ollama serve
-```
-
-### Configure `.env`
+Install Ollama, pull a model, and ensure its service is running. A typical configuration is:
 
 ```bash
 BACKEND=ollama
@@ -104,162 +90,137 @@ OLLAMA_MODEL=llama3.1
 OLLAMA_HOST=http://localhost:11434
 ```
 
-No Python packages are required for this mode.
+### OpenAI API backend
 
----
+ChatGPT subscriptions do not include API usage. OpenAI API compilation requires a separately billed API account and key.
 
-## Option B: OpenAI API backend (cloud)
-
-> **Note:** ChatGPT Plus does **not** include API access. API usage requires a separate OpenAI developer account and billing.
-
-### 1. Create an API key
-
-Create an API key at:
-
-[https://platform.openai.com/](https://platform.openai.com/)
-
-Add it to `.env`:
-
-```bash
-OPENAI_API_KEY=sk-...
-```
-
-### 2. Install Python dependency
-
-Create a virtual environment (recommended):
+For the OpenAI backend, install the Python dependency in a virtual environment:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure `.env`
+Then configure, for example:
 
 ```bash
 BACKEND=openai
+OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-5
 OPENAI_TEMPERATURE=0.2
 OPENAI_SEED=42
 ```
 
----
-
 ## Keyless preflight
 
-Before any provider-backed compile, run the local structural preflight:
+Run the provider-free structural and regression suite before any model-backed compile:
 
 ```bash
 make check
 ```
 
-`make check` requires no API key, running model service, or provider package. It checks Python syntax and helper imports, validates shell syntax, renders a prompt from a tiny synthetic test fixture, and runs the local regressions for prompt contracts, failure routing, target composition, review orchestration, build-directory isolation, and successful artefact sanity.
+`make check` performs Python and shell syntax checks and runs the local unit/smoke tests. It requires no API key, provider package, or running model service.
 
-Provider connectivity/configuration checks remain explicit and separate:
+Provider connectivity checks are deliberately separate:
 
 ```bash
 make check-ollama
 make openai-check
 ```
 
-`check-ollama` contacts the configured local Ollama service. `openai-check` performs a real OpenAI API request and may incur usage charges, so run it only intentionally. Neither is part of `make check` or ordinary CI.
-
-The self-example compile is a separate integration acceptance step because it actually executes the configured model pipeline.
-
----
+`check-ollama` contacts the configured local Ollama service. `openai-check` makes a real OpenAI API request and may incur a charge; it is never part of `make check` or ordinary CI.
 
 ## Running the pipeline
 
-Build the full essay:
+`IN` names the authoritative conceptual source and is required for a fresh model-backed build. Compile the repository self-example with:
 
 ```bash
-make final
+make final IN=outline.md
 ```
 
-Run individual stages:
+Run individual stages with the same source explicitly supplied:
 
 ```bash
-make draft
-make smooth
-make revise
-make review
-make final
+make draft IN=outline.md
+make smooth IN=outline.md
+make revise IN=outline.md
+make review IN=outline.md
+make final IN=outline.md
 ```
 
-Generated artefacts appear in `build/`:
-
-* `draft.tex`
-* `smooth.tex`
-* `revise.tex`
-* `peer_review.md`
-* `final.tex`
-
-Peer review has a small machine-readable status contract:
-
-* `PASS` — no findings; `revise.tex` is promoted deterministically to `final.tex` with no extra model call.
-* `REVISE_REALISATION` — only wording/presentation findings; one bounded final realisation-revision pass is permitted.
-* `BLOCKED_SOURCE` — at least one conceptual/source defect; compilation stops before final revision and writes a diagnostic under `build/errors/`.
-
-Malformed or internally inconsistent review status also fails closed. Peer review never amends `outline.md`, supplies missing citations as authority, or triggers a review/revision loop.
-
----
-
-## Switching backends
-
-Override the backend at runtime:
+There is also an independent summary transform:
 
 ```bash
-make BACKEND=ollama final
-make BACKEND=openai final
+make summarize IN=outline.md
 ```
 
-Switch target style (journal / venue):
+By default generated files live under `build/`:
+
+- `build/draft.tex`
+- `build/smooth.tex`
+- `build/revise.tex`
+- `build/peer_review.md`
+- `build/final.tex`
+- `build/summary.tex` when `summarize` is requested
+- `build/errors/<stage>.md` for blocking diagnostics
+
+The build root is configurable without changing source paths:
 
 ```bash
-make TARGET_STYLE=prompts/targets/<journal>.md final
+make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
 ```
 
----
+`make clean` removes the known generated artefacts and diagnostics from the selected build directory. `make clobber` removes that build directory entirely.
 
-## Notes on reproducibility
+## Peer-review gate
 
-* The **authoritative sources** are `outline.md` and the prompt files in `prompts/`.
-* LaTeX outputs are treated as compiled artefacts.
-* Peer review output is diagnostic and emitted as structured Markdown.
-* Determinism depends on backend support for fixed seeds and low temperature settings.
+Peer review uses a small machine-readable status contract:
 
----
+- `PASS` — no findings; `revise.tex` is copied exactly to `final.tex` without another model call.
+- `REVISE_REALISATION` — findings are realisation-only; exactly one bounded final realisation pass is permitted.
+- `BLOCKED_SOURCE` — at least one finding requires authorial source work; compilation stops before final revision and emits an external diagnostic.
+
+Malformed or internally inconsistent review status also fails closed. The review can identify missing support, but it cannot amend the source or turn a suggested citation into authority.
+
+## Switching backend or target
+
+Runtime overrides remain explicit:
+
+```bash
+make BACKEND=ollama final IN=outline.md
+make BACKEND=openai final IN=outline.md
+make TARGET_STYLE=prompts/targets/journal_academic.md final IN=outline.md
+```
+
+A target controls acceptable realisation for the audience or venue. It is not permission to invent content that is absent from the authoritative source.
+
+## Reproducibility
+
+Compiled Prose targets semantic and specification-level reproducibility:
+
+- source, prompts, target requirements, stage order, protocol checks, and configuration are file-driven and inspectable;
+- the same authority boundaries and failure rules apply across supported backends;
+- a `PASS` review produces an exact deterministic promotion from `revise.tex` to `final.tex`;
+- model-generated prose is **not** promised to be byte-for-byte identical across runs, models, provider versions, or platforms, even when a backend accepts a seed.
+
+Seeds and low temperatures can reduce variance where supported, but they are configuration controls rather than a repository-wide determinism guarantee.
 
 ## CI, paid compilation, and the self-example
 
-Ordinary CI is deliberately **keyless**. Pushes and pull requests run `make check` on Python 3.9, and the normal CI workflow does not reference provider credentials or make model calls.
+Ordinary CI is deliberately keyless. Pushes and pull requests run `make check` and do not reference provider credentials or make model calls.
 
-Paid API compilation is a separate manual operation. `.github/workflows/publish-self-example.yml` has only a `workflow_dispatch` trigger, requires an explicit paid-usage checkbox, is restricted to `main`, and permits the paid job only when the dispatcher is the repository owner. It also places the provider call inside the `paid-compilation` GitHub Environment. Repository tests enforce that separation.
-
-A successful approved run builds an inspectable self-example site in `docs/` inside the workflow runner and deploys it through GitHub Pages Actions. The site includes the rendered final essay, the authoritative outline, peer-review diagnostics, raw stage artefacts, and provenance metadata. Generated prose is not committed back into the source tree.
+Paid self-example compilation is a separate manual publication path in `.github/workflows/publish-self-example.yml`. It has only a `workflow_dispatch` trigger, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. A successful approved run builds the inspectable site from generated artefacts and deploys it through GitHub Pages Actions; generated prose is not committed to the source tree.
 
 Recommended repository configuration:
 
-1. In **Settings → Environments**, create `paid-compilation`, require the repository owner as reviewer, and restrict deployment branches to `main`. If you are the sole reviewer, do not enable “prevent self-review”.
-2. Prefer moving `OPENAI_API_KEY` from a repository secret to an environment secret of the same name under `paid-compilation`. Environment secrets are unavailable until the environment approval passes.
-3. In **Settings → Pages**, set the publishing source to **GitHub Actions**. Do not configure branch-based `main / docs`; Actions commits made with `GITHUB_TOKEN` do not trigger that Pages build path.
-4. To publish, open **Actions → Compile and publish self-example → Run workflow**, explicitly authorize the paid compilation, then approve the `paid-compilation` environment job.
+1. Create the `paid-compilation` environment, require the repository owner as reviewer, and restrict it to `main`.
+2. Store `OPENAI_API_KEY` as an environment secret under `paid-compilation` rather than exposing it to ordinary CI.
+3. Configure GitHub Pages to publish from **GitHub Actions**.
+4. Start publication manually from **Actions -> Compile and publish self-example -> Run workflow**, explicitly authorize paid compilation, then approve the environment job.
 
-One approved successful publication invokes the configured provider for draft, smooth, revise, and peer review. It invokes the provider once more only when peer review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The workflow currently caps each model-backed stage at 20,000 output tokens and performs no automatic retry.
-
----
+One approved successful publication invokes the configured provider for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The workflow currently caps each model-backed stage at 20,000 output tokens and performs no automatic retry.
 
 ## Project intent
 
-This repository is both an essay and a worked example of **compiled prose**:
-
-* specification and execution are explicitly separated
-* prose is reproducible and retargetable
-* authorship is located upstream in structure, not surface realisation
-
-The build system is intentionally minimal and transparent.
+This repository is both an implementation and its own worked example. Its central separation of concerns is simple: humans author the conceptual source; compiler stages realise it under explicit constraints; generated prose and diagnostics remain inspectable downstream artefacts.
