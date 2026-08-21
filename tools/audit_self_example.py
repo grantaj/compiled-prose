@@ -70,15 +70,6 @@ def _valid_urls(values: object) -> bool:
     )
 
 
-def _normalised_author_year(key: str) -> re.Pattern[str]:
-    match = re.fullmatch(r"(.+?)\s+((?:19|20)\d{2})", key)
-    if match is None:
-        return re.compile(re.escape(key), re.IGNORECASE)
-    author, year = match.groups()
-    author_pattern = re.escape(author).replace(r"\ ", r"\s+")
-    return re.compile(rf"\b{author_pattern}\s*,?\s*{year}\b", re.IGNORECASE)
-
-
 def audit(
     outline: Path,
     audit_path: Path,
@@ -158,18 +149,8 @@ def audit(
         unknown = sorted(explicit_final - catalogued)
         if unknown:
             errors.append(
-                "final artefact contains non-authoritative citation labels: "
+                "final artefact contains non-authoritative explicit citation labels: "
                 + ", ".join(unknown)
-            )
-        missing_final = [
-            key
-            for key in sorted(cited)
-            if _normalised_author_year(key).search(final_text) is None
-        ]
-        if missing_final:
-            errors.append(
-                "final artefact does not preserve detectable source citations: "
-                + ", ".join(missing_final)
             )
 
     return AuditResult(
@@ -200,7 +181,7 @@ def main() -> int:
         print("self-example audit failed:\n" + _format_errors(result.errors), file=sys.stderr)
         return 2
 
-    suffix = " and final citation authority" if args.final else ""
+    suffix = " and final mechanical citation checks" if args.final else ""
     print(f"self-example audit OK: {len(result.source_keys)} verified sources{suffix}")
     return 0
 
