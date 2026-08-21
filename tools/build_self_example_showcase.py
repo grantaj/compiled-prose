@@ -188,6 +188,7 @@ def build_showcase(
     candidate_roots: dict[str, Path],
     output_dir: Path,
     base_showcase: Optional[Path] = None,
+    expected_outline: Optional[Path] = None,
 ) -> None:
     unknown = set(candidate_roots) - set(TARGETS)
     if unknown:
@@ -223,6 +224,15 @@ def build_showcase(
         if identifier in selected_roots
     ]
     authoritative_digest = candidates[0].outline_sha256
+    if expected_outline is not None:
+        _require_files([expected_outline])
+        expected_bytes = expected_outline.read_bytes()
+        if candidates[0].outline_bytes != expected_bytes:
+            expected_digest = hashlib.sha256(expected_bytes).hexdigest()
+            raise ValueError(
+                "candidate authoritative outline differs from current source: "
+                f"candidate={authoritative_digest}, current={expected_digest}"
+            )
     for candidate in candidates[1:]:
         if candidate.outline_bytes != candidates[0].outline_bytes:
             raise ValueError(
@@ -369,6 +379,7 @@ def main() -> None:
         metavar="TARGET=PATH",
     )
     parser.add_argument("--base-showcase", type=Path)
+    parser.add_argument("--expected-outline", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     candidate_roots: dict[str, Path] = {}
@@ -380,6 +391,7 @@ def main() -> None:
         candidate_roots=candidate_roots,
         output_dir=args.output_dir,
         base_showcase=args.base_showcase,
+        expected_outline=args.expected_outline,
     )
 
 
