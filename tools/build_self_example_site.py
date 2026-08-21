@@ -37,9 +37,9 @@ ACCEPTANCE = """\
 # Release acceptance review
 
 This page is a **human semantic gate**, not a mechanically generated certificate of fidelity.
-The keyless checks establish source/citation bookkeeping, protocol cleanliness, and real LaTeX
-compilation. They cannot prove that generated prose is materially equivalent to the authored
-conceptual source.
+The mechanical gates establish source/citation bookkeeping and protocol cleanliness and, once a
+candidate has been generated, require a real LaTeX compilation. They cannot prove that generated
+prose is materially equivalent to the authored conceptual source.
 
 Before approving publication, compare `artifacts/final.tex` (or the rendered PDF) directly with
 `artifacts/outline.md` and confirm all of the following:
