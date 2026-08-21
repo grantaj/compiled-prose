@@ -33,10 +33,12 @@ The responsibilities are distinct:
 
 - System instructions define global compiler invariants and failure behaviour.
 - Stage prompts define the transformation being performed.
-- Target requirements define acceptable realisation for the selected audience or venue, including register, formatting, citation expectations and presentation, and audience assumptions.
+- Target requirements define acceptable realisation for the selected audience or venue, including tone, register, reading level, rhetorical form, paragraph/section granularity, formatting, citation expectations and presentation, and audience assumptions.
 - The authoritative source defines conceptual content.
 - A stage input is a derived working representation to transform, not authority for new content.
 - Diagnostic context identifies possible defects but is not authority to rewrite the argument.
+
+Within realisation responsibility, and subject to the explicit output protocol, the selected target is authoritative for audience, venue, tone, register, reading level, rhetorical form, paragraph/section granularity, and citation presentation. Generic stage instructions may define permitted transformations but must not impose conflicting defaults in those dimensions.
 
 Target requirements must never be treated as permission to invent concepts, examples, evidence, citations, or scope. If satisfying a target requirement would require authored material that the source does not provide, use the failure branch rather than fabricating that material.
 
