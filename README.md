@@ -273,7 +273,9 @@ Ordinary CI is deliberately keyless. Pushes and pull requests run `make check` a
 
 Paid self-example compilation is a separate manual publication path in `.github/workflows/publish-self-example.yml`. It has only a `workflow_dispatch` trigger, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. A successful approved run executes `make self`, builds the inspectable candidate bundle, and waits at the separately protected `github-pages` environment before deployment; generated prose is not committed to the source tree.
 
-Each successful OpenAI response records its stage, model, and API-reported token usage in the transient build usage log. After every paid compilation attempt, including failures, the workflow renders per-stage and total token usage plus estimated cost into the GitHub Actions step summary. Unknown model pricing is reported as `N/A` rather than guessed, and the estimate is explicitly not a billing record. This accounting makes no additional provider call.
+Manual dispatch includes an allowlisted OpenAI model selector. It currently offers `gpt-5-mini`, `gpt-5`, `gpt-5.6-luna`, `gpt-5.6-terra`, and `gpt-5.6-sol`; `gpt-5-mini` remains the default so adding the selector does not silently increase spending. The selected value is validated again before the provider-call step, so an unexpected model identifier fails before any paid request.
+
+Each successful OpenAI response records its stage, model, and API-reported token usage in the transient build usage log. After every paid compilation attempt, including failures, the workflow renders per-stage and total token usage plus estimated cost into the GitHub Actions step summary. Unknown model pricing is reported as `N/A` rather than guessed, and the estimate is explicitly not a billing record. This accounting makes no additional provider call. Pricing for the selectable GPT-5.6 family follows the provider's published short-context rates and applies the published long-context multiplier above 272,000 input tokens.
 
 If paid compilation fails, any `build/errors/*.md` diagnostics are printed into the Actions log and the available build/source/audit/bibliography evidence is retained as a 90-day failure artifact. A failed compilation never proceeds to the publication candidate or Pages deployment.
 
@@ -283,9 +285,9 @@ Recommended repository configuration:
 2. Store `OPENAI_API_KEY` as an environment secret under `paid-compilation` rather than exposing it to ordinary CI.
 3. Configure GitHub Pages to publish from **GitHub Actions**.
 4. Configure the `github-pages` environment to require the repository owner as reviewer, so the compiled candidate can be adversarially checked before deployment.
-5. Start publication manually from **Actions -> Compile and publish self-example -> Run workflow**, explicitly authorize paid compilation, approve the `paid-compilation` environment, inspect the uploaded acceptance candidate after compilation, and approve `github-pages` only if the source-authority checklist passes.
+5. Start publication manually from **Actions -> Compile and publish self-example -> Run workflow**, select the OpenAI model, explicitly authorize paid compilation, approve the `paid-compilation` environment, inspect the uploaded acceptance candidate after compilation, and approve `github-pages` only if the source-authority checklist passes.
 
-One approved successful compilation invokes the configured provider for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The end-to-end test workflow currently uses `gpt-5-mini`, caps each model-backed stage at 10,000 output tokens, and performs no automatic retry.
+One approved successful compilation invokes the selected model for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The workflow defaults to `gpt-5-mini`, caps each model-backed stage at 10,000 output tokens, and performs no automatic retry.
 
 ## Project intent
 
