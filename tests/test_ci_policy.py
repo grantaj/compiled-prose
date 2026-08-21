@@ -92,6 +92,14 @@ class CiSpendingPolicyTests(unittest.TestCase):
             content.index("OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}"),
         )
 
+    def test_compile_workflow_records_stable_candidate_provenance(self):
+        content = PAID_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn('--target "$TARGET_STYLE"', content)
+        self.assertIn('--target-id "$TARGET_ID"', content)
+        self.assertIn('--run-url "$RUN_URL"', content)
+        self.assertIn('--run-id "$RUN_ID"', content)
+        self.assertIn("RUN_ID: ${{ github.run_id }}", content)
+
     def test_compile_workflow_builds_candidate_but_never_publishes_pages(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("run: make check", content)
@@ -142,27 +150,43 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("pattern: self-example-showcase-*", content)
         self.assertIn("run-id: ${{ inputs.base_publish_run_id }}", content)
         self.assertIn("--base-showcase base-showcase", content)
-        for target in (
-            "journal_academic",
-            "magazine_general",
-            "explain_like_im_5",
+        for target, env_name in (
+            ("journal_academic", "JOURNAL_RUN_ID"),
+            ("magazine_general", "MAGAZINE_RUN_ID"),
+            ("explain_like_im_5", "ELI5_RUN_ID"),
         ):
             self.assertIn(f"{target}_run_id:", content)
             self.assertIn(f'--candidate "{target}=candidates/{target}"', content)
+            self.assertIn(f'--candidate-run-id "{target}=${env_name}"', content)
         self.assertIn("actions/download-artifact@v4", content)
-        self.assertIn("run-id: ${{ inputs.journal_academic_run_id }}", content)
-        self.assertIn("run-id: ${{ inputs.magazine_general_run_id }}", content)
-        self.assertIn("run-id: ${{ inputs.explain_like_im_5_run_id }}", content)
         self.assertIn("tools/build_self_example_showcase.py", content)
         self.assertNotIn("latest candidate", content.lower())
         self.assertNotIn("/latest", content.lower())
+
+    def test_first_publish_requires_academic_candidate_or_base(self):
+        content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn(
+            'if [ -z "$BASE_PUBLISH_RUN_ID" ] && [ -z "$JOURNAL_RUN_ID" ]; then',
+            content,
+        )
+        self.assertIn("legacy top-level URLs remain valid", content)
+
+    def test_assemble_job_has_no_pages_write_authority(self):
+        content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        assemble = content.split("  assemble:", 1)[1].split("  deploy:", 1)[0]
+        deploy = content.split("  deploy:", 1)[1]
+        self.assertIn("pages: read", assemble)
+        self.assertNotIn("pages: write", assemble)
+        self.assertNotIn("id-token: write", assemble)
+        self.assertIn("pages: write", deploy)
+        self.assertIn("id-token: write", deploy)
+        self.assertIn("name: github-pages", deploy)
 
     def test_publish_workflow_deploys_only_assembled_retained_site(self):
         content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("Upload inspectable publication bundle", content)
         self.assertIn("actions/upload-pages-artifact@v5", content)
         self.assertIn("actions/deploy-pages@v5", content)
-        self.assertIn("name: github-pages", content)
         self.assertLess(
             content.index("Assemble multi-target Pages site"),
             content.index("Upload Pages artifact"),

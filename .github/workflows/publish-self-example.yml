@@ -10,7 +10,7 @@ on:
         required: false
         type: string
       journal_academic_run_id:
-        description: "Compile run ID for journal_academic (blank to preserve base/omit)"
+        description: "Compile run ID for journal_academic (required unless base preserves it)"
         required: false
         type: string
       magazine_general_run_id:
@@ -37,7 +37,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-      pages: write
+      pages: read
     env:
       BASE_PUBLISH_RUN_ID: ${{ inputs.base_publish_run_id }}
       JOURNAL_RUN_ID: ${{ inputs.journal_academic_run_id }}
@@ -66,6 +66,10 @@ jobs:
           done
           if [ "$selected" -eq 0 ]; then
             echo "Select a prior publish run or at least one explicit compile run ID." >&2
+            exit 2
+          fi
+          if [ -z "$BASE_PUBLISH_RUN_ID" ] && [ -z "$JOURNAL_RUN_ID" ]; then
+            echo "A first publication must explicitly include journal_academic so legacy top-level URLs remain valid." >&2
             exit 2
           fi
 
@@ -123,12 +127,15 @@ jobs:
           fi
           if [ -n "$JOURNAL_RUN_ID" ]; then
             args+=(--candidate "journal_academic=candidates/journal_academic")
+            args+=(--candidate-run-id "journal_academic=$JOURNAL_RUN_ID")
           fi
           if [ -n "$MAGAZINE_RUN_ID" ]; then
             args+=(--candidate "magazine_general=candidates/magazine_general")
+            args+=(--candidate-run-id "magazine_general=$MAGAZINE_RUN_ID")
           fi
           if [ -n "$ELI5_RUN_ID" ]; then
             args+=(--candidate "explain_like_im_5=candidates/explain_like_im_5")
+            args+=(--candidate-run-id "explain_like_im_5=$ELI5_RUN_ID")
           fi
           python tools/build_self_example_showcase.py "${args[@]}"
 

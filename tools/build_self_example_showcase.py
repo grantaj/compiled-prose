@@ -12,6 +12,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional
+from urllib.parse import urlparse
 
 if __package__:
     from .build_self_example_site import ACCEPTANCE
@@ -52,6 +53,7 @@ class Candidate:
     spec: TargetSpec
     root: Path
     metadata: dict[str, object]
+    workflow_run_id: str
     outline_bytes: bytes
     outline_sha256: str
 
@@ -92,7 +94,47 @@ def locate_showcase(root: Path) -> Path:
     return matches[0]
 
 
-def load_candidate(identifier: str, root: Path) -> Candidate:
+def _run_id_from_url(run_url: str) -> Optional[str]:
+    parts = [part for part in urlparse(run_url).path.split("/") if part]
+    for index in range(len(parts) - 2):
+        if parts[index : index + 2] == ["actions", "runs"]:
+            value = parts[index + 2]
+            return value if value.isdigit() else None
+    return None
+
+
+def _candidate_run_id(identifier: str, metadata: dict[str, object]) -> str:
+    run_url = metadata.get("workflow_run")
+    if not isinstance(run_url, str) or not run_url:
+        raise ValueError(f"candidate for {identifier} has no usable 'workflow_run' metadata")
+
+    url_run_id = _run_id_from_url(run_url)
+    declared = metadata.get("workflow_run_id")
+    if declared is not None:
+        if not isinstance(declared, str) or not declared.isdigit():
+            raise ValueError(
+                f"candidate for {identifier} has invalid 'workflow_run_id' metadata"
+            )
+        if url_run_id is not None and declared != url_run_id:
+            raise ValueError(
+                f"candidate for {identifier} has inconsistent workflow run provenance: "
+                f"id={declared}, url={url_run_id}"
+            )
+        return declared
+
+    if url_run_id is None:
+        raise ValueError(
+            f"candidate for {identifier} has no recoverable workflow run ID"
+        )
+    return url_run_id
+
+
+def load_candidate(
+    identifier: str,
+    root: Path,
+    *,
+    expected_run_id: Optional[str] = None,
+) -> Candidate:
     spec = resolve_target(identifier)
     candidate_root = locate_candidate(root)
     build_json = candidate_root / "build.json"
@@ -100,20 +142,40 @@ def load_candidate(identifier: str, root: Path) -> Candidate:
     _require_files([build_json, *(artifacts / name for name in REQUIRED_RAW_ARTIFACTS)])
 
     metadata = json.loads(build_json.read_text(encoding="utf-8"))
-    actual_target = metadata.get("target_id", metadata.get("target"))
-    if actual_target not in (identifier, spec.path):
+    actual_target_id = metadata.get("target_id")
+    actual_target_file = metadata.get("target_file", metadata.get("target"))
+    if actual_target_id is None and actual_target_file is None:
+        raise ValueError(f"candidate for {identifier} has no target metadata")
+    if actual_target_id is not None and actual_target_id != identifier:
         raise ValueError(
-            f"candidate for {identifier} reports target {actual_target!r}, expected {spec.path!r}"
+            f"candidate for {identifier} reports target ID {actual_target_id!r}, "
+            f"expected {identifier!r}"
         )
-    for field in ("model", "source_sha", "workflow_run"):
+    if actual_target_file is not None and actual_target_file != spec.path:
+        raise ValueError(
+            f"candidate for {identifier} reports target file {actual_target_file!r}, "
+            f"expected {spec.path!r}"
+        )
+    for field in ("model", "source_sha"):
         if not isinstance(metadata.get(field), str) or not metadata[field]:
             raise ValueError(f"candidate for {identifier} has no usable {field!r} metadata")
+
+    workflow_run_id = _candidate_run_id(identifier, metadata)
+    if expected_run_id is not None:
+        if not expected_run_id.isdigit():
+            raise ValueError(f"expected workflow run ID for {identifier} must be numeric")
+        if workflow_run_id != expected_run_id:
+            raise ValueError(
+                f"candidate for {identifier} came from workflow run {workflow_run_id}, "
+                f"but run {expected_run_id} was selected"
+            )
 
     outline_bytes = (artifacts / "outline.md").read_bytes()
     return Candidate(
         spec=spec,
         root=candidate_root,
         metadata=metadata,
+        workflow_run_id=workflow_run_id,
         outline_bytes=outline_bytes,
         outline_sha256=hashlib.sha256(outline_bytes).hexdigest(),
     )
@@ -174,6 +236,7 @@ def _candidate_info(candidate: Candidate) -> str:
         f"Target: <code>{html.escape(candidate.spec.identifier)}</code><br>"
         f"Model: <code>{html.escape(str(metadata['model']))}</code><br>"
         f"Compilation commit: <code>{html.escape(str(metadata['source_sha']))}</code><br>"
+        f"Compilation run: <code>{candidate.workflow_run_id}</code><br>"
         f"Authoritative outline SHA-256: <code>{candidate.outline_sha256}</code><br>"
         f'<a href="{run_url}">Compilation workflow run</a> · '
         '<a href="peer-review.html">Peer review</a> · '
@@ -189,10 +252,18 @@ def build_showcase(
     output_dir: Path,
     base_showcase: Optional[Path] = None,
     expected_outline: Optional[Path] = None,
+    candidate_run_ids: Optional[dict[str, str]] = None,
 ) -> None:
     unknown = set(candidate_roots) - set(TARGETS)
     if unknown:
         raise ValueError("unsupported target(s): " + ", ".join(sorted(unknown)))
+    if candidate_run_ids is not None:
+        unknown_runs = set(candidate_run_ids) - set(candidate_roots)
+        if unknown_runs:
+            raise ValueError(
+                "workflow run IDs supplied for non-selected target(s): "
+                + ", ".join(sorted(unknown_runs))
+            )
 
     selected_roots: dict[str, Path] = {}
     if base_showcase is not None:
@@ -217,9 +288,20 @@ def build_showcase(
     selected_roots.update(candidate_roots)
     if not selected_roots:
         raise ValueError("at least one retained self-example candidate is required")
+    if "journal_academic" not in selected_roots:
+        raise ValueError(
+            "journal_academic must remain in every published showcase so the "
+            "existing top-level academic evidence URLs stay valid"
+        )
 
     candidates = [
-        load_candidate(identifier, selected_roots[identifier])
+        load_candidate(
+            identifier,
+            selected_roots[identifier],
+            expected_run_id=(candidate_run_ids or {}).get(identifier)
+            if identifier in candidate_roots
+            else None,
+        )
         for identifier in TARGETS
         if identifier in selected_roots
     ]
@@ -296,38 +378,35 @@ def build_showcase(
         title="Authoritative outline",
     )
 
-    # Keep the previously published academic-journal evidence URLs working
-    # while `/` becomes the target showcase. These are compatibility views,
-    # not a declaration that the academic target is the canonical rendering.
+    # Every published showcase includes the academic target so these legacy URLs
+    # are guaranteed rather than opportunistic compatibility views.
     journal = next(
-        (candidate for candidate in candidates if candidate.spec.identifier == "journal_academic"),
-        None,
+        candidate for candidate in candidates if candidate.spec.identifier == "journal_academic"
     )
-    if journal is not None:
-        shutil.copytree(journal.artifacts, output_dir / "artifacts", dirs_exist_ok=True)
-        journal_root_nav = output_dir / "_journal_nav.html"
-        journal_root_nav.write_text(
-            _nav_html(candidates, prefix="", info=_candidate_info(journal)),
-            encoding="utf-8",
-        )
-        _run_pandoc(
-            journal.artifacts / "peer_review.md",
-            output_dir / "peer-review.html",
-            css="style.css",
-            nav=journal_root_nav,
-            title="Academic journal: peer review",
-        )
-        root_acceptance = output_dir / "_acceptance.md"
-        root_acceptance.write_text(ACCEPTANCE, encoding="utf-8")
-        _run_pandoc(
-            root_acceptance,
-            output_dir / "acceptance.html",
-            css="style.css",
-            nav=journal_root_nav,
-            title="Academic journal: release acceptance review",
-        )
-        root_acceptance.unlink()
-        journal_root_nav.unlink()
+    shutil.copytree(journal.artifacts, output_dir / "artifacts", dirs_exist_ok=True)
+    journal_root_nav = output_dir / "_journal_nav.html"
+    journal_root_nav.write_text(
+        _nav_html(candidates, prefix="", info=_candidate_info(journal)),
+        encoding="utf-8",
+    )
+    _run_pandoc(
+        journal.artifacts / "peer_review.md",
+        output_dir / "peer-review.html",
+        css="style.css",
+        nav=journal_root_nav,
+        title="Academic journal: peer review",
+    )
+    root_acceptance = output_dir / "_acceptance.md"
+    root_acceptance.write_text(ACCEPTANCE, encoding="utf-8")
+    _run_pandoc(
+        root_acceptance,
+        output_dir / "acceptance.html",
+        css="style.css",
+        nav=journal_root_nav,
+        title="Academic journal: release acceptance review",
+    )
+    root_acceptance.unlink()
+    journal_root_nav.unlink()
 
     landing.unlink()
     root_nav.unlink()
@@ -376,6 +455,7 @@ def build_showcase(
             "model": candidate.metadata["model"],
             "compilation_commit": candidate.metadata["source_sha"],
             "workflow_run": candidate.metadata["workflow_run"],
+            "workflow_run_id": candidate.workflow_run_id,
             "candidate_build": f"targets/{candidate.spec.identifier}/build.json",
         }
 
@@ -403,6 +483,19 @@ def _parse_candidate(value: str) -> tuple[str, Path]:
     return identifier, Path(path)
 
 
+def _parse_run_id(value: str) -> tuple[str, str]:
+    if "=" not in value:
+        raise argparse.ArgumentTypeError("candidate run ID must be TARGET=RUN_ID")
+    identifier, run_id = value.split("=", 1)
+    try:
+        resolve_target(identifier)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+    if not run_id.isdigit():
+        raise argparse.ArgumentTypeError("candidate workflow run ID must be numeric")
+    return identifier, run_id
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -411,6 +504,13 @@ def main() -> None:
         default=[],
         type=_parse_candidate,
         metavar="TARGET=PATH",
+    )
+    parser.add_argument(
+        "--candidate-run-id",
+        action="append",
+        default=[],
+        type=_parse_run_id,
+        metavar="TARGET=RUN_ID",
     )
     parser.add_argument("--base-showcase", type=Path)
     parser.add_argument("--expected-outline", type=Path)
@@ -421,8 +521,16 @@ def main() -> None:
         if identifier in candidate_roots:
             parser.error(f"candidate target supplied more than once: {identifier}")
         candidate_roots[identifier] = path
+    candidate_run_ids: dict[str, str] = {}
+    for identifier, run_id in args.candidate_run_id:
+        if identifier in candidate_run_ids:
+            parser.error(f"candidate workflow run ID supplied more than once: {identifier}")
+        candidate_run_ids[identifier] = run_id
+    if set(candidate_run_ids) != set(candidate_roots):
+        parser.error("every explicit candidate must have exactly one --candidate-run-id")
     build_showcase(
         candidate_roots=candidate_roots,
+        candidate_run_ids=candidate_run_ids,
         output_dir=args.output_dir,
         base_showcase=args.base_showcase,
         expected_outline=args.expected_outline,
