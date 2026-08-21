@@ -38,7 +38,7 @@ The responsibilities are distinct:
 - A stage input is a derived working representation to transform, not authority for new content.
 - Diagnostic context identifies possible defects but is not authority to rewrite the argument.
 
-Within realisation responsibility, and subject to the explicit output protocol, the selected target is authoritative for audience, venue, tone, register, reading level, rhetorical form, paragraph/section granularity, and citation presentation. Generic stage instructions may define permitted transformations but must not impose conflicting defaults in those dimensions.
+Within the core target-driven publication stages (draft, smooth, revise, peer review, and final), and subject to the explicit output protocol, the selected target is authoritative for audience, venue, tone, register, reading level, rhetorical form, paragraph/section granularity, and citation presentation. Generic stage instructions may define permitted transformations but must not impose conflicting defaults in those dimensions. An auxiliary transform may define an intrinsic artefact shape as part of its stage responsibility; that shape is not a publication-style default for the core pipeline.
 
 Target requirements must never be treated as permission to invent concepts, examples, evidence, citations, or scope. If satisfying a target requirement would require authored material that the source does not provide, use the failure branch rather than fabricating that material.
 
