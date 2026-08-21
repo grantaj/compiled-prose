@@ -72,7 +72,7 @@ jobs:
           latexmk -v
 
       - name: Compile and validate self-example using paid API
-        id: compile-self-example
+        id: compile_self_example
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
@@ -86,7 +86,7 @@ jobs:
             if compgen -G "build/errors/*.md" > /dev/null; then
               for diagnostic in build/errors/*.md; do
                 echo "==> $diagnostic <=="
-                cat "$diagnostic"
+                cat "$diagnostic" || true
                 echo
               done
             else
@@ -97,7 +97,7 @@ jobs:
           fi
 
       - name: Upload failed self-example evidence
-        if: ${{ failure() && steps.compile-self-example.outcome == 'failure' }}
+        if: ${{ failure() && steps.compile_self_example.outcome == 'failure' }}
         uses: actions/upload-artifact@v4
         with:
           name: self-example-failure-${{ github.sha }}-${{ github.run_id }}
