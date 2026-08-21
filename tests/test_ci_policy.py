@@ -46,12 +46,37 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn("inputs.authorize_paid_api_call == true", content)
         self.assertIn("environment: paid-compilation", content)
         self.assertIn("OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}", content)
-        self.assertIn("OPENAI_MODEL: gpt-5-mini", content)
         self.assertIn('OPENAI_MAX_OUTPUT_TOKENS: "10000"', content)
         self.assertIn("pages: read", content)
         self.assertLess(
             content.index("Verify GitHub Pages configuration"),
             content.index("Paid compilation"),
+        )
+
+    def test_paid_workflow_model_selection_is_constrained(self):
+        content = PAID_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("openai_model:", content)
+        self.assertIn('description: "OpenAI model"', content)
+        self.assertIn("type: choice", content)
+        self.assertIn("default: gpt-5-mini", content)
+        for model in (
+            "gpt-5-mini",
+            "gpt-5",
+            "gpt-5.6-luna",
+            "gpt-5.6-terra",
+            "gpt-5.6-sol",
+        ):
+            self.assertIn(f"          - {model}\n", content)
+        self.assertIn("OPENAI_MODEL: ${{ inputs.openai_model }}", content)
+        self.assertIn("name: Validate selected OpenAI model", content)
+        self.assertIn(
+            "gpt-5-mini|gpt-5|gpt-5.6-luna|gpt-5.6-terra|gpt-5.6-sol",
+            content,
+        )
+        self.assertNotIn("OPENAI_MODEL: gpt-5-mini", content)
+        self.assertLess(
+            content.index("Validate selected OpenAI model"),
+            content.index("Compile and validate self-example using paid API"),
         )
 
     def test_paid_workflow_uses_release_ready_self_command(self):
