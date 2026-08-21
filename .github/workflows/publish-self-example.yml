@@ -117,7 +117,7 @@ jobs:
 
       - name: Assemble multi-target Pages site
         run: |
-          args=(--output-dir site)
+          args=(--output-dir site --expected-outline outline.md)
           if [ -n "$BASE_PUBLISH_RUN_ID" ]; then
             args+=(--base-showcase base-showcase)
           fi
