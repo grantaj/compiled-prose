@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 import os, sys
-from openai import OpenAI
+
 
 def main():
+    # Keep the provider SDK optional for keyless/Ollama use. Import it only when
+    # this adapter is actually invoked.
+    from openai import OpenAI
+
     prompt = sys.stdin.read()
 
     model = os.environ.get("OPENAI_MODEL", "gpt-5")
