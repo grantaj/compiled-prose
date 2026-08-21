@@ -131,7 +131,7 @@ endef
 DRAFT_IN := $(IN)
 
 $(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(SYSTEM) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
-	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make draft IN=example_outline.md" >&2; exit 1; fi
+	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make draft IN=outline.md" >&2; exit 1; fi
 	@echo "Draft input: $(DRAFT_IN)"
 	@$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)
 
@@ -164,7 +164,7 @@ $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(SYSTEM) $(P_FINAL) $(TA
 	esac
 
 $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(SYSTEM) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
-	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=example_outline.md" >&2; exit 1; fi
+	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=outline.md" >&2; exit 1; fi
 	@echo "Summarize input: $(IN)"
 	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
 
