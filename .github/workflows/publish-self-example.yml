@@ -69,9 +69,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           sudo apt-get update
-          sudo apt-get install --yes pandoc latexmk texlive-latex-extra
+          sudo apt-get install --yes pandoc latexmk texlive-latex-extra texlive-bibtex-extra biber
           pandoc --version
           latexmk -v
+          biber --version
 
       - name: Compile and validate self-example using paid API
         id: compile_self_example
@@ -107,6 +108,7 @@ jobs:
             build
             outline.md
             self-example/source-audit.json
+            self-example/references.bib
           if-no-files-found: warn
           retention-days: 90
 
@@ -119,6 +121,7 @@ jobs:
             --build-dir build \
             --outline outline.md \
             --source-audit self-example/source-audit.json \
+            --bibliography self-example/references.bib \
             --output-dir docs \
             --source-sha "$SOURCE_SHA" \
             --model "$OPENAI_MODEL" \
