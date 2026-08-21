@@ -55,6 +55,9 @@ def _complete_tex_document(raw: str) -> bool:
 
 
 def _success_protocol_error(raw: str, output_type: str) -> Optional[str]:
+    if any(line.strip() == FAIL_SENTINEL for line in raw.splitlines()):
+        return "mixed the `@@FAIL` failure sentinel into a nominal success artefact."
+
     if output_type == "tex":
         if not _complete_tex_document(raw):
             return (
@@ -97,7 +100,7 @@ def enforce_result(
         _atomic_write(diagnostic, payload)
         return False
 
-    if not raw:
+    if not raw.strip("\ufeff\r\n\t "):
         _write_protocol_failure(
             stage,
             diagnostic,

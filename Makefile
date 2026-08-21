@@ -38,7 +38,7 @@ FINAL_OUT   := $(BUILD_DIR)/final.tex
 SUMMARY_OUT := $(BUILD_DIR)/summary.tex
 ERROR_DIR   := $(BUILD_DIR)/errors
 
-.PHONY: all draft smooth revise review final summarize check-ollama openai-check print-vars clean clobber
+.PHONY: all draft smooth revise review final summarize check check-python check-shell test check-ollama openai-check print-vars clean clobber
 all: final
 draft: $(DRAFT_OUT)
 smooth: $(SMOOTH_OUT)
@@ -46,6 +46,18 @@ revise: $(REVISE_OUT)
 review: $(REVIEW_OUT)
 final: $(FINAL_OUT)
 summarize: $(SUMMARY_OUT)
+
+# Fast local preflight. These dependencies must remain keyless and provider-free.
+check: check-python check-shell test
+
+check-python:
+	@python -m py_compile tools/*.py tests/*.py
+
+check-shell:
+	@for script in tools/*.sh; do bash -n "$$script"; done
+
+test:
+	@python -m unittest discover -s tests -v
 
 check-ollama:
 	@python tools/check_ollama.py

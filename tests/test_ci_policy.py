@@ -56,7 +56,8 @@ class CiSpendingPolicyTests(unittest.TestCase):
     def test_ordinary_ci_is_keyless_and_read_only(self):
         content = (WORKFLOWS / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("contents: read", content)
-        self.assertIn("python -m unittest discover -s tests -v", content)
+        self.assertIn('python-version: "3.9"', content)
+        self.assertIn("run: make check", content)
         self.assertNotIn("workflow_dispatch", content)
         self.assertNotIn("pages: write", content)
 
