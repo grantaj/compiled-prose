@@ -1,121 +1,69 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.build_self_example_site import (
-    REQUIRED_ARTIFACTS,
-    _prepare_final_tex_for_html,
-    build_site,
-)
+from tools.build_self_example_site import REQUIRED_ARTIFACTS, build_site
 
 
 class SelfExampleHtmlRenderingTests(unittest.TestCase):
-    def test_html_copy_materializes_embedded_bibliography_citations(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            source = root / "final.tex"
-            output = root / "html.tex"
-            source.write_text(
-                r"""\documentclass{article}
-\title{One Canonical Paper Title}
-\begin{document}
-\maketitle
-A claim \cite{lewitt1967,hyland2008}. Another \cite{hyland2008}.
-\begin{thebibliography}{9}
-\bibitem[LeWitt 1967]{lewitt1967} Sol LeWitt. Sentences on Conceptual Art.
-\bibitem{hyland2008} Ken Hyland. Genre and academic writing in the disciplines.
-\end{thebibliography}
-\end{document}
-""",
-                encoding="utf-8",
-            )
-
-            _prepare_final_tex_for_html(source, output)
-            rendered = output.read_text(encoding="utf-8")
-
-            self.assertIn(r"\title{One Canonical Paper Title}", rendered)
-            self.assertNotIn(r"\cite{", rendered)
-            self.assertNotIn(r"\bibitem", rendered)
-            self.assertIn(r"\href{#ref-1}{[LeWitt 1967]}", rendered)
-            self.assertIn(r"\href{#ref-2}{[2]}", rendered)
-            self.assertIn(r"\section*{References}", rendered)
-            self.assertIn(r"\hypertarget{ref-1}{} Sol LeWitt", rendered)
-            self.assertIn(r"\hypertarget{ref-2}{} Ken Hyland", rendered)
-
-    def test_html_copy_fails_closed_on_unknown_citation_key(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            source = root / "final.tex"
-            source.write_text(
-                r"""\documentclass{article}
-\begin{document}
-Claim \cite{missing}.
-\begin{thebibliography}{9}
-\bibitem{known} Known reference.
-\end{thebibliography}
-\end{document}
-""",
-                encoding="utf-8",
-            )
-            with self.assertRaisesRegex(ValueError, "citation key has no bibitem: missing"):
-                _prepare_final_tex_for_html(source, root / "html.tex")
-
-    def test_html_copy_fails_closed_if_citations_have_no_embedded_bibliography(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            source = root / "final.tex"
-            source.write_text(
-                r"""\documentclass{article}
-\begin{document}
-Claim \cite{missing}.
-\end{document}
-""",
-                encoding="utf-8",
-            )
-            with self.assertRaisesRegex(ValueError, "without an embedded thebibliography"):
-                _prepare_final_tex_for_html(source, root / "html.tex")
-
-    def test_final_html_keeps_latex_document_title_instead_of_site_title(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            build = root / "build"
-            build.mkdir()
-            for name in REQUIRED_ARTIFACTS:
-                (build / name).write_text(f"contents of {name}\n", encoding="utf-8")
-            (build / "final.tex").write_text(
-                r"""\documentclass{article}
+    def make_inputs(self, root: Path):
+        build = root / "build"
+        build.mkdir()
+        for name in REQUIRED_ARTIFACTS:
+            (build / name).write_text(f"contents of {name}\n", encoding="utf-8")
+        (build / "final.tex").write_text(
+            r"""\documentclass{article}
+\usepackage[backend=biber,style=authoryear]{biblatex}
+\addbibresource{references.bib}
 \title{Canonical Paper Title}
 \begin{document}
 \maketitle
-Body.
+A claim \parencite{known2020}.
+\printbibliography
 \end{document}
 """,
-                encoding="utf-8",
-            )
-            outline = root / "outline.md"
-            outline.write_text("# Outline\n", encoding="utf-8")
-            source_audit = root / "source-audit.json"
-            source_audit.write_text(
-                '{"schema":"compiled-prose-source-audit/1"}\n', encoding="utf-8"
-            )
+            encoding="utf-8",
+        )
+        outline = root / "outline.md"
+        outline.write_text("# Outline\n", encoding="utf-8")
+        source_audit = root / "source-audit.json"
+        source_audit.write_text(
+            '{"schema":"compiled-prose-source-audit/1"}\n', encoding="utf-8"
+        )
+        bibliography = root / "references.bib"
+        bibliography.write_text(
+            "@article{known2020, author={Author, A.}, title={Known}, year={2020}}\n",
+            encoding="utf-8",
+        )
+        return build, outline, source_audit, bibliography
+
+    def fake_pandoc(self, commands):
+        def run(command, check):
+            self.assertTrue(check)
+            commands.append(command)
+            output_path = Path(command[command.index("-o") + 1])
+            output_path.write_text("<html></html>\n", encoding="utf-8")
+
+        return run
+
+    def test_final_html_uses_native_citeproc_and_same_bibliography(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            build, outline, source_audit, bibliography = self.make_inputs(root)
             output = root / "docs"
             commands = []
 
-            def fake_pandoc(command, check):
-                self.assertTrue(check)
-                commands.append(command)
-                output_path = Path(command[command.index("-o") + 1])
-                output_path.write_text("<html></html>\n", encoding="utf-8")
-
             with patch(
                 "tools.build_self_example_site.subprocess.run",
-                side_effect=fake_pandoc,
+                side_effect=self.fake_pandoc(commands),
             ):
                 build_site(
                     build_dir=build,
                     outline=outline,
                     source_audit=source_audit,
+                    bibliography=bibliography,
                     output_dir=output,
                     source_sha="abc123",
                     model="gpt-test",
@@ -128,8 +76,72 @@ Body.
                 for command in commands
                 if command[command.index("-o") + 1] == str(output / "index.html")
             )
+            self.assertIn("--citeproc", index_command)
+            self.assertIn(f"--bibliography={bibliography}", index_command)
             self.assertNotIn("--metadata", index_command)
             self.assertNotIn("title=Compiled Prose — self-example", index_command)
+
+    def test_non_final_pages_do_not_inherit_paper_bibliography(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            build, outline, source_audit, bibliography = self.make_inputs(root)
+            output = root / "docs"
+            commands = []
+
+            with patch(
+                "tools.build_self_example_site.subprocess.run",
+                side_effect=self.fake_pandoc(commands),
+            ):
+                build_site(
+                    build_dir=build,
+                    outline=outline,
+                    source_audit=source_audit,
+                    bibliography=bibliography,
+                    output_dir=output,
+                    source_sha="abc123",
+                    model="gpt-test",
+                    target="target",
+                    run_url="run",
+                )
+
+            non_final = [
+                command
+                for command in commands
+                if command[command.index("-o") + 1] != str(output / "index.html")
+            ]
+            self.assertTrue(non_final)
+            for command in non_final:
+                self.assertNotIn("--citeproc", command)
+                self.assertFalse(any(arg.startswith("--bibliography=") for arg in command))
+
+    def test_candidate_retains_bibliography_as_non_conceptual_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            build, outline, source_audit, bibliography = self.make_inputs(root)
+            output = root / "docs"
+
+            with patch(
+                "tools.build_self_example_site.subprocess.run",
+                side_effect=self.fake_pandoc([]),
+            ):
+                build_site(
+                    build_dir=build,
+                    outline=outline,
+                    source_audit=source_audit,
+                    bibliography=bibliography,
+                    output_dir=output,
+                    source_sha="abc123",
+                    model="gpt-test",
+                    target="target",
+                    run_url="run",
+                )
+
+            self.assertEqual(
+                (output / "artifacts" / "references.bib").read_text(encoding="utf-8"),
+                bibliography.read_text(encoding="utf-8"),
+            )
+            metadata = json.loads((output / "build.json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata["bibliography"], "references.bib")
 
 
 if __name__ == "__main__":
