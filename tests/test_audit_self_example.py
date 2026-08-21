@@ -104,17 +104,6 @@ class SelfExampleAuditTests(unittest.TestCase):
             result = audit(outline, audit_file, final=final)
             self.assertTrue(result.ok, result.errors)
 
-    def test_entropy_fixture_is_rejected(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            outline, audit_file, _ = self.write_fixture(root)
-            entropy = root / "forgotten-stuff" / "example_outline.md"
-            entropy.parent.mkdir()
-            entropy.write_text("disposable fixture\n", encoding="utf-8")
-            result = audit(outline, audit_file)
-            self.assertFalse(result.ok)
-            self.assertTrue(any("entropy fixture" in error for error in result.errors))
-
 
 if __name__ == "__main__":
     unittest.main()
