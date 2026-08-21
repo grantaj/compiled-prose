@@ -4,11 +4,12 @@
 import argparse
 import html
 import json
+import re
 import shutil
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Optional
 
 
 REQUIRED_ARTIFACTS = (
@@ -19,6 +20,16 @@ REQUIRED_ARTIFACTS = (
     "final.tex",
     "final.pdf",
 )
+
+_BIBLIOGRAPHY_RE = re.compile(
+    r"\\begin\{thebibliography\}\{[^{}]*\}(.*?)\\end\{thebibliography\}",
+    re.DOTALL,
+)
+_BIBITEM_RE = re.compile(
+    r"\\bibitem(?:\[(?P<label>[^\]]+)\])?\{(?P<key>[^{}]+)\}"
+)
+_SIMPLE_CITE_RE = re.compile(r"\\cite\s*\{(?P<keys>[^{}]+)\}")
+_ANY_CITE_RE = re.compile(r"\\cite[a-zA-Z*]*\s*(?:\[|\{)")
 
 STYLE = """\
 :root { color-scheme: light dark; }
@@ -69,24 +80,115 @@ def _require_files(paths: Iterable[Path]) -> None:
         raise FileNotFoundError("missing publication inputs: " + ", ".join(missing))
 
 
-def _run_pandoc(source: Path, output: Path, title: str, nav: Path) -> None:
-    subprocess.run(
+def _prepare_final_tex_for_html(source: Path, output: Path) -> None:
+    """Make Pandoc's HTML view preserve embedded LaTeX citation semantics.
+
+    Pandoc can read ``thebibliography`` text but, without separate structured
+    bibliography data, emits empty spans for ``\\cite{...}`` and may collapse
+    adjacent ``\\bibitem`` entries.  The validated LaTeX/PDF remains canonical;
+    this creates only a temporary HTML-rendering copy with explicit linked
+    citation labels and reference entries.
+    """
+
+    tex = source.read_text(encoding="utf-8")
+    bibliography_matches = list(_BIBLIOGRAPHY_RE.finditer(tex))
+
+    if not bibliography_matches:
+        if _ANY_CITE_RE.search(tex):
+            raise ValueError(
+                "HTML rendering found LaTeX citations without an embedded "
+                "thebibliography environment"
+            )
+        output.write_text(tex, encoding="utf-8")
+        return
+
+    if len(bibliography_matches) != 1:
+        raise ValueError("HTML rendering supports exactly one thebibliography environment")
+
+    bibliography = bibliography_matches[0]
+    body = bibliography.group(1)
+    item_matches = list(_BIBITEM_RE.finditer(body))
+    if not item_matches:
+        raise ValueError("thebibliography contains no bibitem entries")
+
+    entries = []
+    by_key = {}
+    for index, item in enumerate(item_matches, start=1):
+        key = item.group("key").strip()
+        if not key:
+            raise ValueError("thebibliography contains an empty bibitem key")
+        if key in by_key:
+            raise ValueError(f"duplicate bibitem key: {key}")
+
+        next_start = (
+            item_matches[index].start() if index < len(item_matches) else len(body)
+        )
+        reference = body[item.end() : next_start].strip()
+        if not reference:
+            raise ValueError(f"bibitem has no reference text: {key}")
+
+        label = (item.group("label") or str(index)).strip()
+        entries.append((key, label, reference))
+        by_key[key] = (index, label)
+
+    def replace_cite(match: re.Match) -> str:
+        keys = [key.strip() for key in match.group("keys").split(",")]
+        if not keys or any(not key for key in keys):
+            raise ValueError("empty citation key in final LaTeX")
+
+        links = []
+        for key in keys:
+            if key not in by_key:
+                raise ValueError(f"citation key has no bibitem: {key}")
+            number, label = by_key[key]
+            links.append(f"\\href{{#ref-{number}}}{{[{label}]}}")
+        return ", ".join(links)
+
+    converted = _SIMPLE_CITE_RE.sub(replace_cite, tex)
+    if _ANY_CITE_RE.search(converted):
+        raise ValueError(
+            "HTML rendering encountered an unsupported LaTeX citation command; "
+            "only simple \\cite{...} is supported"
+        )
+
+    references = ["\\section*{References}", "\\begin{description}"]
+    for number, (_, label, reference) in enumerate(entries, start=1):
+        references.append(
+            f"\\item[{{[{label}]}}] \\hypertarget{{ref-{number}}}{{}} {reference}"
+        )
+    references.append("\\end{description}")
+    rendered_bibliography = "\n".join(references)
+
+    converted = (
+        converted[: bibliography.start()]
+        + rendered_bibliography
+        + converted[bibliography.end() :]
+    )
+    output.write_text(converted, encoding="utf-8")
+
+
+def _run_pandoc(
+    source: Path, output: Path, title: Optional[str], nav: Path
+) -> None:
+    command = [
+        "pandoc",
+        str(source),
+        "--standalone",
+        "--to=html5",
+        "--mathjax",
+    ]
+    if title is not None:
+        command.extend(["--metadata", f"title={title}"])
+    command.extend(
         [
-            "pandoc",
-            str(source),
-            "--standalone",
-            "--to=html5",
-            "--mathjax",
-            "--metadata",
-            f"title={title}",
             "--css=style.css",
             "--include-before-body",
             str(nav),
             "-o",
             str(output),
-        ],
-        check=True,
+        ]
     )
+    subprocess.run(command, check=True)
 
 
 def build_site(
@@ -140,12 +242,15 @@ def build_site(
         encoding="utf-8",
     )
 
-    _run_pandoc(
-        build_dir / "final.tex",
-        output_dir / "index.html",
-        "Compiled Prose — self-example",
-        nav,
-    )
+    final_html_source = output_dir / "_final_for_html.tex"
+    _prepare_final_tex_for_html(build_dir / "final.tex", final_html_source)
+    try:
+        # Do not override final.tex metadata: its authored/generated paper title
+        # must be the same title readers see in both the PDF and HTML views.
+        _run_pandoc(final_html_source, output_dir / "index.html", None, nav)
+    finally:
+        final_html_source.unlink(missing_ok=True)
+
     _run_pandoc(outline, output_dir / "outline.html", "Authoritative outline", nav)
     _run_pandoc(
         build_dir / "peer_review.md",
