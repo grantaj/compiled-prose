@@ -63,6 +63,7 @@ self-preflight:
 # fresh build. The selected BACKEND controls whether model execution is local
 # or paid; self-preflight always runs before any backend invocation.
 self: self-preflight
+	@python tools/self_example_targets.py --path "$(TARGET_STYLE)" --field citation_audit >/dev/null
 	@$(MAKE) --no-print-directory clobber
 	@mkdir -p "$(BUILD_DIR)"
 	@cp "$(SELF_BIBLIOGRAPHY)" "$(BUILD_BIBLIOGRAPHY)"
