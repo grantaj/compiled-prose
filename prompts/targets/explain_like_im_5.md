@@ -9,8 +9,9 @@ CORE TARGET:
 COVERAGE AND LENGTH:
 - This target explicitly permits summarisation, compression, selective omission, and reordering of source material when needed to produce an appropriate child-level explanation.
 - Preserve the central idea or ideas and the minimum reasoning, distinctions, qualifications, uncertainty, and context needed to keep the retained explanation faithful and non-misleading.
+- Decide coverage semantically from the source as a whole and the needs of this reader. There is no quota of source points to retain, no percentage to preserve, and no mechanical category of material that must always be kept or always be dropped.
 - Prefer a short, coherent explanation over exhaustive coverage. Do not attempt to realise every source section, argument branch, example, citation, qualification, or contextual detail merely because it is present in the source.
-- Omit or heavily compress subsidiary arguments, literature context, methodological detail, repeated distinctions, extended evidence, meta-discussion, and other material that is not needed for the child to understand the core idea.
+- Subsidiary arguments, literature context, methodological detail, repeated distinctions, extended evidence, meta-discussion, and similar material are strong candidates for compression or omission when they are not needed for the child to understand the core idea; retain any of them when they are necessary to keep that idea faithful or understandable.
 - Length is governed by the target audience, not by the length of the source. The result should be suitable to read or hear in one short sitting, not a child-worded version of a long adult paper.
 - Omission must not make a retained claim false, materially stronger or weaker, misleading, or detached from a qualification or dependency necessary to understand it faithfully.
 - Material omitted from this realisation remains authoritative in the source; omission for this target does not erase or revise it.
