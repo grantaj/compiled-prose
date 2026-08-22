@@ -27,17 +27,19 @@ Mechanical enforcement currently covers matters such as:
 - the single bounded final-realisation route;
 - build-directory isolation for generated artefacts and diagnostics.
 
-The repository self-example adds release-specific mechanical checks around its audited source catalogue and bibliography keys. Those checks do not make the generic compiler a semantic citation verifier.
+The repository self-example adds release-specific mechanical checks around its audited source catalogue and bibliography keys. Those checks verify provenance and rendering integrity for material that is actually emitted; they do not make the generic compiler a semantic citation verifier and do not decide what the selected target should include.
 
 ### Prompt contracts
 
-A **prompt contract** is an executable instruction supplied to the model but not semantically proved by the build system. Source fidelity, absence of invented claims, preservation of conceptual scope, target-relative coverage, faithful attribution/evidence presentation, and correct classification of a review finding as `SOURCE` or `REALISATION` fall into this category.
+A **prompt contract** is an executable instruction supplied to the model but not semantically proved by the build system. Source fidelity, absence of invented claims, preservation of conceptual scope, target-relative coverage, summarisation depth, omission choices, faithful attribution/evidence presentation, and correct classification of a review finding as `SOURCE` or `REALISATION` fall into this category.
 
-The build system can detect malformed transport/output structure. It cannot in general prove that valid-looking prose is faithful. A structurally valid LaTeX result that silently invents a claim is therefore a prompt-contract violation, not something `enforce_protocol.py` can currently discover by itself.
+The build system can detect malformed transport/output structure. It cannot in general prove that valid-looking prose is faithful or target-appropriate. A structurally valid LaTeX result that silently invents a claim, preserves far too much material for a child target, or uses an inappropriate citation presentation is therefore a prompt-contract violation, not something `enforce_protocol.py` can currently discover by itself.
 
 ### Design constraints
 
-A **design constraint** states an architectural property future implementation changes are expected to preserve even where no single current test proves it completely. The principal design constraints are backend independence, explicit failure over improvisation, file-driven/Git-friendly operation, keeping conceptual authority upstream of generated prose, and model-stage economy.
+A **design constraint** states an architectural property future implementation changes are expected to preserve even where no single current test proves it completely. The principal design constraints are backend independence, explicit failure over improvisation, file-driven/Git-friendly operation, keeping conceptual authority upstream of generated prose, model-stage economy, and keeping semantic target decisions in the model/prompt layer rather than duplicating them as deterministic policy code.
+
+Coverage selection, summarisation level, omission, explanatory strategy, and evidence/attribution/citation presentation are semantic target-realisation decisions. Mechanical code may validate protocol and provenance of whatever the model emits, but it must not encode a second deterministic implementation of those target semantics.
 
 Model-stage economy means a conceptual responsibility should be folded into an existing model-backed stage when that stage can perform it reliably. New model-backed stages require empirical justification from compilation quality or failure behaviour; cleaner conceptual decomposition by itself is insufficient because every additional stage increases user cost.
 
@@ -156,7 +158,7 @@ For each stage the renderer composes one prompt in this stable order:
 7. peer-review diagnostic context, only for the conditional final-realisation stage;
 8. declared output and failure contract.
 
-For a `tex` stage with bibliography metadata, the output contract fixes provenance-safe citation handling rather than imposing one visible citation style. It permits only supplied BibTeX keys and forbids model-authored bibliography entries. If the selected target requires or preserves formal citation apparatus, the protocol uses BibLaTeX/biber, the supplied bibliography filename, and no model-authored `thebibliography` block. If the target explicitly requires no formal citation apparatus, the protocol forbids emitting citation commands, bibliography plumbing, or a references section merely because metadata was supplied; necessary source-authored attribution is instead realised in the target-appropriate form. Citation presentation therefore remains target-owned rather than a hidden academic default.
+For a `tex` stage with bibliography metadata, the output contract fixes provenance-safe citation handling rather than imposing one visible citation style. It permits only supplied BibTeX keys and forbids model-authored bibliography entries. If the selected target requires or preserves formal citation apparatus, the prompt instructs the model to use BibLaTeX/biber, the supplied bibliography filename, and no model-authored `thebibliography` block. If the target explicitly requires no formal citation apparatus, the prompt instructs the model not to emit citation commands, bibliography plumbing, or a references section merely because metadata was supplied; necessary source-authored attribution is instead realised in the target-appropriate form. Citation presentation therefore remains target-owned rather than a hidden academic default.
 
 Draft and summarize normally use the authoritative source as their stage input, so the renderer avoids duplicating that payload.
 
@@ -213,7 +215,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced:** the source path is required when the draft recipe runs, and a successful result must satisfy the structural `tex` protocol.
 
-**Prompt contract:** realise the source faithfully at the selected target's required coverage without inventing claims, evidence, sources, attributions, citations, content-bearing examples, or authorial choices. Core-pipeline coverage is exhaustive unless the target explicitly authorises reduction. The target also controls whether source-authorised support appears as formal citations, narrative attribution, or another permitted presentation. When the target explicitly permits illustrative scaffolding, the draft may generate it only under the provenance and fidelity constraints above. Source insufficiency that would require conceptual invention is a blocking condition to report with `@@FAIL`.
+**Prompt contract:** realise the source faithfully at the selected target's required coverage without inventing claims, evidence, sources, attributions, citations, content-bearing examples, or authorial choices. Core-pipeline coverage is exhaustive unless the target explicitly authorises reduction. The model decides which permitted material to compress or omit based on the target contract and source relationships rather than a deterministic selection rule. The target also controls whether source-authorised support appears as formal citations, narrative attribution, or another permitted presentation. When the target explicitly permits illustrative scaffolding, the draft may generate it only under the provenance and fidelity constraints above. Source insufficiency that would require conceptual invention is a blocking condition to report with `@@FAIL`.
 
 ### 2. Smooth
 
@@ -347,7 +349,7 @@ Separately, the following are **mechanical blocking conditions** and stop the Ma
 - a validated `BLOCKED_SOURCE` review;
 - explicit `@@FAIL` from the conditional final-realisation stage.
 
-The self-example release path additionally fails closed if its audited bibliography keys do not match `references.bib` or if the final LaTeX invents an unknown citation key. Retention of every source-supplied citation is a target-specific release-audit policy: `journal_academic` and `magazine_general` require all source citations to survive, while `explain_like_im_5` permits no formal citation keys at all and therefore checks only that any formal citations which do appear are source-authorised and correctly wired. Whether narrative attribution and retained evidentiary relationships are semantically faithful remains part of model review and human acceptance rather than being falsely claimed as mechanically proved.
+The self-example release path additionally fails closed if its audited bibliography keys do not match `references.bib`, if the final LaTeX invents an unknown citation key, or if formal citation commands that do appear are not correctly bound to the supplied bibliography. It deliberately does **not** fail merely because an authoritative-source citation is absent from the final realisation, nor because a target-facing text does or does not use formal citation apparatus. Whether material should be retained, compressed, omitted, formally cited, or narratively attributed is decided by the model under the selected target and assessed by model review and human acceptance.
 
 Failures are externalised as diagnostics rather than hidden in generated LaTeX.
 
