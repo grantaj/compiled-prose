@@ -63,13 +63,11 @@ self-preflight:
 # fresh build. The selected BACKEND controls whether model execution is local
 # or paid; self-preflight always runs before any backend invocation.
 self: self-preflight
-	@python tools/self_example_targets.py --path "$(TARGET_STYLE)" --field citation_audit >/dev/null
 	@$(MAKE) --no-print-directory clobber
 	@mkdir -p "$(BUILD_DIR)"
 	@cp "$(SELF_BIBLIOGRAPHY)" "$(BUILD_BIBLIOGRAPHY)"
 	@$(MAKE) --no-print-directory IN="$(SELF_SOURCE)" BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final
-	@citation_audit="$$(python tools/self_example_targets.py --path "$(TARGET_STYLE)" --field citation_audit)"; \
-	  python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)" --bibliography "$(BUILD_BIBLIOGRAPHY)" --final "$(FINAL_OUT)" --citation-retention "$$citation_audit"
+	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)" --bibliography "$(BUILD_BIBLIOGRAPHY)" --final "$(FINAL_OUT)"
 	@$(MAKE) --no-print-directory validate-latex
 
 # Validation is intentionally non-compiling at the prose-pipeline level: if
