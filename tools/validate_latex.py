@@ -15,6 +15,26 @@ UNRESOLVED_MARKERS = (
     "Citation `",
     "Reference `",
 )
+DIAGNOSTIC_SUFFIXES = (
+    ".aux",
+    ".bbl",
+    ".bcf",
+    ".blg",
+    ".fdb_latexmk",
+    ".fls",
+    ".log",
+    ".run.xml",
+)
+ERROR_MARKERS = (
+    "undefined control sequence",
+    "latex error:",
+    "package biblatex error:",
+    "emergency stop",
+    "fatal error",
+    "runaway argument",
+    "file ended while scanning",
+    "error -",
+)
 
 
 def validate_document_text(text: str) -> list[str]:
@@ -48,7 +68,47 @@ def _unresolved_from_log(log: str) -> list[str]:
     return lines
 
 
-def compile_latex(input_path: Path, output_path: Path, *, latexmk: str = "latexmk") -> None:
+def _failure_excerpt(log: str, stdout: str) -> str:
+    for label, text in (("LaTeX log", log), ("latexmk output", stdout)):
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            lowered = line.lower()
+            if line.lstrip().startswith("!") or any(
+                marker in lowered for marker in ERROR_MARKERS
+            ):
+                start = max(0, index - 3)
+                end = min(len(lines), index + 12)
+                return f"{label} around first error:\n" + "\n".join(lines[start:end])
+    return "latexmk output tail:\n" + "\n".join(stdout.splitlines()[-50:])
+
+
+def _retain_failure_diagnostics(
+    tmpdir: Path,
+    stem: str,
+    diagnostic_dir: Path | None,
+    stdout: str,
+) -> str | None:
+    if diagnostic_dir is None:
+        return None
+    try:
+        diagnostic_dir.mkdir(parents=True, exist_ok=True)
+        (diagnostic_dir / "latexmk.stdout.txt").write_text(stdout, encoding="utf-8")
+        for suffix in DIAGNOSTIC_SUFFIXES:
+            source = tmpdir / f"{stem}{suffix}"
+            if source.is_file():
+                shutil.copy2(source, diagnostic_dir / source.name)
+    except OSError as exc:
+        return f"could not retain LaTeX diagnostics in {diagnostic_dir}: {exc}"
+    return None
+
+
+def compile_latex(
+    input_path: Path,
+    output_path: Path,
+    *,
+    latexmk: str = "latexmk",
+    diagnostic_dir: Path | None = None,
+) -> None:
     executable = shutil.which(latexmk)
     if executable is None:
         raise RuntimeError(
@@ -61,7 +121,12 @@ def compile_latex(input_path: Path, output_path: Path, *, latexmk: str = "latexm
         raise RuntimeError("; ".join(static_errors))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="compiled-prose-latex-") as tmp:
+    # Keep the auxiliary directory below the source directory. TeX helper tools
+    # are not uniformly portable when asked to write to an unrelated absolute
+    # output directory, and the release source/bibliography already live here.
+    with tempfile.TemporaryDirectory(
+        prefix=".compiled-prose-latex-", dir=input_path.parent
+    ) as tmp:
         tmpdir = Path(tmp)
         command = [
             executable,
@@ -87,18 +152,49 @@ def compile_latex(input_path: Path, output_path: Path, *, latexmk: str = "latexm
             else completed.stdout
         )
         if completed.returncode != 0:
-            tail = "\n".join(completed.stdout.splitlines()[-25:])
-            raise RuntimeError(
-                f"latexmk failed with status {completed.returncode}:\n{tail}"
+            retention_error = _retain_failure_diagnostics(
+                tmpdir,
+                input_path.stem,
+                diagnostic_dir,
+                completed.stdout,
             )
+            message = (
+                f"latexmk failed with status {completed.returncode}:\n"
+                f"{_failure_excerpt(log, completed.stdout)}"
+            )
+            if retention_error:
+                message += f"\n{retention_error}"
+            elif diagnostic_dir is not None:
+                message += f"\nRetained diagnostics: {diagnostic_dir}"
+            raise RuntimeError(message)
         unresolved = _unresolved_from_log(log)
         if unresolved:
-            raise RuntimeError(
-                "unresolved LaTeX references/citations:\n" + "\n".join(unresolved)
+            retention_error = _retain_failure_diagnostics(
+                tmpdir,
+                input_path.stem,
+                diagnostic_dir,
+                completed.stdout,
             )
+            message = "unresolved LaTeX references/citations:\n" + "\n".join(unresolved)
+            if retention_error:
+                message += f"\n{retention_error}"
+            elif diagnostic_dir is not None:
+                message += f"\nRetained diagnostics: {diagnostic_dir}"
+            raise RuntimeError(message)
         produced = tmpdir / f"{input_path.stem}.pdf"
         if not produced.is_file() or produced.stat().st_size == 0:
-            raise RuntimeError("latexmk succeeded but did not produce a non-empty PDF")
+            retention_error = _retain_failure_diagnostics(
+                tmpdir,
+                input_path.stem,
+                diagnostic_dir,
+                completed.stdout,
+            )
+            message = "latexmk succeeded but did not produce a non-empty PDF"
+            if retention_error:
+                message += f"; {retention_error}"
+            elif diagnostic_dir is not None:
+                message += f"; retained diagnostics: {diagnostic_dir}"
+            raise RuntimeError(message)
         shutil.copy2(produced, output_path)
 
 
@@ -106,9 +202,14 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--diagnostic-dir", type=Path)
     args = parser.parse_args()
     try:
-        compile_latex(args.input, args.output)
+        compile_latex(
+            args.input,
+            args.output,
+            diagnostic_dir=args.diagnostic_dir,
+        )
     except (OSError, RuntimeError) as exc:
         print(f"LaTeX validation failed: {exc}", file=sys.stderr)
         return 2
