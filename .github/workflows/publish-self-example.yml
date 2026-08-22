@@ -62,6 +62,16 @@ jobs:
               { owner, repo, per_page: 100 }
             );
 
+            function newerCandidate(left, right) {
+              if (!left) return right;
+              if (!right) return left;
+              const leftCreated = Date.parse(left.run.created_at);
+              const rightCreated = Date.parse(right.run.created_at);
+              if (rightCreated > leftCreated) return right;
+              if (rightCreated < leftCreated) return left;
+              return right.run.id > left.run.id ? right : left;
+            }
+
             async function newestSuccessfulMatching(matchesArtifact, workflowPath) {
               let newest = null;
               for (const artifact of artifacts) {
@@ -86,16 +96,7 @@ jobs:
                   continue;
                 }
 
-                if (
-                  newest === null ||
-                  Date.parse(run.created_at) > Date.parse(newest.run.created_at) ||
-                  (
-                    Date.parse(run.created_at) === Date.parse(newest.run.created_at) &&
-                    run.id > newest.run.id
-                  )
-                ) {
-                  newest = { artifact, run };
-                }
+                newest = newerCandidate(newest, { artifact, run });
               }
               return newest;
             }
@@ -107,11 +108,24 @@ jobs:
               );
             }
 
+            // Before compile and publish became separate workflows, the accepted
+            // academic publication retained its compilation as
+            // self-example-candidate-<40-hex-source-sha>. It is a real successful
+            // academic compilation and remains eligible until a newer academic
+            // compile-only candidate supersedes it.
+            const legacyAcademic = await newestSuccessfulMatching(
+              artifact => /^self-example-candidate-[0-9a-f]{40}$/.test(artifact.name),
+              ".github/workflows/publish-self-example.yml"
+            );
+
             const target = process.env.TARGET_ID;
-            const candidate = await newestSuccessful(
+            const modernCandidate = await newestSuccessful(
               `self-example-candidate-${target}-`,
               ".github/workflows/compile-self-example.yml"
             );
+            const candidate = target === "journal_academic"
+              ? newerCandidate(modernCandidate, legacyAcademic)
+              : modernCandidate;
             if (!candidate) {
               core.setFailed(
                 `No successful retained compilation exists for target ${target}. ` +
@@ -121,7 +135,7 @@ jobs:
             }
 
             core.info(
-              `Publishing ${target} from successful compile run ${candidate.run.id} ` +
+              `Publishing ${target} from successful retained compilation run ${candidate.run.id} ` +
               `(${candidate.artifact.name}).`
             );
             core.setOutput("candidate-run-id", String(candidate.run.id));
@@ -141,15 +155,11 @@ jobs:
               return;
             }
 
-            // Before the multi-target publish workflow existed, the successful
-            // publication retained the exact academic site as a candidate named
-            // self-example-candidate-<40-hex-source-sha>. Reuse that exact
-            // published candidate once to bootstrap the first modern showcase.
-            const legacyAcademic = await newestSuccessfulMatching(
-              artifact => /^self-example-candidate-[0-9a-f]{40}$/.test(artifact.name),
-              ".github/workflows/publish-self-example.yml"
-            );
-            if (legacyAcademic) {
+            // A non-academic target needs the legacy academic publication only
+            // until the first modern multi-target showcase has been retained.
+            // When journal_academic itself is selected, the legacy candidate is
+            // already the selected candidate and must not be imported twice.
+            if (target !== "journal_academic" && legacyAcademic) {
               core.info(
                 `Preserving legacy published academic candidate from run ` +
                 `${legacyAcademic.run.id} (${legacyAcademic.artifact.name}).`
@@ -158,7 +168,7 @@ jobs:
               core.setOutput("base-artifact", legacyAcademic.artifact.name);
               core.setOutput("base-kind", "legacy-academic");
             } else {
-              core.info("No prior successful retained publication found; this is a first publication.");
+              core.info("No separate prior retained publication base is needed.");
             }
 
       - name: Require academic target for first publication
@@ -185,7 +195,7 @@ jobs:
           repository: ${{ github.repository }}
 
       - name: Download legacy published academic candidate
-        if: ${{ steps.retained.outputs.base-kind == 'legacy-academic' && inputs.target != 'journal_academic' }}
+        if: ${{ steps.retained.outputs.base-kind == 'legacy-academic' }}
         uses: actions/download-artifact@v4
         with:
           name: ${{ steps.retained.outputs.base-artifact }}
@@ -217,7 +227,7 @@ jobs:
           )
           if [ "$BASE_KIND" = "showcase" ]; then
             args+=(--base-showcase base-showcase)
-          elif [ "$BASE_KIND" = "legacy-academic" ] && [ "$TARGET_ID" != "journal_academic" ]; then
+          elif [ "$BASE_KIND" = "legacy-academic" ]; then
             args+=(--candidate "journal_academic=legacy-academic")
             args+=(--candidate-run-id "journal_academic=$BASE_RUN_ID")
           fi
