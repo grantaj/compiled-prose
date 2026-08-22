@@ -5,7 +5,13 @@ from pathlib import Path
 from typing import Optional
 
 OUTPUT_CONTRACTS = {
-    "tex": "Return exactly one complete raw LaTeX document beginning with `\\documentclass` and ending with `\\end{document}`. Do not repeat or summarize the prompt.",
+    "tex": (
+        "Return exactly one complete, standalone raw LaTeX document beginning with "
+        "`\\documentclass` and ending with `\\end{document}`. It must compile as emitted: "
+        "every command and environment used must be provided by the document class, the "
+        "LaTeX kernel, or a package explicitly loaded in the document preamble. Do not rely "
+        "on undeclared packages or an external wrapper. Do not repeat or summarize the prompt."
+    ),
     "md": "Return only Markdown content. Do not repeat or summarize the prompt.",
 }
 
