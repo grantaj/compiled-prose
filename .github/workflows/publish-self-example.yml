@@ -1,26 +1,20 @@
 name: Publish self-example
 
 # Publication is intentionally separate from compilation. This workflow is
-# keyless: it only reuses explicitly selected retained candidate artifacts.
+# keyless: the operator selects a target, and publication promotes the newest
+# successful retained compilation for that target.
 on:
   workflow_dispatch:
     inputs:
-      base_publish_run_id:
-        description: "Prior Publish self-example run ID to reuse (blank for first publication)"
-        required: false
-        type: string
-      journal_academic_run_id:
-        description: "Compile run ID for journal_academic (required unless base preserves it)"
-        required: false
-        type: string
-      magazine_general_run_id:
-        description: "Compile run ID for magazine_general (blank to preserve base/omit)"
-        required: false
-        type: string
-      explain_like_im_5_run_id:
-        description: "Compile run ID for explain_like_im_5 (blank to preserve base/omit)"
-        required: false
-        type: string
+      target:
+        description: "Target to publish from its latest successful compilation"
+        required: true
+        type: choice
+        default: journal_academic
+        options:
+          - journal_academic
+          - magazine_general
+          - explain_like_im_5
 
 permissions:
   contents: read
@@ -39,10 +33,7 @@ jobs:
       actions: read
       pages: read
     env:
-      BASE_PUBLISH_RUN_ID: ${{ inputs.base_publish_run_id }}
-      JOURNAL_RUN_ID: ${{ inputs.journal_academic_run_id }}
-      MAGAZINE_RUN_ID: ${{ inputs.magazine_general_run_id }}
-      ELI5_RUN_ID: ${{ inputs.explain_like_im_5_run_id }}
+      TARGET_ID: ${{ inputs.target }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -52,26 +43,98 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Validate explicit artifact selections
+      - name: Validate selected target
         run: |
-          selected=0
-          for value in "$BASE_PUBLISH_RUN_ID" "$JOURNAL_RUN_ID" "$MAGAZINE_RUN_ID" "$ELI5_RUN_ID"; do
-            if [ -n "$value" ]; then
-              selected=$((selected + 1))
-              if ! [[ "$value" =~ ^[0-9]+$ ]]; then
-                echo "Selected workflow run IDs must be numeric: $value" >&2
-                exit 2
-              fi
-            fi
-          done
-          if [ "$selected" -eq 0 ]; then
-            echo "Select a prior publish run or at least one explicit compile run ID." >&2
-            exit 2
-          fi
-          if [ -z "$BASE_PUBLISH_RUN_ID" ] && [ -z "$JOURNAL_RUN_ID" ]; then
-            echo "A first publication must explicitly include journal_academic so legacy top-level URLs remain valid." >&2
-            exit 2
-          fi
+          target_path="$(python tools/self_example_targets.py "$TARGET_ID")"
+          test -f "$target_path"
+
+      - name: Resolve latest successful retained artifacts
+        id: retained
+        uses: actions/github-script@v8
+        env:
+          TARGET_ID: ${{ inputs.target }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+            artifacts.sort(
+              (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at)
+            );
+
+            async function newestSuccessful(prefix, workflowPath, requireMain) {
+              for (const artifact of artifacts) {
+                if (
+                  artifact.expired ||
+                  !artifact.name.startsWith(prefix) ||
+                  !artifact.workflow_run?.id
+                ) {
+                  continue;
+                }
+
+                const { data: run } = await github.rest.actions.getWorkflowRun({
+                  owner,
+                  repo,
+                  run_id: artifact.workflow_run.id,
+                });
+                if (
+                  run.conclusion !== "success" ||
+                  run.event !== "workflow_dispatch" ||
+                  run.path !== workflowPath ||
+                  (requireMain && run.head_branch !== "main")
+                ) {
+                  continue;
+                }
+
+                return { artifact, run };
+              }
+              return null;
+            }
+
+            const target = process.env.TARGET_ID;
+            const candidate = await newestSuccessful(
+              `self-example-candidate-${target}-`,
+              ".github/workflows/compile-self-example.yml",
+              true
+            );
+            if (!candidate) {
+              core.setFailed(
+                `No successful retained compilation exists for target ${target} on main. ` +
+                "Run Compile self-example target successfully first."
+              );
+              return;
+            }
+
+            core.info(
+              `Publishing ${target} from successful compile run ${candidate.run.id} ` +
+              `(${candidate.artifact.name}).`
+            );
+            core.setOutput("candidate-run-id", String(candidate.run.id));
+            core.setOutput("candidate-artifact", candidate.artifact.name);
+
+            const base = await newestSuccessful(
+              "self-example-showcase-",
+              ".github/workflows/publish-self-example.yml",
+              false
+            );
+            if (base) {
+              core.info(
+                `Preserving unselected targets from successful publish run ${base.run.id}.`
+              );
+              core.setOutput("base-run-id", String(base.run.id));
+              core.setOutput("base-artifact", base.artifact.name);
+            } else {
+              core.info("No prior successful retained showcase found; this is a first publication.");
+            }
+
+      - name: Require academic target for first publication
+        if: ${{ steps.retained.outputs.base-run-id == '' && inputs.target != 'journal_academic' }}
+        run: |
+          echo "No prior published showcase is available to preserve the legacy academic URLs." >&2
+          echo "Publish journal_academic first, then publish additional targets normally." >&2
+          exit 2
 
       - name: Install keyless publication dependency
         run: |
@@ -80,62 +143,37 @@ jobs:
           pandoc --version
 
       - name: Download prior published showcase
-        if: ${{ inputs.base_publish_run_id != '' }}
+        if: ${{ steps.retained.outputs.base-run-id != '' }}
         uses: actions/download-artifact@v4
         with:
-          pattern: self-example-showcase-*
+          name: ${{ steps.retained.outputs.base-artifact }}
           path: base-showcase
-          run-id: ${{ inputs.base_publish_run_id }}
+          run-id: ${{ steps.retained.outputs.base-run-id }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
 
-      - name: Download journal_academic candidate
-        if: ${{ inputs.journal_academic_run_id != '' }}
+      - name: Download selected target candidate
         uses: actions/download-artifact@v4
         with:
-          pattern: self-example-candidate-*
-          path: candidates/journal_academic
-          run-id: ${{ inputs.journal_academic_run_id }}
-          github-token: ${{ github.token }}
-          repository: ${{ github.repository }}
-
-      - name: Download magazine_general candidate
-        if: ${{ inputs.magazine_general_run_id != '' }}
-        uses: actions/download-artifact@v4
-        with:
-          pattern: self-example-candidate-*
-          path: candidates/magazine_general
-          run-id: ${{ inputs.magazine_general_run_id }}
-          github-token: ${{ github.token }}
-          repository: ${{ github.repository }}
-
-      - name: Download explain_like_im_5 candidate
-        if: ${{ inputs.explain_like_im_5_run_id != '' }}
-        uses: actions/download-artifact@v4
-        with:
-          pattern: self-example-candidate-*
-          path: candidates/explain_like_im_5
-          run-id: ${{ inputs.explain_like_im_5_run_id }}
+          name: ${{ steps.retained.outputs.candidate-artifact }}
+          path: candidate
+          run-id: ${{ steps.retained.outputs.candidate-run-id }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
 
       - name: Assemble multi-target Pages site
+        env:
+          CANDIDATE_RUN_ID: ${{ steps.retained.outputs.candidate-run-id }}
+          BASE_RUN_ID: ${{ steps.retained.outputs.base-run-id }}
         run: |
-          args=(--output-dir site --expected-outline outline.md)
-          if [ -n "$BASE_PUBLISH_RUN_ID" ]; then
+          args=(
+            --output-dir site
+            --expected-outline outline.md
+            --candidate "$TARGET_ID=candidate"
+            --candidate-run-id "$TARGET_ID=$CANDIDATE_RUN_ID"
+          )
+          if [ -n "$BASE_RUN_ID" ]; then
             args+=(--base-showcase base-showcase)
-          fi
-          if [ -n "$JOURNAL_RUN_ID" ]; then
-            args+=(--candidate "journal_academic=candidates/journal_academic")
-            args+=(--candidate-run-id "journal_academic=$JOURNAL_RUN_ID")
-          fi
-          if [ -n "$MAGAZINE_RUN_ID" ]; then
-            args+=(--candidate "magazine_general=candidates/magazine_general")
-            args+=(--candidate-run-id "magazine_general=$MAGAZINE_RUN_ID")
-          fi
-          if [ -n "$ELI5_RUN_ID" ]; then
-            args+=(--candidate "explain_like_im_5=candidates/explain_like_im_5")
-            args+=(--candidate-run-id "explain_like_im_5=$ELI5_RUN_ID")
           fi
           python tools/build_self_example_showcase.py "${args[@]}"
 
@@ -156,7 +194,7 @@ jobs:
           path: site
 
   deploy:
-    name: Publish selected retained candidates
+    name: Publish selected retained candidate
     needs: assemble
     runs-on: ubuntu-latest
     permissions:
