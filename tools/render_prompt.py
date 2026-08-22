@@ -15,7 +15,7 @@ FAILURE_CONTRACT = """If this stage cannot faithfully produce its declared succe
 - State what authorial information is missing, ambiguous, contradictory, or unsupported; do not invent or apply a conceptual fix.
 Do not mix a failure diagnostic into a successful artefact. Diagnostic stages should not use @@FAIL merely to report findings that are their normal declared output."""
 
-BIBLIOGRAPHY_RESOURCE_TOKEN = "{{BIBLIOGRAPHY_RESOURCE}}"
+BIBLIOGRAPHY_RESOURCE_TOKEN = "__BIBLIOGRAPHY_RESOURCE__"
 
 
 def read(path: str) -> str:
