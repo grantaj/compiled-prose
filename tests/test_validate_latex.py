@@ -47,10 +47,17 @@ class LatexValidationTests(unittest.TestCase):
                 )
                 self.assertEqual(outdir.parent, root)
                 (outdir / "final.log").write_text(
-                    "before\n! Undefined control sequence.\nafter\n", encoding="utf-8"
+                    "before\n"
+                    "pdfTeX error (font expansion): auto expansion is only possible "
+                    "with scalable fonts.\n"
+                    "after\n",
+                    encoding="utf-8",
                 )
-                (outdir / "final.bbl").write_text(
-                    "broken bbl\n", encoding="utf-8"
+                (outdir / "final.bbl-SAVE-ERROR").write_text(
+                    "saved broken bbl\n", encoding="utf-8"
+                )
+                (outdir / "final.bcf-SAVE-ERROR").write_text(
+                    "saved broken bcf\n", encoding="utf-8"
                 )
                 (outdir / "final.blg").write_text(
                     "biber details\n", encoding="utf-8"
@@ -65,9 +72,7 @@ class LatexValidationTests(unittest.TestCase):
                 with patch(
                     "tools.validate_latex.subprocess.run", side_effect=fake_run
                 ):
-                    with self.assertRaisesRegex(
-                        RuntimeError, "Undefined control sequence"
-                    ):
+                    with self.assertRaisesRegex(RuntimeError, "pdfTeX error"):
                         compile_latex(
                             source,
                             output,
@@ -75,8 +80,16 @@ class LatexValidationTests(unittest.TestCase):
                         )
 
             self.assertEqual(
-                (diagnostic_dir / "final.bbl").read_text(encoding="utf-8"),
-                "broken bbl\n",
+                (diagnostic_dir / "final.bbl-SAVE-ERROR").read_text(
+                    encoding="utf-8"
+                ),
+                "saved broken bbl\n",
+            )
+            self.assertEqual(
+                (diagnostic_dir / "final.bcf-SAVE-ERROR").read_text(
+                    encoding="utf-8"
+                ),
+                "saved broken bcf\n",
             )
             self.assertEqual(
                 (diagnostic_dir / "final.blg").read_text(encoding="utf-8"),
