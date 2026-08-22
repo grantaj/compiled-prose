@@ -130,159 +130,26 @@ class SelfExampleAuditTests(unittest.TestCase):
                 ),
             )
             result = audit(
-                outline,
-                audit_file,
-                bibliography=bibliography,
-                final=final,
-                citation_retention="known_only",
+                outline, audit_file, bibliography=bibliography, final=final
             )
             self.assertFalse(result.ok)
             self.assertTrue(any("unknown bibliography citation keys" in error for error in result.errors))
 
-    def test_all_source_policy_rejects_dropped_source_citation(self):
+    def test_final_may_omit_source_citations_without_mechanical_policy(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             outline, audit_file, bibliography, final = self.write_fixture(
                 root,
                 final=(
                     "\\documentclass{article}\n"
-                    "\\begin{document}\nClaim without citation.\n"
+                    "\\begin{document}\nTarget-selected explanation without formal citation syntax.\n"
                     "\\end{document}\n"
                 ),
             )
             result = audit(
-                outline,
-                audit_file,
-                bibliography=bibliography,
-                final=final,
-                citation_retention="all_source",
-            )
-            self.assertFalse(result.ok)
-            self.assertTrue(
-                any(
-                    "dropped source-supplied citations required by target audit policy"
-                    in error
-                    for error in result.errors
-                )
-            )
-
-    def test_known_only_policy_allows_no_formal_citations(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            outline, audit_file, bibliography, final = self.write_fixture(
-                root,
-                final=(
-                    "\\documentclass{article}\n"
-                    "\\begin{document}\n"
-                    "A selective target explanation with narrative provenance only.\n"
-                    "\\end{document}\n"
-                ),
-            )
-            result = audit(
-                outline,
-                audit_file,
-                bibliography=bibliography,
-                final=final,
-                citation_retention="known_only",
+                outline, audit_file, bibliography=bibliography, final=final
             )
             self.assertTrue(result.ok, result.errors)
-
-    def test_known_only_policy_still_validates_formal_citations_if_present(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            outline, audit_file, bibliography, final = self.write_fixture(
-                root,
-                final=(
-                    "\\documentclass{article}\n"
-                    "\\usepackage[backend=biber,style=authoryear]{biblatex}\n"
-                    "\\addbibresource{references.bib}\n"
-                    "\\begin{document}\n"
-                    "A claim \\parencite{known2020}.\n"
-                    "\\printbibliography\n\\end{document}\n"
-                ),
-            )
-            result = audit(
-                outline,
-                audit_file,
-                bibliography=bibliography,
-                final=final,
-                citation_retention="known_only",
-            )
-            self.assertTrue(result.ok, result.errors)
-
-    def test_no_formal_policy_allows_narrative_only_output(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            outline, audit_file, bibliography, final = self.write_fixture(
-                root,
-                final=(
-                    "\\documentclass{article}\n"
-                    "\\begin{document}\n"
-                    "Someone who worked on this idea explained it this way.\n"
-                    "\\end{document}\n"
-                ),
-            )
-            result = audit(
-                outline,
-                audit_file,
-                bibliography=bibliography,
-                final=final,
-                citation_retention="no_formal",
-            )
-            self.assertTrue(result.ok, result.errors)
-
-    def test_no_formal_policy_rejects_known_formal_biblatex_citation(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            outline, audit_file, bibliography, final = self.write_fixture(
-                root,
-                final=(
-                    "\\documentclass{article}\n"
-                    "\\usepackage[backend=biber]{biblatex}\n"
-                    "\\addbibresource{references.bib}\n"
-                    "\\begin{document}\n"
-                    "A claim \\textcite{known2020}.\n"
-                    "\\printbibliography\n\\end{document}\n"
-                ),
-            )
-            result = audit(
-                outline,
-                audit_file,
-                bibliography=bibliography,
-                final=final,
-                citation_retention="no_formal",
-            )
-            self.assertFalse(result.ok)
-            self.assertTrue(
-                any("formal bibliography citation commands forbidden" in error for error in result.errors)
-            )
-            self.assertTrue(
-                any("bibliography resource plumbing forbidden" in error for error in result.errors)
-            )
-            self.assertTrue(any("prints a bibliography forbidden" in error for error in result.errors))
-
-    def test_no_formal_policy_rejects_explicit_author_year_label(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            outline, audit_file, bibliography, final = self.write_fixture(
-                root,
-                final=(
-                    "\\documentclass{article}\n"
-                    "\\begin{document}\nKnown claim [Known 2020].\n"
-                    "\\end{document}\n"
-                ),
-            )
-            result = audit(
-                outline,
-                audit_file,
-                bibliography=bibliography,
-                final=final,
-                citation_retention="no_formal",
-            )
-            self.assertFalse(result.ok)
-            self.assertTrue(
-                any("formal explicit citation labels forbidden" in error for error in result.errors)
-            )
 
     def test_final_with_supplied_bibliography_contract_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -317,26 +184,10 @@ class SelfExampleAuditTests(unittest.TestCase):
                 ),
             )
             result = audit(
-                outline,
-                audit_file,
-                bibliography=bibliography,
-                final=final,
-                citation_retention="known_only",
+                outline, audit_file, bibliography=bibliography, final=final
             )
             self.assertFalse(result.ok)
             self.assertTrue(any("must not hand-render" in error for error in result.errors))
-
-    def test_unknown_citation_retention_policy_is_rejected(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            outline, audit_file, bibliography, _ = self.write_fixture(root)
-            with self.assertRaisesRegex(ValueError, "citation_retention must be one of"):
-                audit(
-                    outline,
-                    audit_file,
-                    bibliography=bibliography,
-                    citation_retention="academic_everywhere",
-                )
 
 
 if __name__ == "__main__":
