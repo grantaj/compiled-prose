@@ -64,8 +64,8 @@ Machine contributes causal execution labour by producing grammatical and coheren
 ### II.3 Compiler analogy
 
 - Source corresponds to the upstream, authoritative, structured, inspectable, maintainable artefact.
-- prose corresponds to target-adapted, replaceable conforming output.
-- source defects are repaired upstream rather than patched into output.
+- Prose corresponds to target-adapted, replaceable conforming output.
+- Source defects are repaired upstream rather than patched into output.
 - Boundary: natural language is not machine code. Semantic equivalence is not mechanically guaranteed.
 
 ### II.4 Pipeline and targets
