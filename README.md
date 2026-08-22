@@ -1,6 +1,6 @@
 # Compiled Prose
 
-Compiled Prose is a small, file-driven compiler pipeline for academic and technical prose. The human-authored source carries the claims, argument, structure, evidence, citations, and unresolved choices. Model-backed stages realise that source as prose for a selected target, but their outputs remain derived artefacts rather than new conceptual authority.
+Compiled Prose is a small, file-driven compiler pipeline for academic and technical prose. The human-authored source carries the claims, argument, conceptual structure, evidence, citations, attributions, and unresolved choices. Model-backed stages realise that source as prose for a selected target, but their outputs remain derived artefacts rather than new conceptual authority.
 
 The compiler analogy is architectural, not a promise of byte-for-byte deterministic generation. The project aims for a predictable, auditable transformation process whose authority and failure rules are stable even when model output varies.
 
@@ -43,7 +43,11 @@ backend-independent protocol enforcement
         `--> build/errors/<stage>.md
 ```
 
-The original authoritative source is carried alongside downstream derived artefacts. Target files constrain realisation for a venue or audience; they do not supply claims, evidence, citations, content-bearing examples, or scope. A target may explicitly permit non-authoritative illustrative scaffolding to explain source-authorised concepts, but that scaffolding must remain traceable and removable and cannot become evidence, argument, scope, or conceptual authority. Optional bibliography metadata provides stable identifiers and verified publication metadata for citations that already exist in the authoritative source; it cannot author a new citation or claim. Peer review is diagnostic and likewise cannot become conceptual authority.
+The original authoritative source is carried alongside downstream derived artefacts. Target files constrain realisation for a venue or audience; they do not supply claims, evidence, citations, attributions, content-bearing examples, or conceptual scope. Within the core publication pipeline, coverage is exhaustive by default, but a target may explicitly permit summarisation, compression, selective omission, or presentation reordering without changing what retained source material means. Targets also own evidence, attribution, and citation **presentation**: one target may require formal scholarly citations while another may use ordinary narrative attribution or explicitly suppress formal citation apparatus. This does not transfer evidentiary authority to the target or model. The source remains authoritative for support and attribution, and retained material must not become misleading through omission or presentation changes.
+
+A target may explicitly permit non-authoritative illustrative scaffolding to explain source-authorised concepts, but that scaffolding must remain traceable and removable and cannot become evidence, argument, scope, or conceptual authority. Optional bibliography metadata provides stable identifiers and verified publication metadata for citations that already exist in the authoritative source; it cannot author a new citation or claim and does not by itself force formal citations into every target. Peer review is diagnostic and likewise cannot become conceptual authority.
+
+The target-independent source-assurance floor is epistemic, not an inescapable academic style contract. It requires a coherent and adequately supported source, but it does not require every target to expose academic prose conventions, scholarly citation syntax, or academic-style visible argumentation.
 
 See `pipeline.md` for the exact stage and failure semantics.
 
@@ -60,7 +64,7 @@ You need:
 
 `jq` is optional. Python 3.9 is the minimum runtime exercised by ordinary CI.
 
-For release-candidate LaTeX validation of the self-example, also install `latexmk`, `biber`, and a working LaTeX distribution with BibLaTeX support. Publication additionally uses `pandoc` to build the inspectable Pages site.
+For release-candidate LaTeX validation of the self-example, also install `latexmk`, `biber`, and a working LaTeX distribution with BibLaTeX support. Publication additionally uses `pandoc` to build the inspectable Pages site. BibLaTeX/biber remains required by the self-example release toolchain because some targets, including the academic journal target, use formal scholarly citations even though other targets may not.
 
 For Debian/Ubuntu:
 
@@ -156,7 +160,7 @@ The repository self-example has one obvious end-to-end command:
 make self
 ```
 
-`make self` first runs the keyless source preflight, deletes the transient build directory, copies the audited bibliography metadata into the build, compiles `outline.md` through the normal pipeline using the selected backend, mechanically rejects invented or dropped citation keys, and then requires `latexmk`/biber to produce `build/final.pdf`. It does not hide or bypass the ordinary stage contracts. If `BACKEND=openai` is selected, the command makes paid API calls; no paid invocation is part of the keyless preflight.
+`make self` first runs the keyless source preflight, deletes the transient build directory, copies the audited bibliography metadata into the build, compiles `outline.md` through the normal pipeline using the selected backend, applies the selected public target's mechanical citation-audit policy, and then requires `latexmk`/biber-capable validation to produce `build/final.pdf`. All targets reject invented/unknown citation keys. Targets that require full formal citation retention, currently `journal_academic` and `magazine_general`, also reject dropped source citation keys; a target such as `explain_like_im_5` may legitimately expose no formal citation keys. The command does not hide or bypass the ordinary stage contracts. If `BACKEND=openai` is selected, the command makes paid API calls; no paid invocation is part of the keyless preflight.
 
 For generic compilation, `IN` names the authoritative conceptual source and is required for a fresh model-backed build:
 
@@ -170,7 +174,7 @@ When a project has separately verified bibliography metadata, pass it explicitly
 make final IN=outline.md BIBLIOGRAPHY=references.bib
 ```
 
-The bibliography supplies rendering metadata and stable citation keys only. The authoritative source must already supply the citations and the claims they support.
+The bibliography supplies rendering metadata and stable citation keys only. The authoritative source must already supply the citations, attribution, and supported claims. Supplying bibliography metadata does not itself require the selected target to display formal citation apparatus.
 
 Run individual stages with the same source explicitly supplied:
 
@@ -187,6 +191,8 @@ There is also an independent summary transform:
 ```bash
 make summarize IN=outline.md
 ```
+
+This auxiliary transform intrinsically compresses its source and is separate from the core publication pipeline's exhaustive-coverage default.
 
 By default generated files live under `build/`:
 
@@ -219,17 +225,19 @@ Peer review uses a small machine-readable status contract:
 - `REVISE_REALISATION` — findings are realisation-only; exactly one bounded final realisation pass is permitted.
 - `BLOCKED_SOURCE` — at least one finding requires authorial source work; compilation stops before final revision and emits an external diagnostic.
 
-Malformed or internally inconsistent review status also fails closed. The review can identify missing support, but it cannot amend the source or turn a suggested citation into authority.
+Malformed or internally inconsistent review status also fails closed. The review can identify missing support, but it cannot amend the source or turn a suggested citation or attribution into authority. It evaluates visible evidence and attribution against the selected target rather than assuming academic citation conventions.
 
 ## Self-example release acceptance
 
-Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final essay with `outline.md` and confirm that no material claim was introduced without source authority, no proposition was silently strengthened or weakened, no content-bearing example/theory/citation/historical claim was added downstream, every source-supplied citation remains present and attached to the claim it supports, peer review did not expand scope, and important qualifications and uncertainty were preserved. Any target-permitted illustrative scaffolding should also be checked for a faithful, traceable mapping to a source concept, for material accuracy, and for remaining removable without changing the work's claims or evidentiary support.
+Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final realisation with `outline.md` and the selected target. Confirm that no material claim was introduced without source authority, no represented proposition was silently strengthened or weakened, no content-bearing example/theory/citation/historical claim was added downstream, peer review did not expand conceptual scope, and retained qualifications and uncertainty remain sufficient to keep represented material faithful.
+
+Coverage and citation checks are target-relative. For an exhaustive target such as `journal_academic`, confirm that all materially distinct source content and source-supplied citations remain represented and correctly attached. For a target that explicitly permits compression or omission, confirm that omitted material is permitted by the target and that its removal has not made retained material misleading. For a target that explicitly suppresses formal citation apparatus, do not require citation syntax merely for provenance; instead confirm that any attribution needed by retained material is expressed faithfully in the target-appropriate form. Any target-permitted illustrative scaffolding should likewise be checked for a faithful, traceable mapping to a source concept, for material accuracy, and for remaining removable without changing the work's claims or evidentiary support.
 
 Compilation and publication are deliberately separate. **Compile self-example target** creates and retains one candidate artifact but cannot deploy Pages. **Publish self-example** asks only which target to publish, finds that target's newest successful retained compilation, and deploys it after the `github-pages` environment gate. Already-published unselected targets are preserved automatically from the latest successful retained showcase. A candidate therefore never becomes public merely because it was generated, and publishing an already-generated candidate does not invoke the model again.
 
 The publication assembler still treats the exact `outline.md` bytes as the shared authoritative revision. Candidates compiled at different repository commits may be combined when their authored outline is byte-identical; this is what allows an already-good rendering to survive later compiler/workflow changes without an unnecessary paid rerun. Each rendering still exposes its own compilation commit, model, target, and originating run. If a selected candidate and the preserved showcase were compiled from different authoritative outline revisions, publication fails closed rather than silently mixing them.
 
-For the paper view, PDF and HTML deliberately share the same `references.bib`: LaTeX resolves it through BibLaTeX/biber, while Pages passes it directly to Pandoc `--citeproc`. The HTML builder does not parse or rewrite citation commands or manufacture bibliography entries. The paper title likewise comes from `final.tex` rather than a Pages-specific replacement title.
+For targets that use formal citations, PDF and HTML deliberately share the same `references.bib`: LaTeX resolves source-authorised citation keys through BibLaTeX/biber, while Pages passes the same metadata to Pandoc citeproc. Targets that explicitly suppress formal citation apparatus may carry the audited bibliography as provenance metadata without displaying it in the target-facing text. The HTML builder does not parse or rewrite citation commands or manufacture bibliography entries. The paper title likewise comes from `final.tex` rather than a Pages-specific replacement title.
 
 ## Retained self-example artefacts
 
@@ -256,7 +264,7 @@ make BACKEND=openai final IN=outline.md
 make TARGET_STYLE=prompts/targets/journal_academic.md final IN=outline.md
 ```
 
-A target controls acceptable realisation for the audience or venue. It is not permission to invent conceptual content that is absent from the authoritative source; target-permitted illustrative scaffolding remains non-authoritative and subject to the provenance and fidelity rules in `pipeline.md`.
+A target controls acceptable realisation for the audience or venue, including coverage/compression and evidence/attribution/citation presentation. It is not permission to invent conceptual content, alter conceptual scope, or fabricate support that is absent from the authoritative source; target-permitted illustrative scaffolding remains non-authoritative and subject to the provenance and fidelity rules in `pipeline.md`.
 
 ## Reproducibility
 
@@ -275,7 +283,7 @@ Ordinary CI is deliberately keyless. Pushes and pull requests run `make check` a
 
 Paid self-example compilation lives only in `.github/workflows/compile-self-example.yml`. It has only a `workflow_dispatch` trigger, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. It compiles exactly one selected target and uploads a retained candidate; it has no Pages deployment step.
 
-Manual compilation dispatch includes allowlisted selectors for both model and target. Models currently offered are `gpt-5-mini`, `gpt-5`, `gpt-5.6-luna`, `gpt-5.6-terra`, and `gpt-5.6-sol`; `gpt-5-mini` remains the default. Targets initially offered are `journal_academic`, `magazine_general`, and `explain_like_im_5`, with `journal_academic` as the default. Model and target are both validated before the API-key-bearing step, and target identifiers are mapped through `tools/self_example_targets.py` rather than accepting arbitrary prompt paths.
+Manual compilation dispatch includes allowlisted selectors for both model and target. Models currently offered are `gpt-5-mini`, `gpt-5`, `gpt-5.6-luna`, `gpt-5.6-terra`, and `gpt-5.6-sol`; `gpt-5-mini` remains the default. Targets initially offered are `journal_academic`, `magazine_general`, and `explain_like_im_5`, with `journal_academic` as the default. Model and target are both validated before the API-key-bearing step, and target identifiers are mapped through `tools/self_example_targets.py` rather than accepting arbitrary prompt paths. The same registry also records the self-example's mechanical citation-retention audit policy so strict targets remain strict without forcing that policy onto targets that intentionally use narrative or no formal citation apparatus.
 
 Each successful OpenAI response records its stage, model, and API-reported token usage in the transient build usage log. After every paid compilation attempt, including failures, the workflow renders per-stage and total token usage plus estimated cost into the GitHub Actions step summary. Unknown model pricing is reported as `N/A` rather than guessed, and the estimate is explicitly not a billing record. This accounting makes no additional provider call. Pricing for the selectable GPT-5.6 family follows the provider's published short-context rates and applies the published long-context multiplier above 272,000 input tokens.
 
@@ -298,4 +306,4 @@ One approved successful compilation invokes the selected model for draft, smooth
 
 ## Project intent
 
-This repository is both an implementation and its own worked example. Its central separation of concerns is simple: humans author the conceptual source; compiler stages realise it under explicit constraints; generated prose and diagnostics remain inspectable downstream artefacts.
+This repository is both an implementation and its own worked example. Its central separation of concerns is simple: humans author the conceptual source; compiler stages select and realise source-authorised material under explicit target constraints; generated prose and diagnostics remain inspectable downstream artefacts.
