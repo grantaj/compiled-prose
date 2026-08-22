@@ -174,7 +174,7 @@ class TargetAwarePromptTests(unittest.TestCase):
         self.assertNotIn("academic journal", final)
         self.assertNotIn("academic rigor", final)
         self.assertIn("selected target", final)
-        self.assertIn("do not add or remove concepts", final)
+        self.assertIn("preserve exhaustive conceptual coverage unless", final)
 
     def test_generic_stages_do_not_encode_any_existing_target_identity(self):
         paths = (
@@ -228,25 +228,57 @@ class TargetAwarePromptTests(unittest.TestCase):
     def test_target_requirements_cannot_author_new_conceptual_content(self):
         system = text("prompts/00_system.md")
         self.assertIn(
-            "Target requirements must never be treated as permission to invent conceptual content, evidence, citations, scope, or content-bearing examples.",
+            "Target requirements must never be treated as permission to invent conceptual content, evidence, citations, conceptual scope, or content-bearing examples.",
             system,
         )
         self.assertIn(
-            "They may permit illustrative scaffolding only under the provenance and fidelity rules above.",
+            "They may permit reduced coverage only under the coverage and fidelity rules above",
+            system,
+        )
+        self.assertIn(
+            "may permit illustrative scaffolding only under the provenance and fidelity rules above",
             system,
         )
         self.assertIn("must not supply evidence or a missing warrant", system)
         journal = text("prompts/targets/journal_academic.md")
         self.assertNotIn("Treat moral language", journal)
 
-    def test_eli5_target_is_literal_comprehension_target(self):
+    def test_coverage_is_target_owned_with_exhaustive_default(self):
+        system = text("prompts/00_system.md")
+        self.assertIn("coverage and compression", system.lower())
+        self.assertIn("The default is exhaustive conceptual coverage", system)
+        self.assertIn(
+            "The authoritative source defines conceptual content and conceptual scope.", system
+        )
+
+        for stage in (
+            "prompts/20_smooth.md",
+            "prompts/30_revise.md",
+            "prompts/50_final.md",
+        ):
+            prompt = text(stage)
+            with self.subTest(stage=stage):
+                self.assertIn("Preserve exhaustive conceptual coverage unless", prompt)
+                self.assertIn("selected target explicitly", prompt)
+
+        draft = text("prompts/10_draft.md")
+        self.assertIn("By default, realise every materially distinct authored conceptual step", draft)
+        self.assertIn("If and only if the selected target explicitly permits reduced coverage", draft)
+
+        review = text("prompts/40_peer_review.md")
+        self.assertIn("Exhaustive conceptual coverage is the default unless", review)
+        self.assertIn("Target-authorised reduced coverage is not source drift", review)
+
+    def test_eli5_target_is_literal_short_selective_comprehension_target(self):
         target = text("prompts/targets/explain_like_im_5.md")
         self.assertIn("a curious five-year-old", target)
-        self.assertIn("Acceptance criterion", target)
-        self.assertIn("adult-level abstractions or unstated inferential steps", target)
-        self.assertIn("original conceptual density", target)
+        self.assertIn("originally conceived for this child", target)
+        self.assertIn("summarisation, compression, selective omission", target)
+        self.assertIn("one short sitting", target)
+        self.assertIn("Reduce conceptual load", target)
         self.assertIn("traceable by an adult reviewer", target)
         self.assertNotIn("intelligent child or adult with no domain knowledge", target)
+        self.assertNotIn("forbidden-word list", target.lower())
 
     def test_core_stages_do_not_override_target_permitted_scaffolding(self):
         for stage in (
@@ -261,11 +293,24 @@ class TargetAwarePromptTests(unittest.TestCase):
                 self.assertNotIn("Do not add new concepts or examples", prompt)
         review = text("prompts/40_peer_review.md")
         self.assertIn("may be absent from the source without being source drift", review)
-        self.assertIn("conceptual density and explanatory progression", review)
+        self.assertIn("conceptual density", review)
         self.assertIn("not merely vocabulary or sentence length", review)
 
-    def test_existing_academic_target_rules_are_preserved(self):
+    def test_peer_review_distinguishes_coverage_from_source_drift(self):
+        review = text("prompts/40_peer_review.md")
+        self.assertIn(
+            "do not classify target-authorised summarisation, compression, or omission as drift merely because source material is absent",
+            review,
+        )
+        self.assertIn("incorrect target coverage", review)
+        self.assertIn("source-authored material accidentally omitted", review)
+        self.assertIn("REALISATION defect", review)
+
+    def test_existing_academic_target_rules_and_coverage_are_preserved(self):
         journal = text("prompts/targets/journal_academic.md")
+        self.assertIn("Coverage is exhaustive for this target.", journal)
+        self.assertIn("Do not omit materially distinct claims", journal)
+        self.assertIn("without reducing conceptual coverage", journal)
         self.assertIn("Do not oversimplify for accessibility.", journal)
         self.assertIn(
             "Do not appeal to authority except through explicit argument", journal
