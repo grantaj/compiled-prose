@@ -57,15 +57,18 @@ def resolve_target_path(path: str) -> TargetSpec:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    selector = parser.add_mutually_exclusive_group(required=True)
-    selector.add_argument("identifier", nargs="?")
-    selector.add_argument("--path")
+    parser.add_argument("identifier", nargs="?")
+    parser.add_argument("--path")
     parser.add_argument(
         "--field",
         choices=("path", "label", "identifier", "citation_audit"),
         default="path",
     )
     args = parser.parse_args()
+
+    if (args.identifier is None) == (args.path is None):
+        parser.error("supply exactly one of identifier or --path")
+
     try:
         spec = resolve_target_path(args.path) if args.path else resolve_target(args.identifier)
     except ValueError as exc:
