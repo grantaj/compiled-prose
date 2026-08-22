@@ -126,7 +126,7 @@ class SelfExampleAuditTests(unittest.TestCase):
                     "\\addbibresource{references.bib}\n"
                     "\\begin{document}\n"
                     "Claim \\footcite{invented2024}.\n"
-                    "\\printbibliography\n\\end{document}\n"
+                    "\\end{document}\n"
                 ),
             )
             result = audit(
@@ -150,6 +150,43 @@ class SelfExampleAuditTests(unittest.TestCase):
                 outline, audit_file, bibliography=bibliography, final=final
             )
             self.assertTrue(result.ok, result.errors)
+
+    def test_formal_citation_may_omit_reference_list_when_target_does_not_require_one(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\usepackage[backend=biber]{biblatex}\n"
+                    "\\addbibresource{references.bib}\n"
+                    "\\begin{document}\n"
+                    "A claim \\fullcite{known2020}.\n"
+                    "\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
+            self.assertTrue(result.ok, result.errors)
+
+    def test_formal_citation_commands_must_bind_to_supplied_bibliography(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\begin{document}\n"
+                    "A claim \\cite{known2020}.\n"
+                    "\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
+            self.assertFalse(result.ok)
+            self.assertTrue(any("must bind formal citation commands" in error for error in result.errors))
 
     def test_final_with_supplied_bibliography_contract_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -176,7 +213,9 @@ class SelfExampleAuditTests(unittest.TestCase):
             outline, audit_file, bibliography, final = self.write_fixture(
                 root,
                 final=(
-                    "\\documentclass{article}\n\\begin{document}\n"
+                    "\\documentclass{article}\n"
+                    "\\addbibresource{references.bib}\n"
+                    "\\begin{document}\n"
                     "A claim \\cite{known2020}.\n"
                     "\\begin{thebibliography}{1}\n"
                     "\\bibitem{known2020} A. Author. Useful Source. 2020.\n"
