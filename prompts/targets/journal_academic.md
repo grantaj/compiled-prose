@@ -31,7 +31,7 @@ LANGUAGE CONSTRAINTS:
 - Do not oversimplify for accessibility.
 
 CITATION EXPECTATIONS:
-- Formal scholarly citation support is required for claims that depend on external literature, evidence, or attribution.
+- Scholarly citation support is required for claims that depend on external literature, evidence, or attribution.
 - Preserve source-supplied citations for all represented material and keep them attached to the claims they support.
 - Use the supplied verified bibliography metadata through formal BibLaTeX citation commands and include a bibliography/reference list in the final journal realisation.
 - Use only citations supplied by the authoritative source; never invent, substitute, or complete a reference from model knowledge.
