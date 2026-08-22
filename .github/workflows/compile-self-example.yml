@@ -79,7 +79,7 @@ jobs:
       - name: Install LaTeX release-validation dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --yes latexmk texlive-latex-extra texlive-bibtex-extra biber
+          sudo apt-get install --yes latexmk texlive-latex-extra texlive-bibtex-extra biber cm-super
           latexmk -v
           biber --version
 
@@ -126,7 +126,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           sudo apt-get update
-          sudo apt-get install --yes pandoc latexmk texlive-latex-extra texlive-bibtex-extra biber
+          sudo apt-get install --yes pandoc latexmk texlive-latex-extra texlive-bibtex-extra biber cm-super
           pandoc --version
           latexmk -v
           biber --version
