@@ -11,15 +11,22 @@ def text(path: str) -> str:
 
 
 class TargetLayerAuthorityTests(unittest.TestCase):
-    def test_system_preserves_conceptual_emphasis_not_section_volume(self):
+    def test_system_makes_coverage_target_owned_without_changing_source_meaning(self):
         system = text("prompts/00_system.md")
         self.assertNotIn(
             "Maintain proportional emphasis (no collapsing or inflating sections)",
             system,
         )
-        self.assertIn("Preserve the authored hierarchy of conceptual importance", system)
-        self.assertIn("may redistribute explanatory space", system)
-        self.assertIn("must not add, omit, strengthen, weaken, or re-scope", system)
+        self.assertIn("Coverage and compression are realisation responsibilities", system)
+        self.assertIn("the default is exhaustive conceptual coverage", system)
+        self.assertIn(
+            "A target may explicitly authorise summarisation, compression, selective omission, or presentation reordering",
+            system,
+        )
+        self.assertIn(
+            "does not change the authoritative source or grant permission to alter the conceptual scope or meaning of retained material",
+            system,
+        )
 
     def test_system_makes_target_authoritative_for_core_realisation_dimensions(self):
         system = text("prompts/00_system.md")
@@ -35,30 +42,35 @@ class TargetLayerAuthorityTests(unittest.TestCase):
             "register",
             "reading level",
             "rhetorical form",
+            "coverage and compression",
             "paragraph/section granularity",
-            "citation presentation",
+            "evidence/attribution/citation presentation",
         ):
             with self.subTest(dimension=dimension):
                 self.assertIn(dimension, system)
         self.assertIn(
-            "Generic stage instructions may define permitted transformations but must not impose conflicting defaults",
+            "must not impose conflicting academic, citation, or other venue defaults",
             system,
         )
         self.assertIn(
-            "An auxiliary transform may define an intrinsic artefact shape as part of its stage responsibility",
+            "An auxiliary transform may define an intrinsic artefact shape or coverage as part of its stage responsibility",
             system,
         )
         self.assertIn(
-            "that shape is not a publication-style default for the core pipeline",
+            "that is not a publication-style default for the core pipeline",
             system,
         )
 
-    def test_system_defines_source_assurance_floor_and_target_rigour_overlay(self):
+    def test_system_defines_source_assurance_floor_without_academic_presentation_leakage(self):
         system = text("prompts/00_system.md")
         self.assertIn("Source assurance has a target-independent floor", system)
         self.assertIn("may impose additional explicit rigour above that floor", system)
         self.assertIn("cannot make an internally contradictory", system)
-        self.assertIn("less formal presentation", system)
+        self.assertIn("less formal or more selective presentation", system)
+        self.assertIn(
+            "does **not** impose scholarly citation apparatus, academic prose conventions, or academic-style visible argumentation",
+            system,
+        )
         self.assertIn(
             "Target-specific review must not import academic or otherwise stricter conventions",
             system,
@@ -104,7 +116,10 @@ Do not change authored concepts, grouping, order, or scope to create them.
         self.assertIn("Perform the review in this order", review)
         self.assertIn("1. Source assurance", review)
         self.assertIn("2. Target realisation assurance", review)
-        self.assertIn("may impose additional explicitness, rigour, evidence, or citation requirements", review)
+        self.assertIn(
+            "may impose additional explicitness, rigour, evidence, attribution, or citation requirements",
+            review,
+        )
         self.assertIn("may not lower the source-assurance floor", review)
         self.assertIn(
             "Do not import academic or otherwise stricter venue conventions",
