@@ -43,7 +43,7 @@ backend-independent protocol enforcement
         `--> build/errors/<stage>.md
 ```
 
-The original authoritative source is carried alongside downstream derived artefacts. Target files constrain realisation for a venue or audience; they do not supply claims, evidence, citations, examples, or scope. Optional bibliography metadata provides stable identifiers and verified publication metadata for citations that already exist in the authoritative source; it cannot author a new citation or claim. Peer review is diagnostic and likewise cannot become conceptual authority.
+The original authoritative source is carried alongside downstream derived artefacts. Target files constrain realisation for a venue or audience; they do not supply claims, evidence, citations, content-bearing examples, or scope. A target may explicitly permit non-authoritative illustrative scaffolding to explain source-authorised concepts, but that scaffolding must remain traceable and removable and cannot become evidence, argument, scope, or conceptual authority. Optional bibliography metadata provides stable identifiers and verified publication metadata for citations that already exist in the authoritative source; it cannot author a new citation or claim. Peer review is diagnostic and likewise cannot become conceptual authority.
 
 See `pipeline.md` for the exact stage and failure semantics.
 
@@ -223,7 +223,7 @@ Malformed or internally inconsistent review status also fails closed. The review
 
 ## Self-example release acceptance
 
-Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final essay with `outline.md` and confirm that no material claim was introduced without source authority, no proposition was silently strengthened or weakened, no example/theory/citation/historical claim was added downstream, every source-supplied citation remains present and attached to the claim it supports, peer review did not expand scope, and important qualifications and uncertainty were preserved.
+Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final essay with `outline.md` and confirm that no material claim was introduced without source authority, no proposition was silently strengthened or weakened, no content-bearing example/theory/citation/historical claim was added downstream, every source-supplied citation remains present and attached to the claim it supports, peer review did not expand scope, and important qualifications and uncertainty were preserved. Any target-permitted illustrative scaffolding should also be checked for a faithful, traceable mapping to a source concept, for material accuracy, and for remaining removable without changing the work's claims or evidentiary support.
 
 Compilation and publication are deliberately separate. **Compile self-example target** creates and retains one candidate artifact but cannot deploy Pages. **Publish self-example** asks only which target to publish, finds that target's newest successful retained compilation, and deploys it after the `github-pages` environment gate. Already-published unselected targets are preserved automatically from the latest successful retained showcase. A candidate therefore never becomes public merely because it was generated, and publishing an already-generated candidate does not invoke the model again.
 
@@ -256,7 +256,7 @@ make BACKEND=openai final IN=outline.md
 make TARGET_STYLE=prompts/targets/journal_academic.md final IN=outline.md
 ```
 
-A target controls acceptable realisation for the audience or venue. It is not permission to invent content that is absent from the authoritative source.
+A target controls acceptable realisation for the audience or venue. It is not permission to invent conceptual content that is absent from the authoritative source; target-permitted illustrative scaffolding remains non-authoritative and subject to the provenance and fidelity rules in `pipeline.md`.
 
 ## Reproducibility
 
