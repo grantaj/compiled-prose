@@ -15,12 +15,36 @@ SOURCE_ENTRY_RE = re.compile(r"^\*\*(.+?)\*\*\s*$", re.MULTILINE)
 CITATION_GROUP_RE = re.compile(r"\[([^\]\n]*(?:19|20)\d{2}[^\]\n]*)\]")
 YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
 BIB_ENTRY_RE = re.compile(r"^@\w+\s*\{\s*([^,\s]+)\s*,", re.MULTILINE)
+LATEX_CITE_COMMANDS = (
+    "cite",
+    "parencite",
+    "textcite",
+    "autocite",
+    "footcite",
+    "smartcite",
+    "supercite",
+    "fullcite",
+    "footfullcite",
+    "volcite",
+    "pvolcite",
+    "fvolcite",
+    "tvolcite",
+    "avolcite",
+    "citeauthor",
+    "citetitle",
+    "citeyear",
+    "citedate",
+    "citeurl",
+    "nocite",
+    "citep",
+    "citet",
+)
 LATEX_CITE_RE = re.compile(
-    r"\\(?:cite|parencite|textcite|autocite|citep|citet)\*?"
+    r"\\(?:" + "|".join(LATEX_CITE_COMMANDS) + r")\*?"
     r"(?:\s*\[[^\]]*\]){0,2}\s*\{([^{}]+)\}"
 )
 FAIL_SENTINEL = "@@FAIL"
-CITATION_RETENTION_POLICIES = ("all_source", "known_only")
+CITATION_RETENTION_POLICIES = ("all_source", "known_only", "no_formal")
 
 
 @dataclass(frozen=True)
@@ -187,12 +211,18 @@ def audit(
         final_text = final.read_text(encoding="utf-8")
         if FAIL_SENTINEL in final_text:
             errors.append("final artefact contains compiler failure sentinel")
+
         explicit_final = _citation_keys(final_text)
         unknown_labels = sorted(explicit_final - catalogued)
         if unknown_labels:
             errors.append(
                 "final artefact contains non-authoritative explicit citation labels: "
                 + ", ".join(unknown_labels)
+            )
+        if citation_retention == "no_formal" and explicit_final:
+            errors.append(
+                "final artefact contains formal explicit citation labels forbidden by target audit policy: "
+                + ", ".join(sorted(explicit_final))
             )
 
         if bibliography is not None:
@@ -215,6 +245,21 @@ def audit(
                     errors.append(
                         "final artefact dropped source-supplied citations required by target audit policy: "
                         + ", ".join(missing_final)
+                    )
+
+            if citation_retention == "no_formal":
+                if final_bib_keys:
+                    errors.append(
+                        "final artefact contains formal bibliography citation commands forbidden by target audit policy: "
+                        + ", ".join(sorted(final_bib_keys))
+                    )
+                if "\\addbibresource{" in final_text:
+                    errors.append(
+                        "final artefact contains bibliography resource plumbing forbidden by target audit policy"
+                    )
+                if "\\printbibliography" in final_text:
+                    errors.append(
+                        "final artefact prints a bibliography forbidden by target audit policy"
                     )
 
             bib_filename = bibliography.name
