@@ -20,7 +20,7 @@ class SelfExampleTargetTests(unittest.TestCase):
     def test_citation_audit_policy_preserves_strict_targets(self):
         self.assertEqual(TARGETS["journal_academic"].citation_audit, "all_source")
         self.assertEqual(TARGETS["magazine_general"].citation_audit, "all_source")
-        self.assertEqual(TARGETS["explain_like_im_5"].citation_audit, "known_only")
+        self.assertEqual(TARGETS["explain_like_im_5"].citation_audit, "no_formal")
 
     def test_eli5_label_matches_literal_target(self):
         self.assertEqual(
