@@ -61,11 +61,9 @@ jobs:
               github.rest.actions.listArtifactsForRepo,
               { owner, repo, per_page: 100 }
             );
-            artifacts.sort(
-              (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at)
-            );
 
             async function newestSuccessfulMatching(matchesArtifact, workflowPath) {
+              let newest = null;
               for (const artifact of artifacts) {
                 if (
                   artifact.expired ||
@@ -88,9 +86,18 @@ jobs:
                   continue;
                 }
 
-                return { artifact, run };
+                if (
+                  newest === null ||
+                  Date.parse(run.created_at) > Date.parse(newest.run.created_at) ||
+                  (
+                    Date.parse(run.created_at) === Date.parse(newest.run.created_at) &&
+                    run.id > newest.run.id
+                  )
+                ) {
+                  newest = { artifact, run };
+                }
               }
-              return null;
+              return newest;
             }
 
             function newestSuccessful(prefix, workflowPath) {
