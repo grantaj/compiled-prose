@@ -50,9 +50,7 @@ class BibliographyContractTests(unittest.TestCase):
             "If the selected target explicitly requires no formal citation apparatus",
             rendered,
         )
-        self.assertIn(
-            "do not emit biblatex citation commands", rendered
-        )
+        self.assertIn("do not emit biblatex citation commands", rendered)
         self.assertIn(
             "Do not use formal scholarly citation apparatus in the child-facing realisation.",
             rendered,
@@ -112,11 +110,8 @@ class BibliographyContractTests(unittest.TestCase):
         self.assertIn('BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final', makefile)
         self.assertIn("--bibliography $(BIBLIOGRAPHY)", makefile)
         self.assertIn('--bibliography "$(SELF_BIBLIOGRAPHY)"', makefile)
-        self.assertIn(
-            'python tools/self_example_targets.py --path "$(TARGET_STYLE)" --field citation_audit',
-            makefile,
-        )
-        self.assertIn('--citation-retention "$$citation_audit"', makefile)
+        self.assertNotIn("citation_audit", makefile)
+        self.assertNotIn("citation-retention", makefile)
 
 
 if __name__ == "__main__":
