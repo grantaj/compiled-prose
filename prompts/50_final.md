@@ -7,16 +7,17 @@ Authority and bounds:
 - This is one bounded final-revision pass. Do not request, imply, or initiate another review/revision cycle.
 
 Constraints:
-- Address review comments only where the correction is fully determined by the authoritative source and changes realisation rather than meaning.
+- Address review comments only where the correction is fully determined by the authoritative source and target-permitted realisation choices rather than requiring an authorial source change.
 - If the stage input has drifted from the authoritative source, repair the drift only when the faithful correction is fully determined by the source; otherwise use the failure branch.
 - Follow the selected target's tone, register, reading level, structure, formatting, and citation expectations without changing what the authoritative source says.
-- Do not add or remove concepts; do not introduce new examples, claims, evidence, citations, or scope.
+- Do not add or remove concepts; do not introduce new claims, evidence, citations, scope, or content-bearing examples.
+- If the selected target explicitly permits illustrative scaffolding, you may add, refine, replace, or remove such scaffolding in order to address a validated REALISATION finding, provided the system-level scaffolding rules remain satisfied. It must stay traceable to the source concept it explains and must not become evidence, argument, scope, or conceptual authority.
 - Preserve authored order and scope of ideas unless a purely realisation-level reordering is permitted by the stage and remains faithful to the authoritative source.
 - Treat section boundaries and headings in the derived stage input as realisation choices. When validated REALISATION findings identify sectioning that is over-fragmented relative to the selected target, consolidate adjacent sections, replace unnecessary subheadings with paragraph transitions, and remove duplicated manual numbering from section titles while preserving authored order, distinctions, and scope. Do not consolidate sections merely to impose a generic publication shape.
 - Preserve citations supplied by the authoritative source and represented in the stage input; keep them tied to the claims they support.
-- Do not treat a citation, claim, example, or scope change that appears only in the derived stage input or diagnostic context as authored source material.
+- Do not treat a citation, claim, content-bearing example, or scope change that appears only in the derived stage input or diagnostic context as authored source material. Target-permitted illustrative scaffolding remains non-authoritative and is governed separately by the system-level scaffolding rules.
 - If the selected target requires citation or evidence support that the authoritative source does not supply, use the failure branch rather than inventing or substituting material.
-- If satisfying a review comment or target requirement actually requires a new claim, warrant, interpretation, citation, evidence, scope decision, or other authorial source change, use the failure branch instead of improvising. The earlier review classification does not grant conceptual authority.
+- If satisfying a review comment or target requirement actually requires a new claim, warrant, interpretation, citation, evidence, scope decision, content-bearing example, or other authorial source change, use the failure branch instead of improvising. The earlier review classification does not grant conceptual authority.
 - Check paragraph- and document-level coherence according to the selected target rather than an assumed academic style.
 - Preserve the epistemic stance of the authoritative source.
 - LaTeX must compile; avoid invalid commands.
