@@ -174,7 +174,7 @@ class TargetAwarePromptTests(unittest.TestCase):
         self.assertNotIn("academic journal", final)
         self.assertNotIn("academic rigor", final)
         self.assertIn("selected target", final)
-        self.assertIn("preserve exhaustive conceptual coverage unless", final)
+        self.assertIn("do not introduce new concepts", final)
 
     def test_generic_stages_do_not_encode_any_existing_target_identity(self):
         paths = (
@@ -192,6 +192,7 @@ class TargetAwarePromptTests(unittest.TestCase):
             "intelligent non-specialists",
             "everyday language",
             "intelligent child",
+            "five-year-old",
             "academic rigor",
         )
         for path in paths:
@@ -228,11 +229,11 @@ class TargetAwarePromptTests(unittest.TestCase):
     def test_target_requirements_cannot_author_new_conceptual_content(self):
         system = text("prompts/00_system.md")
         self.assertIn(
-            "Target requirements must never be treated as permission to invent conceptual content, evidence, citations, conceptual scope, or content-bearing examples.",
+            "Target requirements must never be treated as permission to invent conceptual content, evidence, citations, attributions, conceptual scope, or content-bearing examples.",
             system,
         )
         self.assertIn(
-            "They may permit reduced coverage only under the coverage and fidelity rules above",
+            "may permit reduced coverage only under the coverage and fidelity rules above",
             system,
         )
         self.assertIn(
@@ -243,31 +244,32 @@ class TargetAwarePromptTests(unittest.TestCase):
         journal = text("prompts/targets/journal_academic.md")
         self.assertNotIn("Treat moral language", journal)
 
-    def test_coverage_is_target_owned_with_exhaustive_default(self):
+    def test_core_coverage_defaults_exhaustive_but_target_can_reduce_it(self):
         system = text("prompts/00_system.md")
-        self.assertIn("coverage and compression", system.lower())
-        self.assertIn("The default is exhaustive conceptual coverage", system)
+        journal = text("prompts/targets/journal_academic.md")
+        eli5 = text("prompts/targets/explain_like_im_5.md")
         self.assertIn(
-            "The authoritative source defines conceptual content and conceptual scope.", system
+            "Within the core target-driven publication stages, the default is exhaustive conceptual coverage",
+            system,
         )
+        self.assertIn(
+            "An auxiliary transform may define an intrinsic coverage reduction as part of its stage responsibility",
+            system,
+        )
+        self.assertIn("Coverage is exhaustive for this target.", journal)
+        self.assertIn("Realise the complete authored argument", journal)
+        self.assertIn(
+            "explicitly permits summarisation, compression, selective omission, and reordering",
+            eli5,
+        )
+        self.assertIn("one short sitting", eli5)
+        self.assertIn("Prefer a short, coherent explanation over exhaustive coverage", eli5)
 
-        for stage in (
-            "prompts/20_smooth.md",
-            "prompts/30_revise.md",
-            "prompts/50_final.md",
-        ):
-            prompt = text(stage)
-            with self.subTest(stage=stage):
-                self.assertIn("Preserve exhaustive conceptual coverage unless", prompt)
-                self.assertIn("selected target explicitly", prompt)
-
-        draft = text("prompts/10_draft.md")
-        self.assertIn("By default, realise every materially distinct authored conceptual step", draft)
-        self.assertIn("If and only if the selected target explicitly permits reduced coverage", draft)
-
-        review = text("prompts/40_peer_review.md")
-        self.assertIn("Exhaustive conceptual coverage is the default unless", review)
-        self.assertIn("Target-authorised reduced coverage is not source drift", review)
+    def test_magazine_remains_exhaustive_under_generic_default(self):
+        magazine = text("prompts/targets/magazine_general.md")
+        self.assertIn("Preserve the argument's structure and order.", magazine)
+        self.assertIn("Preserve citations supplied by the authoritative source", magazine)
+        self.assertNotIn("selective omission", magazine.lower())
 
     def test_eli5_target_is_literal_short_selective_comprehension_target(self):
         target = text("prompts/targets/explain_like_im_5.md")
@@ -275,10 +277,34 @@ class TargetAwarePromptTests(unittest.TestCase):
         self.assertIn("originally conceived for this child", target)
         self.assertIn("summarisation, compression, selective omission", target)
         self.assertIn("one short sitting", target)
-        self.assertIn("Reduce conceptual load", target)
+        self.assertIn("Rebuild the explanation from concepts the child can already understand", target)
+        self.assertIn("Do not preserve adult conceptual packaging", target)
+        self.assertIn("Reduce conceptual load as well as linguistic difficulty", target)
         self.assertIn("traceable by an adult reviewer", target)
         self.assertNotIn("intelligent child or adult with no domain knowledge", target)
-        self.assertNotIn("forbidden-word list", target.lower())
+
+    def test_citation_presentation_is_target_owned_not_globally_academic(self):
+        system = text("prompts/00_system.md")
+        journal = text("prompts/targets/journal_academic.md")
+        eli5 = text("prompts/targets/explain_like_im_5.md")
+        self.assertIn(
+            "Evidence, attribution, and citation presentation are realisation responsibilities",
+            system,
+        )
+        self.assertIn("formal citation syntax is not a global fidelity requirement", system)
+        self.assertIn(
+            "does **not** impose scholarly citation apparatus, academic prose conventions",
+            system,
+        )
+        self.assertIn("Scholarly citation support is required", journal)
+        self.assertIn(
+            "Do not use formal scholarly citation apparatus in the child-facing realisation.",
+            eli5,
+        )
+        self.assertIn("ordinary narrative language that a child can understand", eli5)
+        self.assertIn(
+            "Do not turn narrative attribution into an appeal to unexplained authority", eli5
+        )
 
     def test_core_stages_do_not_override_target_permitted_scaffolding(self):
         for stage in (
@@ -293,8 +319,28 @@ class TargetAwarePromptTests(unittest.TestCase):
                 self.assertNotIn("Do not add new concepts or examples", prompt)
         review = text("prompts/40_peer_review.md")
         self.assertIn("may be absent from the source without being source drift", review)
-        self.assertIn("conceptual density", review)
+        self.assertIn("conceptual density, explanatory progression, overall length", review)
         self.assertIn("not merely vocabulary or sentence length", review)
+
+    def test_core_stages_do_not_force_literal_formal_citation_retention(self):
+        for stage in (
+            "prompts/10_draft.md",
+            "prompts/20_smooth.md",
+            "prompts/30_revise.md",
+            "prompts/50_final.md",
+        ):
+            prompt = text(stage)
+            with self.subTest(stage=stage):
+                self.assertIn("no formal citation apparatus", prompt)
+                self.assertIn("narrative attribution", prompt)
+        review = text("prompts/40_peer_review.md")
+        self.assertIn(
+            "Formal scholarly citation apparatus is not globally required", review
+        )
+        self.assertIn(
+            "formal citation apparatus retained when the target explicitly forbids it",
+            review,
+        )
 
     def test_peer_review_distinguishes_coverage_from_source_drift(self):
         review = text("prompts/40_peer_review.md")
@@ -315,6 +361,7 @@ class TargetAwarePromptTests(unittest.TestCase):
         self.assertIn(
             "Do not appeal to authority except through explicit argument", journal
         )
+        self.assertIn("Keep supplied citations attached to the claims they support", journal)
 
 
 if __name__ == "__main__":
