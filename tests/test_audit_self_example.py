@@ -125,7 +125,7 @@ class SelfExampleAuditTests(unittest.TestCase):
                     "\\usepackage[backend=biber,style=authoryear]{biblatex}\n"
                     "\\addbibresource{references.bib}\n"
                     "\\begin{document}\n"
-                    "Claim \\parencite{invented2024}.\n"
+                    "Claim \\footcite{invented2024}.\n"
                     "\\printbibliography\n\\end{document}\n"
                 ),
             )
@@ -174,7 +174,7 @@ class SelfExampleAuditTests(unittest.TestCase):
                 final=(
                     "\\documentclass{article}\n"
                     "\\begin{document}\n"
-                    "A short target-appropriate explanation with narrative provenance only.\n"
+                    "A selective target explanation with narrative provenance only.\n"
                     "\\end{document}\n"
                 ),
             )
@@ -209,6 +209,80 @@ class SelfExampleAuditTests(unittest.TestCase):
                 citation_retention="known_only",
             )
             self.assertTrue(result.ok, result.errors)
+
+    def test_no_formal_policy_allows_narrative_only_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\begin{document}\n"
+                    "Someone who worked on this idea explained it this way.\n"
+                    "\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline,
+                audit_file,
+                bibliography=bibliography,
+                final=final,
+                citation_retention="no_formal",
+            )
+            self.assertTrue(result.ok, result.errors)
+
+    def test_no_formal_policy_rejects_known_formal_biblatex_citation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\usepackage[backend=biber]{biblatex}\n"
+                    "\\addbibresource{references.bib}\n"
+                    "\\begin{document}\n"
+                    "A claim \\textcite{known2020}.\n"
+                    "\\printbibliography\n\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline,
+                audit_file,
+                bibliography=bibliography,
+                final=final,
+                citation_retention="no_formal",
+            )
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("formal bibliography citation commands forbidden" in error for error in result.errors)
+            )
+            self.assertTrue(
+                any("bibliography resource plumbing forbidden" in error for error in result.errors)
+            )
+            self.assertTrue(any("prints a bibliography forbidden" in error for error in result.errors))
+
+    def test_no_formal_policy_rejects_explicit_author_year_label(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\begin{document}\nKnown claim [Known 2020].\n"
+                    "\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline,
+                audit_file,
+                bibliography=bibliography,
+                final=final,
+                citation_retention="no_formal",
+            )
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("formal explicit citation labels forbidden" in error for error in result.errors)
+            )
 
     def test_final_with_supplied_bibliography_contract_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
