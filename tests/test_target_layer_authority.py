@@ -31,7 +31,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
     def test_system_makes_target_authoritative_for_core_realisation_dimensions(self):
         system = text("prompts/00_system.md")
         self.assertIn(
-            "Within the core target-driven publication stages (draft, smooth, revise, peer review, and final)",
+            "Within the core target-driven realisation stages (draft, smooth, revise, peer review, and final)",
             system,
         )
         self.assertIn("the selected target is authoritative", system)
@@ -49,7 +49,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
             with self.subTest(dimension=dimension):
                 self.assertIn(dimension, system)
         self.assertIn(
-            "must not impose conflicting academic, citation, or other venue defaults",
+            "must not impose conflicting academic, citation, rhetorical, or other venue defaults",
             system,
         )
         self.assertIn(
@@ -57,7 +57,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
             system,
         )
         self.assertIn(
-            "that is not a publication-style default for the core pipeline",
+            "that is not a target-style default for the core pipeline",
             system,
         )
 
@@ -68,7 +68,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("cannot make an internally contradictory", system)
         self.assertIn("less formal or more selective presentation", system)
         self.assertIn(
-            "does **not** impose scholarly citation apparatus, academic prose conventions, or academic-style visible argumentation",
+            "does **not** impose scholarly citation apparatus, academic prose conventions, or academic-style visible reasoning",
             system,
         )
         self.assertIn(
@@ -85,10 +85,45 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         ):
             with self.subTest(summary=leaked_summary):
                 self.assertNotIn(leaked_summary, system)
-        self.assertIn("Draft: produce the first complete target-aware prose realisation", system)
+        self.assertIn("Draft: produce the first complete target-aware text realisation", system)
         self.assertIn("Smooth: improve local readability and connective flow", system)
         self.assertIn("Revise: improve document-level coherence and target realisation", system)
         self.assertIn("Peer review: perform source assurance, then diagnose target-relative", system)
+
+    def test_generic_chain_does_not_impose_adult_publication_shape(self):
+        generic = "\n".join(
+            text(path)
+            for path in (
+                "prompts/00_system.md",
+                "prompts/10_draft.md",
+                "prompts/20_smooth.md",
+                "prompts/30_revise.md",
+                "prompts/40_peer_review.md",
+                "prompts/50_final.md",
+            )
+        )
+        for leaked_prior in (
+            "publication-quality prose",
+            "first-draft expansion",
+            "connected prose according to",
+            "one-to-one publication section map",
+            "publication sections",
+            "generic publication shape",
+            "publication-quality revision",
+            "Assess argument thread",
+            "publication sectioning serves",
+            "publication-ready LaTeX text",
+        ):
+            with self.subTest(leaked_prior=leaked_prior):
+                self.assertNotIn(leaked_prior, generic)
+        self.assertIn(
+            "do not infer rhetorical form, sectioning, tone, or document genre from the fact that the output format is LaTeX",
+            text("prompts/10_draft.md"),
+        )
+        self.assertIn(
+            "Do not import academic, adult-publication, argumentative, or otherwise stricter conventions",
+            text("prompts/40_peer_review.md"),
+        )
 
     def test_explicit_target_structural_choice_is_not_overridden_by_draft_defaults(self):
         target = """# Synthetic target
@@ -122,7 +157,7 @@ Do not change authored concepts, grouping, order, or scope to create them.
         )
         self.assertIn("may not lower the source-assurance floor", review)
         self.assertIn(
-            "Do not import academic or otherwise stricter venue conventions",
+            "Do not import academic, adult-publication, argumentative, or otherwise stricter conventions",
             review,
         )
         self.assertIn(
@@ -141,7 +176,10 @@ Do not change authored concepts, grouping, order, or scope to create them.
         )
         self.assertIn("Scholarly citations are not required merely by this target", rendered)
         self.assertIn("Source assurance has a target-independent floor", rendered)
-        self.assertIn("Ask first whether the claim and argument satisfy the target-independent", rendered)
+        self.assertIn(
+            "Ask first whether the claim and any source-authored supporting reasoning satisfy the target-independent",
+            rendered,
+        )
         self.assertIn("do not convert adequate support into an academic-style explanation burden", rendered)
         self.assertNotIn("unsupported non-trivial claim", rendered)
 
