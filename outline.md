@@ -178,7 +178,7 @@ Authored critical hypothesis; not prevalence/historical claim.
 
 ### IV.4 Liturgical limit case
 
-Derived limit case of IV.3 disciplinary-recognition premise; not a prevalence claim.
+Derived limit case of IV.3 disciplinary-recognition premise.
 
 Pathological conditions:
 
