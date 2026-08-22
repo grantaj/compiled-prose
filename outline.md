@@ -12,7 +12,7 @@
 
 ---
 
-## I. The Experiment: Where Is the Work?
+## I. Scope and Authorship Problem
 
 ### I.1 Domain
 
@@ -30,7 +30,7 @@ Human specifies, where material:
 - argumentative order;
 - wording constraints carrying conceptual weight.
 
-Machine executes grammatical/coherent realisation.
+Machine contributes causal execution labour by producing grammatical/coherent realisation.
 
 **Proposition:** if materially different texts faithfully realise the same sufficiently detailed specification, that specification can function as the primary authored object.
 
@@ -172,7 +172,7 @@ Authored critical hypothesis; not prevalence/historical claim.
 - Premise: disciplinary forms participate in recognition, standing, identity. [Hyland 2008; Hyland 2012; Hyland 2013]
 - Inference: accepted sentence-level performance may be treated as evidence of intellectual authorship, not merely execution.
 - Test: hold authored argument fixed/inspectable while making prose replaceable.
-- Question exposed: whether execution receives authority beyond semantic function.
+- Hypothesis tested: execution may receive authority beyond semantic function.
 
 ### IV.4 Liturgical limit case
 
@@ -195,11 +195,11 @@ Examples: borrowed weight; displays of seriousness; unnecessary opacity; rhetori
 
 Exclusion: features materially communicating uncertainty, stance, disciplinary meaning, claim relationships, or necessary nuance.
 
-Operational test: must this feature be fixed in source, or can it vary without changing the work?
+Operational test: whether the feature must be fixed in source or may vary without changing the work.
 
 ---
 
-## V. What the Separation Makes Visible
+## V. Review and Revision Consequences
 
 ### V.1 Two objects of review
 
@@ -267,7 +267,7 @@ Does not show:
 
 ---
 
-## VIII. Closing Position
+## VIII. Conclusion
 
 **Conclusion:** where conceptual structure can be made sufficiently explicit, the authoritative intellectual artefact need not be identical with its surface prose realisation.
 
