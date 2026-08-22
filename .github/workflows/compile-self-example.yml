@@ -76,6 +76,28 @@ jobs:
           test -f "$target_path"
           echo "path=$target_path" >> "$GITHUB_OUTPUT"
 
+      - name: Install LaTeX release-validation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes latexmk texlive-latex-extra texlive-bibtex-extra biber
+          latexmk -v
+          biber --version
+
+      - name: Smoke-test LaTeX bibliography toolchain
+        run: |
+          python tools/smoke_latex_bibliography.py \
+            --bibliography self-example/references.bib \
+            --diagnostic-dir build/errors/latex-smoke
+
+      - name: Upload keyless preflight diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-example-preflight-failure-${{ inputs.target }}-${{ github.sha }}-${{ github.run_id }}
+          path: build/errors
+          if-no-files-found: warn
+          retention-days: 30
+
   compile:
     name: Paid compilation
     needs: preflight
