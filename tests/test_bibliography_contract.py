@@ -34,13 +34,20 @@ class BibliographyContractTests(unittest.TestCase):
         self.assertIn("CITATION_PROTOCOL:", rendered)
         self.assertIn("The selected target owns their visible presentation", rendered)
         self.assertIn(
-            "If the selected target requires or preserves formal citation apparatus",
+            "If the selected target requires formal BibLaTeX citation apparatus",
             rendered,
         )
         self.assertIn("use biblatex with `backend=biber`", rendered)
         self.assertIn("\\addbibresource{references.bib}", rendered)
-        self.assertIn("\\printbibliography", rendered)
+        self.assertIn(
+            "Include `\\printbibliography` only when the selected target requires a bibliography/reference list",
+            rendered,
+        )
         self.assertIn("do not emit a `thebibliography` environment", rendered)
+        self.assertIn(
+            "include a bibliography/reference list in the final journal realisation",
+            rendered,
+        )
 
     def test_citation_protocol_allows_target_to_suppress_formal_apparatus(self):
         rendered = self.render_with_bibliography(
@@ -60,7 +67,7 @@ class BibliographyContractTests(unittest.TestCase):
             rendered,
         )
 
-    def test_citation_protocol_does_not_hard_code_target_presentation(self):
+    def test_citation_protocol_does_not_infer_scholarly_apparatus_from_metadata(self):
         for target_path in (
             "prompts/targets/journal_academic.md",
             "prompts/targets/magazine_general.md",
@@ -73,6 +80,10 @@ class BibliographyContractTests(unittest.TestCase):
                 self.assertNotIn("\\textcite{key}", rendered)
                 self.assertIn(
                     "do not hard-code an author-year, numeric, or other presentation",
+                    rendered,
+                )
+                self.assertIn(
+                    "without imposing scholarly apparatus merely because bibliography metadata is available",
                     rendered,
                 )
 
