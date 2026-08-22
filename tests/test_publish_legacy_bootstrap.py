@@ -25,25 +25,47 @@ class LegacyPublishBootstrapTests(unittest.TestCase):
         self.assertIn('--candidate "journal_academic=legacy-academic"', self.content)
         self.assertIn('--candidate-run-id "journal_academic=$BASE_RUN_ID"', self.content)
 
-    def test_modern_showcase_remains_preferred_after_bootstrap(self):
-        modern = self.content.index('"self-example-showcase-"')
-        legacy = self.content.index('/^self-example-candidate-[0-9a-f]{40}$/')
-        self.assertLess(modern, legacy)
-        self.assertIn('core.setOutput("base-kind", "showcase")', self.content)
-
-    def test_selected_academic_target_does_not_reimport_legacy_academic(self):
+    def test_legacy_academic_is_eligible_as_selected_academic_candidate(self):
         self.assertIn(
-            "steps.retained.outputs.base-kind == 'legacy-academic' && inputs.target != 'journal_academic'",
+            'const candidate = target === "journal_academic"',
             self.content,
         )
         self.assertIn(
-            'elif [ "$BASE_KIND" = "legacy-academic" ] && [ "$TARGET_ID" != "journal_academic" ]; then',
+            "? newerCandidate(modernCandidate, legacyAcademic)",
+            self.content,
+        )
+        self.assertIn(
+            'Publishing ${target} from successful retained compilation run ${candidate.run.id}',
+            self.content,
+        )
+
+    def test_newer_modern_academic_compile_supersedes_legacy_candidate(self):
+        self.assertIn("function newerCandidate(left, right)", self.content)
+        self.assertIn("Date.parse(left.run.created_at)", self.content)
+        self.assertIn("Date.parse(right.run.created_at)", self.content)
+        self.assertIn("right.run.id > left.run.id", self.content)
+
+    def test_modern_showcase_remains_preferred_as_preservation_base(self):
+        modern = self.content.index('"self-example-showcase-"')
+        base_legacy = self.content.index(
+            'if (target !== "journal_academic" && legacyAcademic)'
+        )
+        self.assertLess(modern, base_legacy)
+        self.assertIn('core.setOutput("base-kind", "showcase")', self.content)
+
+    def test_selected_academic_target_does_not_import_legacy_as_a_second_candidate(self):
+        self.assertIn(
+            'if (target !== "journal_academic" && legacyAcademic)',
+            self.content,
+        )
+        self.assertIn(
+            'core.info("No separate prior retained publication base is needed.")',
             self.content,
         )
 
     def test_latest_means_latest_successful_workflow_run_not_artifact_upload(self):
-        self.assertIn("Date.parse(run.created_at)", self.content)
-        self.assertIn("Date.parse(newest.run.created_at)", self.content)
+        self.assertIn("Date.parse(left.run.created_at)", self.content)
+        self.assertIn("Date.parse(right.run.created_at)", self.content)
         self.assertNotIn("Date.parse(right.created_at)", self.content)
         self.assertNotIn("Date.parse(left.created_at)", self.content)
 
