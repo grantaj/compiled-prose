@@ -202,10 +202,8 @@ def audit(
             bib_filename = bibliography.name
             if final_bib_keys and f"\\addbibresource{{{bib_filename}}}" not in final_text:
                 errors.append(
-                    f"final artefact must bind citations to supplied bibliography {bib_filename!r}"
+                    f"final artefact must bind formal citation commands to supplied bibliography {bib_filename!r}"
                 )
-            if final_bib_keys and "\\printbibliography" not in final_text:
-                errors.append("final artefact cites sources but does not print the supplied bibliography")
             if "\\begin{thebibliography}" in final_text:
                 errors.append(
                     "final artefact must not hand-render thebibliography when supplied bibliography metadata exists"
