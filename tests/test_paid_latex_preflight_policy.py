@@ -21,6 +21,14 @@ class PaidLatexPreflightPolicyTests(unittest.TestCase):
         self.assertNotIn("secrets.", preflight)
         self.assertLess(content.index(smoke), content.index(secret))
 
+    def test_release_validation_installs_scalable_t1_fonts_in_both_jobs(self):
+        content = PAID_WORKFLOW.read_text(encoding="utf-8")
+        preflight = content.split("  preflight:", 1)[1].split("  compile:", 1)[0]
+        paid_job = content.split("  compile:", 1)[1]
+
+        self.assertIn("cm-super", preflight)
+        self.assertIn("cm-super", paid_job)
+
     def test_paid_job_still_depends_on_successful_preflight(self):
         content = PAID_WORKFLOW.read_text(encoding="utf-8")
         paid_job = content.split("  compile:", 1)[1]
