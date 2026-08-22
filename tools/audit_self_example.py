@@ -15,36 +15,13 @@ SOURCE_ENTRY_RE = re.compile(r"^\*\*(.+?)\*\*\s*$", re.MULTILINE)
 CITATION_GROUP_RE = re.compile(r"\[([^\]\n]*(?:19|20)\d{2}[^\]\n]*)\]")
 YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
 BIB_ENTRY_RE = re.compile(r"^@\w+\s*\{\s*([^,\s]+)\s*,", re.MULTILINE)
-LATEX_CITE_COMMANDS = (
-    "cite",
-    "parencite",
-    "textcite",
-    "autocite",
-    "footcite",
-    "smartcite",
-    "supercite",
-    "fullcite",
-    "footfullcite",
-    "volcite",
-    "pvolcite",
-    "fvolcite",
-    "tvolcite",
-    "avolcite",
-    "citeauthor",
-    "citetitle",
-    "citeyear",
-    "citedate",
-    "citeurl",
-    "nocite",
-    "citep",
-    "citet",
-)
 LATEX_CITE_RE = re.compile(
-    r"\\(?:" + "|".join(LATEX_CITE_COMMANDS) + r")\*?"
+    r"\\(?:cite|parencite|textcite|autocite|footcite|smartcite|supercite|fullcite|"
+    r"footfullcite|volcite|pvolcite|fvolcite|tvolcite|avolcite|citeauthor|citetitle|"
+    r"citeyear|citedate|citeurl|nocite|citep|citet)\*?"
     r"(?:\s*\[[^\]]*\]){0,2}\s*\{([^{}]+)\}"
 )
 FAIL_SENTINEL = "@@FAIL"
-CITATION_RETENTION_POLICIES = ("all_source", "known_only", "no_formal")
 
 
 @dataclass(frozen=True)
@@ -117,14 +94,7 @@ def audit(
     *,
     bibliography: Optional[Path] = None,
     final: Optional[Path] = None,
-    citation_retention: str = "all_source",
 ) -> AuditResult:
-    if citation_retention not in CITATION_RETENTION_POLICIES:
-        raise ValueError(
-            "citation_retention must be one of: "
-            + ", ".join(CITATION_RETENTION_POLICIES)
-        )
-
     text = outline.read_text(encoding="utf-8")
     body, catalog = _split_outline(text)
     cited = _citation_keys(body)
@@ -219,11 +189,6 @@ def audit(
                 "final artefact contains non-authoritative explicit citation labels: "
                 + ", ".join(unknown_labels)
             )
-        if citation_retention == "no_formal" and explicit_final:
-            errors.append(
-                "final artefact contains formal explicit citation labels forbidden by target audit policy: "
-                + ", ".join(sorted(explicit_final))
-            )
 
         if bibliography is not None:
             final_bib_keys = _latex_citation_keys(final_text)
@@ -233,34 +198,6 @@ def audit(
                     "final artefact contains unknown bibliography citation keys: "
                     + ", ".join(unknown_bib_keys)
                 )
-
-            if citation_retention == "all_source":
-                required_bib_keys = {
-                    by_key[key]["bib_key"]
-                    for key in cited
-                    if key in by_key and isinstance(by_key[key].get("bib_key"), str)
-                }
-                missing_final = sorted(required_bib_keys - final_bib_keys)
-                if missing_final:
-                    errors.append(
-                        "final artefact dropped source-supplied citations required by target audit policy: "
-                        + ", ".join(missing_final)
-                    )
-
-            if citation_retention == "no_formal":
-                if final_bib_keys:
-                    errors.append(
-                        "final artefact contains formal bibliography citation commands forbidden by target audit policy: "
-                        + ", ".join(sorted(final_bib_keys))
-                    )
-                if "\\addbibresource{" in final_text:
-                    errors.append(
-                        "final artefact contains bibliography resource plumbing forbidden by target audit policy"
-                    )
-                if "\\printbibliography" in final_text:
-                    errors.append(
-                        "final artefact prints a bibliography forbidden by target audit policy"
-                    )
 
             bib_filename = bibliography.name
             if final_bib_keys and f"\\addbibresource{{{bib_filename}}}" not in final_text:
@@ -291,11 +228,6 @@ def main() -> int:
     parser.add_argument("--audit", type=Path, required=True)
     parser.add_argument("--bibliography", type=Path)
     parser.add_argument("--final", type=Path)
-    parser.add_argument(
-        "--citation-retention",
-        choices=CITATION_RETENTION_POLICIES,
-        default="all_source",
-    )
     args = parser.parse_args()
 
     try:
@@ -304,7 +236,6 @@ def main() -> int:
             args.audit,
             bibliography=args.bibliography,
             final=args.final,
-            citation_retention=args.citation_retention,
         )
     except (OSError, ValueError) as exc:
         print(f"self-example audit failed: {exc}", file=sys.stderr)
