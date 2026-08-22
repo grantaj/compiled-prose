@@ -27,6 +27,7 @@ concurrency:
 jobs:
   assemble:
     name: Assemble retained candidates
+    if: ${{ github.actor == github.repository_owner && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -117,7 +118,7 @@ jobs:
             const base = await newestSuccessful(
               "self-example-showcase-",
               ".github/workflows/publish-self-example.yml",
-              false
+              true
             );
             if (base) {
               core.info(
