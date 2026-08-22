@@ -6,6 +6,7 @@
 - **Domain:** writing primarily for reliable transmission of concepts, arguments, procedures, or results.
 - **Claim:** conceptual authorship and linguistic execution can sometimes be usefully separated and independently inspected.
 - **Model:** authoritative source = claims, warrants, dependencies, scope, sources, uncertainty, constraints; prose = reviewed downstream realisation.
+- **Functions:** practical prose-compiler model + art-informed critical intervention into academic writing.
 - **Critical frame:** conceptual art provides precedent for separating conception from execution; academic discourse research shows prose also performs disciplinary/social functions. [LeWitt 1967; LeWitt 1971; Hyland 2008; Hyland 2012; Hyland 2013]
 - **Experiment:** produce this essay by the method it describes and expose source, prompts, passes, review, and realisations separately.
 - **Boundaries:** not universal; prose still matters; wording may carry meaning.
@@ -32,12 +33,12 @@ Human specifies, where material:
 
 Machine contributes causal execution labour by producing grammatical/coherent realisation.
 
-**Proposition:** if materially different texts faithfully realise the same sufficiently detailed specification, that specification can function as the primary authored object.
+**Proposition:** if materially different texts faithfully realise the same sufficiently detailed specification, that specification can coherently function as the primary authored object.
 
 ### I.3 Responsibility
 
 - Conceptual authority upstream does not transfer responsibility.
-- Human remains responsible for source choices, interpretation, generated realisation, and final claims.
+- Human remains responsible for specification/source, source choices, interpretation, generated realisation, and final claims.
 - ICMJE: AI assistance disclosed; AI not author; humans retain responsibility. [ICMJE 2026]
 - Use as practical example of execution/accountability separation, not universal authorship theory.
 
@@ -173,8 +174,11 @@ Authored critical hypothesis; not prevalence/historical claim.
 - Inference: accepted sentence-level performance may be treated as evidence of intellectual authorship, not merely execution.
 - Test: hold authored argument fixed/inspectable while making prose replaceable.
 - Hypothesis tested: execution may receive authority beyond semantic function.
+- Interpretive conclusion: in this limited sense, the experiment desacralises execution; prose remains important but is not automatically the authoritative object.
 
 ### IV.4 Liturgical limit case
+
+Derived limit case of IV.3 disciplinary-recognition premise; not a prevalence claim.
 
 Pathological conditions:
 
@@ -261,7 +265,7 @@ Success would show:
 Does not show:
 
 - all writing should be compiled;
-- authorship can always be fully specified;
+- conceptual authorship can always be fully specified;
 - LLM output is automatically faithful;
 - style lacks intellectual/aesthetic value.
 
