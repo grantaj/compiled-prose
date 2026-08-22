@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 FAIL_SENTINEL = "@@FAIL"
 UNRESOLVED_MARKERS = (
@@ -85,9 +86,9 @@ def _failure_excerpt(log: str, stdout: str) -> str:
 def _retain_failure_diagnostics(
     tmpdir: Path,
     stem: str,
-    diagnostic_dir: Path | None,
+    diagnostic_dir: Optional[Path],
     stdout: str,
-) -> str | None:
+) -> Optional[str]:
     if diagnostic_dir is None:
         return None
     try:
@@ -107,7 +108,7 @@ def compile_latex(
     output_path: Path,
     *,
     latexmk: str = "latexmk",
-    diagnostic_dir: Path | None = None,
+    diagnostic_dir: Optional[Path] = None,
 ) -> None:
     executable = shutil.which(latexmk)
     if executable is None:
@@ -121,11 +122,12 @@ def compile_latex(
         raise RuntimeError("; ".join(static_errors))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    source_dir = input_path.parent.resolve()
     # Keep the auxiliary directory below the source directory. TeX helper tools
     # are not uniformly portable when asked to write to an unrelated absolute
     # output directory, and the release source/bibliography already live here.
     with tempfile.TemporaryDirectory(
-        prefix=".compiled-prose-latex-", dir=input_path.parent
+        prefix=".compiled-prose-latex-", dir=source_dir
     ) as tmp:
         tmpdir = Path(tmp)
         command = [
@@ -139,7 +141,7 @@ def compile_latex(
         ]
         completed = subprocess.run(
             command,
-            cwd=input_path.parent,
+            cwd=source_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
