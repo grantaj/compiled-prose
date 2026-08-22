@@ -93,7 +93,7 @@ The file supplied as `IN=...` is the authoritative conceptual source for the wor
 Its role is:
 
 - The sole source of conceptual authorship throughout the pipeline.
-- The authority for claims, argument, structure, scope, distinctions, examples, evidence, citations, and unresolved authorial choices.
+- The authority for claims, argument, structure, scope, distinctions, authored examples, evidence, citations, and unresolved authorial choices.
 
 Changing a model-generated artefact does not retroactively change this source.
 
@@ -105,7 +105,9 @@ Changing a model-generated artefact does not retroactively change this source.
 
 `prompts/targets/*.md` define audience- or venue-specific realisation requirements: register, reading level, formatting, citation expectations and presentation, explanatory explicitness, level of rigour, and similar constraints.
 
-A target is not conceptual authority. It may require greater explicitness, rigour, evidence visibility, attribution, or citation apparatus than the target-independent source-assurance floor, but it may not lower that floor or make an inadequately warranted or materially unsupported source acceptable through a less formal presentation. If satisfying a target requires a claim, example, item of evidence, citation, warrant, or scope choice absent from the source, the prompt contract directs the model to fail or report a `SOURCE` defect rather than invent the missing material.
+A target is not conceptual authority. It may require greater explicitness, rigour, evidence visibility, attribution, or citation apparatus than the target-independent source-assurance floor, but it may not lower that floor or make an inadequately warranted or materially unsupported source acceptable through a less formal presentation. If satisfying a target requires a claim, item of evidence, citation, warrant, scope choice, content-bearing example, or other authored material absent from the source, the prompt contract directs the model to fail or report a `SOURCE` defect rather than invent the missing material.
+
+A target may explicitly permit **illustrative scaffolding** as a realisation strategy. Generated examples, analogies, hypotheticals, comparisons, concrete restatements, or similar devices may therefore be absent from the authoritative source without becoming conceptual authorship, provided they only illuminate a source-authorised concept. They may not supply evidence or a missing warrant, introduce a new claim, assumption, scope choice, normative position, or interpretation, resolve an authored ambiguity, or carry argumentative weight that the source does not carry. Their mapping to the source concept must remain traceable and they must be removable without changing what the work claims. Misleading or materially inaccurate scaffolding is a realisation defect; scaffolding that cannot meet those conditions is not permitted.
 
 ### Bibliographic rendering metadata
 
@@ -117,7 +119,7 @@ Its role is limited to:
 - verified bibliographic fields needed by output renderers;
 - a shared rendering input that can be consumed independently by LaTeX/BibLaTeX and Pandoc citeproc.
 
-Bibliographic metadata is **not** authority to introduce a new citation, claim, example, evidence item, theory, or scope choice. A title or other field present only in the bibliography cannot be promoted into essay content merely because the compiler can see it.
+Bibliographic metadata is **not** authority to introduce a new citation, claim, content-bearing example, evidence item, theory, or scope choice. A title or other field present only in the bibliography cannot be promoted into essay content merely because the compiler can see it.
 
 ### Derived stage artefacts
 
@@ -125,6 +127,7 @@ Bibliographic metadata is **not** authority to introduce a new citation, claim, 
 
 - Are inputs to later transformations but are not conceptual authority.
 - Must remain faithful to the authoritative source; content that exists only because an earlier model invented it does not become authoritative by propagation.
+- May contain target-permitted illustrative scaffolding without that scaffolding becoming authored content or evidence.
 
 A downstream stage therefore receives the current representation alongside the original source.
 
@@ -206,7 +209,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced:** the source path is required when the draft recipe runs, and a successful result must satisfy the structural `tex` protocol.
 
-**Prompt contract:** expand the source faithfully for the selected target without inventing claims, evidence, citations, examples, or authorial choices. Source insufficiency that would require invention is a blocking condition to report with `@@FAIL`. When bibliography metadata is supplied, use only its exact citation keys for source-authored citations.
+**Prompt contract:** expand the source faithfully for the selected target without inventing claims, evidence, citations, content-bearing examples, or authorial choices. When the target explicitly permits illustrative scaffolding, the draft may generate it only under the provenance and fidelity constraints above. Source insufficiency that would require conceptual invention is a blocking condition to report with `@@FAIL`. When bibliography metadata is supplied, use only its exact citation keys for source-authored citations.
 
 ### 2. Smooth
 
@@ -217,7 +220,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced:** Make orders this after draft and applies the same structural `tex` result protocol.
 
-**Prompt contract:** improve local coherence, readability, and flow without changing conceptual structure or authority. Earlier drift may be repaired only when the source determines the correction; otherwise the stage is instructed to fail closed.
+**Prompt contract:** improve local coherence, readability, and flow without changing conceptual structure or authority. Earlier drift may be repaired only when the source determines the correction; otherwise the stage is instructed to fail closed. Target-permitted illustrative scaffolding may be refined as realisation but never promoted to conceptual authority.
 
 ### 3. Revise
 
@@ -228,7 +231,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced:** Make orders this after smooth and applies the structural `tex` protocol.
 
-**Prompt contract:** tighten the realised prose and global consistency without expanding scope or turning target conventions into new content authority.
+**Prompt contract:** tighten the realised prose and global consistency without expanding scope or turning target conventions into new content authority. Target-permitted illustrative scaffolding remains a removable realisation device rather than authored content.
 
 ### 4. Peer review
 
@@ -239,7 +242,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced at stage publication:** the result uses the declared `md` transport protocol rather than the `tex` protocol.
 
-**Prompt contract:** use this existing review pass for two ordered responsibilities rather than adding another model-backed stage. First perform source assurance against a target-independent floor: inspect the authoritative source for coherent argument, necessary warrants, contradictions, scope, and support appropriate to the nature of its claims. Then review the revised artefact at the style, explanatory depth, rigour, and evidentiary presentation expected by the selected target. The target may raise explicit rigour or evidence requirements above the source-assurance floor, but may not lower that floor. The review must not import academic or otherwise stricter venue conventions into a target that does not require them. Findings remain diagnostic and are classified as source-owned or realisation-owned; review is not permitted to rewrite the source.
+**Prompt contract:** use this existing review pass for two ordered responsibilities rather than adding another model-backed stage. First perform source assurance against a target-independent floor: inspect the authoritative source for coherent argument, necessary warrants, contradictions, scope, and support appropriate to the nature of its claims. Then review the revised artefact at the style, explanatory depth, rigour, and evidentiary presentation expected by the selected target. The target may raise explicit rigour or evidence requirements above the source-assurance floor, but may not lower that floor. The review must not import academic or otherwise stricter venue conventions into a target that does not require them. Target-permitted illustrative scaffolding is reviewed as realisation: absence from the source is not by itself source drift, while misleading scaffolding is a realisation defect when it can be corrected or removed without authorial change. Findings remain diagnostic and are classified as source-owned or realisation-owned; review is not permitted to rewrite the source.
 
 The exact machine grammar below is mechanically validated by the final review decision gate. Therefore `make review` alone can publish Markdown that later proves malformed; `make final` will fail closed rather than guess how to interpret it.
 
@@ -290,7 +293,7 @@ Review suggestions never become source authority at this gate.
 
 **Mechanically enforced:** the Makefile exposes only one forward invocation of this model-backed final stage per dependency-chain execution, and its result must satisfy the structural `tex` protocol. There is no automatic route back to peer review.
 
-**Prompt contract:** apply only the validated realisation-level corrections. If a requested correction actually requires authorial source work, the stage is instructed to fail rather than reinterpret diagnostic text as authority.
+**Prompt contract:** apply only the validated realisation-level corrections. If a requested correction actually requires authorial source work, the stage is instructed to fail rather than reinterpret diagnostic text as authority. Target-permitted illustrative scaffolding may be repaired as a realisation choice under the same provenance and fidelity constraints.
 
 ## Auxiliary summarize transform
 
@@ -321,7 +324,8 @@ Generated artefacts are therefore disposable build products. The source tree rem
 
 The semantic conditions below are **prompt-contract blocking conditions**, not claims of automatic semantic detection. A prose-producing stage is instructed to return `@@FAIL` rather than improvise when faithful output would require it to:
 
-- invent a claim, warrant, example, evidence item, or citation;
+- invent a claim, warrant, content-bearing example, evidence item, or citation;
+- use target-permitted illustrative scaffolding as evidence, argument, scope, or conceptual authority;
 - choose between unresolved interpretations or contradictory source instructions;
 - change authored scope or claim strength;
 - satisfy an additional target-required evidence, explicit-rigour, or citation obligation not supplied by the source;
