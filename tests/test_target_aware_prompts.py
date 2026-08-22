@@ -298,6 +298,10 @@ class TargetAwarePromptTests(unittest.TestCase):
         )
         self.assertIn("Scholarly citation support is required", journal)
         self.assertIn(
+            "Use the supplied verified bibliography metadata through formal BibLaTeX citation commands",
+            journal,
+        )
+        self.assertIn(
             "Do not use formal scholarly citation apparatus in the child-facing realisation.",
             eli5,
         )
@@ -361,7 +365,10 @@ class TargetAwarePromptTests(unittest.TestCase):
         self.assertIn(
             "Do not appeal to authority except through explicit argument", journal
         )
-        self.assertIn("Keep supplied citations attached to the claims they support", journal)
+        self.assertIn(
+            "Preserve source-supplied citations for all represented material", journal
+        )
+        self.assertIn("include a bibliography/reference list", journal)
 
 
 if __name__ == "__main__":
