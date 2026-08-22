@@ -32,7 +32,7 @@ TARGETS = {
         identifier="explain_like_im_5",
         path="prompts/targets/explain_like_im_5.md",
         label="Explain for a five-year-old",
-        citation_audit="known_only",
+        citation_audit="no_formal",
     ),
 }
 
