@@ -141,6 +141,8 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertNotIn("secrets.", content)
         self.assertNotIn("tools/llm_run", content)
         self.assertNotIn("make self", content)
+        self.assertIn("github.actor == github.repository_owner", content)
+        self.assertIn("github.ref == 'refs/heads/main'", content)
         for forbidden in ("push", "pull_request", "schedule", "workflow_run"):
             self.assertNotIn(forbidden, trigger_block)
 
@@ -173,7 +175,6 @@ class CiSpendingPolicyTests(unittest.TestCase):
         self.assertIn('run.conclusion !== "success"', content)
         self.assertIn('run.event !== "workflow_dispatch"', content)
         self.assertIn('run.path !== workflowPath', content)
-        self.assertIn('run.head_branch !== "main"', content)
         self.assertIn("`self-example-candidate-${target}-`", content)
         self.assertIn('"self-example-showcase-"', content)
         self.assertIn('".github/workflows/compile-self-example.yml"', content)
