@@ -21,6 +21,7 @@ class BibliographyContractTests(unittest.TestCase):
             output_type="tex",
             bibliography_text="@article{known2020, title={Known}, year={2020}}",
             bibliography_name="references.bib",
+            citation_protocol_text=text("prompts/citation_protocol.md"),
         )
 
     def test_tex_prompt_uses_supplied_bibliography_as_non_conceptual_metadata(self):
@@ -114,12 +115,37 @@ class BibliographyContractTests(unittest.TestCase):
                 bibliography_text="@article{x, title={X}}",
             )
 
+    def test_tex_bibliography_requires_explicit_prompt_protocol(self):
+        with self.assertRaisesRegex(ValueError, "citation_protocol_text is required"):
+            render_prompt(
+                system="system",
+                target="target",
+                stage="stage",
+                source_text="source",
+                input_text="source",
+                output_type="tex",
+                bibliography_text="@article{x, title={X}}",
+                bibliography_name="references.bib",
+            )
+
+    def test_citation_behaviour_is_file_driven_not_embedded_in_renderer(self):
+        renderer = text("tools/render_prompt.py")
+        protocol = text("prompts/citation_protocol.md")
+        self.assertIn("CITATION_PROTOCOL:", protocol)
+        self.assertIn("selected target owns their visible presentation", protocol)
+        self.assertNotIn("If the selected target requires formal BibLaTeX", renderer)
+        self.assertNotIn("If the selected target explicitly requires no formal citation", renderer)
+        self.assertIn("BIBLIOGRAPHY_RESOURCE_TOKEN", renderer)
+
     def test_self_build_copies_and_passes_verified_bibliography(self):
         makefile = text("Makefile")
         self.assertIn("SELF_BIBLIOGRAPHY := self-example/references.bib", makefile)
+        self.assertIn("CITATION_PROTOCOL := prompts/citation_protocol.md", makefile)
         self.assertIn('cp "$(SELF_BIBLIOGRAPHY)" "$(BUILD_BIBLIOGRAPHY)"', makefile)
         self.assertIn('BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final', makefile)
         self.assertIn("--bibliography $(BIBLIOGRAPHY)", makefile)
+        self.assertIn("--citation-protocol $(CITATION_PROTOCOL)", makefile)
+        self.assertIn("$(CITATION_PROTOCOL) $(P_DRAFT)", makefile)
         self.assertIn('--bibliography "$(SELF_BIBLIOGRAPHY)"', makefile)
         self.assertNotIn("citation_audit", makefile)
         self.assertNotIn("citation-retention", makefile)
