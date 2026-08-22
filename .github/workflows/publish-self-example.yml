@@ -65,7 +65,7 @@ jobs:
               (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at)
             );
 
-            async function newestSuccessful(prefix, workflowPath, requireMain) {
+            async function newestSuccessful(prefix, workflowPath) {
               for (const artifact of artifacts) {
                 if (
                   artifact.expired ||
@@ -83,8 +83,7 @@ jobs:
                 if (
                   run.conclusion !== "success" ||
                   run.event !== "workflow_dispatch" ||
-                  run.path !== workflowPath ||
-                  (requireMain && run.head_branch !== "main")
+                  run.path !== workflowPath
                 ) {
                   continue;
                 }
@@ -97,12 +96,11 @@ jobs:
             const target = process.env.TARGET_ID;
             const candidate = await newestSuccessful(
               `self-example-candidate-${target}-`,
-              ".github/workflows/compile-self-example.yml",
-              true
+              ".github/workflows/compile-self-example.yml"
             );
             if (!candidate) {
               core.setFailed(
-                `No successful retained compilation exists for target ${target} on main. ` +
+                `No successful retained compilation exists for target ${target}. ` +
                 "Run Compile self-example target successfully first."
               );
               return;
@@ -117,8 +115,7 @@ jobs:
 
             const base = await newestSuccessful(
               "self-example-showcase-",
-              ".github/workflows/publish-self-example.yml",
-              true
+              ".github/workflows/publish-self-example.yml"
             );
             if (base) {
               core.info(
