@@ -22,14 +22,15 @@ def read(path: str) -> str:
 
 def _citation_output_contract(bibliography_name: str) -> str:
     return f"""CITATION_PROTOCOL:
-- Citation metadata is supplied separately from the authoritative source. It provides only verified bibliographic rendering metadata and stable citation keys; it does not add claims, evidence, or conceptual authority.
-- Use only BibTeX keys present in that supplied metadata. Never invent, rename, or infer a citation key.
-- Preserve source-supplied citations and keep them attached to the claims they support. Do not add, drop, or relocate a citation merely to fit a target presentation preference.
-- Citation presentation is owned by the selected target. Parenthetical versus narrative form, author-year versus numeric presentation, and other citation-style choices must follow the target rather than this protocol.
-- Use biblatex with `backend=biber`; add target-appropriate presentation options only when they are consistent with the selected target. Do not hard-code an author-year, numeric, or other presentation merely because bibliography metadata is present.
-- Add `\\addbibresource{{{bibliography_name}}}` and cite only supplied keys using biblatex citation commands compatible with the selected target.
-- Include `\\printbibliography` exactly once near the end of the document.
-- Do not emit a `thebibliography` environment or hand-write bibliography entries; the supplied bibliography file is the rendering source."""
+- Citation metadata is supplied separately from the authoritative source. It provides only verified bibliographic rendering metadata and stable citation keys; it does not add claims, evidence, attribution, or conceptual authority.
+- Use only BibTeX keys present in that supplied metadata. Never invent, rename, infer, or substitute a citation key.
+- The authoritative source owns evidentiary relationships, authored attribution, and source-supplied citations. The selected target owns their visible presentation.
+- If the selected target requires or preserves formal citation apparatus, preserve the source-supplied formal citations for represented material, keep them attached to the claims they support, use biblatex with `backend=biber`, add `\\addbibresource{{{bibliography_name}}}`, cite only supplied keys using target-appropriate biblatex commands, and include `\\printbibliography` exactly once near the end of the document.
+- If the selected target explicitly requires no formal citation apparatus, do not emit biblatex citation commands, `\\addbibresource`, `\\printbibliography`, footnote citations, parenthetical author-year citations, numbered references, or a references section merely because bibliography metadata is present. Where retained material still requires source-authored attribution to remain faithful or non-misleading, realise that attribution in the ordinary narrative form required by the target using only information authorised by the source.
+- If the selected target does not explicitly suppress formal citation apparatus, treat source-supplied formal citations conservatively and preserve them for represented material.
+- Citation-presentation freedom is not permission to drop a necessary attribution, disguise model knowledge as source-authorised support, invent a source, or alter what the source says.
+- When formal citation apparatus is used, do not hard-code an author-year, numeric, or other presentation merely because bibliography metadata is present; follow the selected target.
+- When formal citation apparatus is used, do not emit a `thebibliography` environment or hand-write bibliography entries; the supplied bibliography file is the rendering source."""
 
 
 def render_prompt(
