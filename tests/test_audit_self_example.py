@@ -125,8 +125,8 @@ class SelfExampleAuditTests(unittest.TestCase):
                     "\\usepackage[backend=biber,style=authoryear]{biblatex}\n"
                     "\\addbibresource{references.bib}\n"
                     "\\begin{document}\n"
-                    "Claim \\parencite{invented2024}.\n"
-                    "\\printbibliography\n\\end{document}\n"
+                    "Claim \\footcite{invented2024}.\n"
+                    "\\end{document}\n"
                 ),
             )
             result = audit(
@@ -135,24 +135,58 @@ class SelfExampleAuditTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("unknown bibliography citation keys" in error for error in result.errors))
 
-    def test_final_dropped_source_citation_is_rejected(self):
+    def test_final_may_omit_source_citations_without_mechanical_policy(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             outline, audit_file, bibliography, final = self.write_fixture(
                 root,
                 final=(
                     "\\documentclass{article}\n"
-                    "\\usepackage[backend=biber,style=authoryear]{biblatex}\n"
+                    "\\begin{document}\nTarget-selected explanation without formal citation syntax.\n"
+                    "\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
+            self.assertTrue(result.ok, result.errors)
+
+    def test_formal_citation_may_omit_reference_list_when_target_does_not_require_one(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\usepackage[backend=biber]{biblatex}\n"
                     "\\addbibresource{references.bib}\n"
-                    "\\begin{document}\nClaim without citation.\n"
-                    "\\printbibliography\n\\end{document}\n"
+                    "\\begin{document}\n"
+                    "A claim \\fullcite{known2020}.\n"
+                    "\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline, audit_file, bibliography=bibliography, final=final
+            )
+            self.assertTrue(result.ok, result.errors)
+
+    def test_formal_citation_commands_must_bind_to_supplied_bibliography(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\begin{document}\n"
+                    "A claim \\cite{known2020}.\n"
+                    "\\end{document}\n"
                 ),
             )
             result = audit(
                 outline, audit_file, bibliography=bibliography, final=final
             )
             self.assertFalse(result.ok)
-            self.assertTrue(any("dropped source-supplied citations" in error for error in result.errors))
+            self.assertTrue(any("must bind formal citation commands" in error for error in result.errors))
 
     def test_final_with_supplied_bibliography_contract_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -179,7 +213,9 @@ class SelfExampleAuditTests(unittest.TestCase):
             outline, audit_file, bibliography, final = self.write_fixture(
                 root,
                 final=(
-                    "\\documentclass{article}\n\\begin{document}\n"
+                    "\\documentclass{article}\n"
+                    "\\addbibresource{references.bib}\n"
+                    "\\begin{document}\n"
                     "A claim \\cite{known2020}.\n"
                     "\\begin{thebibliography}{1}\n"
                     "\\bibitem{known2020} A. Author. Useful Source. 2020.\n"

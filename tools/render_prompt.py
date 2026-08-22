@@ -15,21 +15,19 @@ FAILURE_CONTRACT = """If this stage cannot faithfully produce its declared succe
 - State what authorial information is missing, ambiguous, contradictory, or unsupported; do not invent or apply a conceptual fix.
 Do not mix a failure diagnostic into a successful artefact. Diagnostic stages should not use @@FAIL merely to report findings that are their normal declared output."""
 
+BIBLIOGRAPHY_RESOURCE_TOKEN = "__BIBLIOGRAPHY_RESOURCE__"
+
 
 def read(path: str) -> str:
     return Path(path).read_text(encoding="utf-8").rstrip()
 
 
-def _citation_output_contract(bibliography_name: str) -> str:
-    return f"""CITATION_PROTOCOL:
-- Citation metadata is supplied separately from the authoritative source. It provides only verified bibliographic rendering metadata and stable citation keys; it does not add claims, evidence, or conceptual authority.
-- Use only BibTeX keys present in that supplied metadata. Never invent, rename, or infer a citation key.
-- Preserve source-supplied citations and keep them attached to the claims they support. Do not add, drop, or relocate a citation merely to fit a target presentation preference.
-- Citation presentation is owned by the selected target. Parenthetical versus narrative form, author-year versus numeric presentation, and other citation-style choices must follow the target rather than this protocol.
-- Use biblatex with `backend=biber`; add target-appropriate presentation options only when they are consistent with the selected target. Do not hard-code an author-year, numeric, or other presentation merely because bibliography metadata is present.
-- Add `\\addbibresource{{{bibliography_name}}}` and cite only supplied keys using biblatex citation commands compatible with the selected target.
-- Include `\\printbibliography` exactly once near the end of the document.
-- Do not emit a `thebibliography` environment or hand-write bibliography entries; the supplied bibliography file is the rendering source."""
+def _render_citation_protocol(template: str, bibliography_name: str) -> str:
+    if BIBLIOGRAPHY_RESOURCE_TOKEN not in template:
+        raise ValueError(
+            "citation protocol must contain " + BIBLIOGRAPHY_RESOURCE_TOKEN
+        )
+    return template.replace(BIBLIOGRAPHY_RESOURCE_TOKEN, bibliography_name)
 
 
 def render_prompt(
@@ -43,6 +41,7 @@ def render_prompt(
     review: Optional[str] = None,
     bibliography_text: Optional[str] = None,
     bibliography_name: Optional[str] = None,
+    citation_protocol_text: Optional[str] = None,
 ) -> str:
     try:
         output_instruction = OUTPUT_CONTRACTS[output_type]
@@ -51,6 +50,10 @@ def render_prompt(
 
     if (bibliography_text is None) != (bibliography_name is None):
         raise ValueError("bibliography_text and bibliography_name must be supplied together")
+    if output_type == "tex" and bibliography_name is not None and citation_protocol_text is None:
+        raise ValueError(
+            "citation_protocol_text is required for tex output when bibliography metadata is supplied"
+        )
 
     stage_input = input_text.rstrip()
     source = source_text.rstrip()
@@ -96,7 +99,10 @@ def render_prompt(
 
     output_contract = f"OUTPUT_TYPE: {output_type}\nSUCCESS: {output_instruction}"
     if output_type == "tex" and bibliography_name is not None:
-        output_contract += "\n\n" + _citation_output_contract(bibliography_name)
+        assert citation_protocol_text is not None
+        output_contract += "\n\n" + _render_citation_protocol(
+            citation_protocol_text.rstrip(), bibliography_name
+        )
     output_contract += f"\n\nFAILURE:\n{FAILURE_CONTRACT}"
 
     sections.extend(["\n\n# Output Contract\n\n", output_contract])
@@ -112,6 +118,7 @@ def main() -> None:
     ap.add_argument("--in", dest="inp", required=True)
     ap.add_argument("--review", required=False)
     ap.add_argument("--bibliography", required=False)
+    ap.add_argument("--citation-protocol", required=False)
     ap.add_argument("--output-type", required=True, choices=OUTPUT_CONTRACTS)
     args = ap.parse_args()
 
@@ -126,6 +133,7 @@ def main() -> None:
         review=read(args.review) if args.review else None,
         bibliography_text=read(str(bibliography)) if bibliography else None,
         bibliography_name=bibliography.name if bibliography else None,
+        citation_protocol_text=read(args.citation_protocol) if args.citation_protocol else None,
     )
     sys.stdout.write(rendered)
     sys.stdout.write("\n")

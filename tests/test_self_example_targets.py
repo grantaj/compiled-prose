@@ -16,6 +16,11 @@ class SelfExampleTargetTests(unittest.TestCase):
                 self.assertEqual(spec.identifier, identifier)
                 self.assertEqual(spec.path, f"prompts/targets/{identifier}.md")
 
+    def test_eli5_label_matches_literal_target(self):
+        self.assertEqual(
+            TARGETS["explain_like_im_5"].label, "Explain for a five-year-old"
+        )
+
     def test_unknown_target_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "unsupported self-example target"):
             resolve_target("critical_essay")

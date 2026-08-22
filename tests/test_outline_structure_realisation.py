@@ -12,7 +12,7 @@ def text(path: str) -> str:
 class OutlineStructureRealisationTests(unittest.TestCase):
     def test_draft_does_not_map_outline_headings_one_to_one_to_latex_sections(self):
         draft = text("prompts/10_draft.md")
-        self.assertIn("not as a one-to-one publication section map", draft)
+        self.assertIn("not as a one-to-one target-output structure map", draft)
         self.assertIn("Do not copy outline navigation numbering or labels", draft)
         self.assertIn("Do not create a section or subsection merely because", draft)
         self.assertIn("according to the selected target", draft)
@@ -31,11 +31,11 @@ class OutlineStructureRealisationTests(unittest.TestCase):
         )
         self.assertIn("Do not mechanically preserve or suppress list formatting", draft)
         self.assertIn(
-            "Do not require one source item to map to one sentence, paragraph, list item, or section",
+            "Do not require one source item to map to one sentence, paragraph, list item, section, or other target-facing unit",
             draft,
         )
 
-    def test_downstream_stages_can_repair_over_sectioning_without_claiming_authority(self):
+    def test_downstream_stages_can_repair_structure_within_target_permissions(self):
         smooth = text("prompts/20_smooth.md")
         revise = text("prompts/30_revise.md")
         review = text("prompts/40_peer_review.md")
@@ -44,26 +44,30 @@ class OutlineStructureRealisationTests(unittest.TestCase):
         for stage in (smooth, revise, final):
             with self.subTest(stage=stage[:40]):
                 self.assertIn("realisation choices", stage)
-                self.assertIn("duplicated manual numbering", stage)
+                self.assertIn("Consolidate, reorder, or omit", stage)
                 self.assertIn("selected target", stage)
-                self.assertIn("generic publication shape", stage)
+                self.assertIn("generic rhetorical or document shape", stage)
 
-        self.assertIn("mechanically mirroring the outline", review)
-        self.assertIn("gratuitous one-heading-per-outline-item", review)
-        self.assertIn("duplicated manual-plus-LaTeX section numbering", review)
-        self.assertIn("REALISATION defects", review)
+        self.assertIn("target-facing sectioning or other structural units", review)
+        self.assertIn("structure and ordering as realisation choices", review)
+        self.assertIn("not as authority to alter conceptual relationships", review)
 
-    def test_structural_realisation_still_preserves_authored_order_and_distinctions(self):
+    def test_structural_order_defaults_to_source_but_target_may_explicitly_reorder(self):
         draft = text("prompts/10_draft.md")
         smooth = text("prompts/20_smooth.md")
         revise = text("prompts/30_revise.md")
         final = text("prompts/50_final.md")
 
-        self.assertIn("Preserve the order and distinctions they express", draft)
+        self.assertIn(
+            "Preserve authored order unless the selected target explicitly permits presentation reordering",
+            draft,
+        )
+        self.assertIn("logical dependencies among retained ideas", draft)
         for stage in (smooth, revise, final):
             with self.subTest(stage=stage[:40]):
-                self.assertIn("authored order", stage)
-                self.assertIn("scope", stage)
+                self.assertIn("Preserve authored order by default", stage)
+                self.assertIn("presentation reordering", stage)
+                self.assertIn("logical dependencies among retained ideas", stage)
 
 
 if __name__ == "__main__":

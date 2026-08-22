@@ -37,29 +37,34 @@ ACCEPTANCE = """\
 # Release acceptance review
 
 This page is a **human semantic gate**, not a mechanically generated certificate of fidelity.
-The mechanical gates establish source/citation bookkeeping and protocol cleanliness and, once a
+The mechanical gates establish source/provenance bookkeeping and protocol cleanliness and, once a
 candidate has been generated, require a real LaTeX compilation. They cannot prove that generated
-prose is materially equivalent to the authored conceptual source.
+prose is a faithful target realisation of the authored conceptual source.
 
 Before approving publication, compare `artifacts/final.tex` (or the rendered PDF) directly with
-`artifacts/outline.md` and confirm all of the following:
+`artifacts/outline.md` and the selected target, and confirm all of the following:
 
-- no material claim appears in the final essay without authority in the outline;
-- no authored proposition has been silently strengthened or weakened;
-- no example, theory, citation, or historical claim was introduced downstream;
-- every source-supplied citation remains present and attached to the claim it supports;
+- no material claim appears in the final text without authority in the outline;
+- no represented authored proposition has been silently strengthened or weakened;
+- no content-bearing example, theory, citation, attribution, or historical claim was invented downstream;
+- the realised coverage matches the selected target: exhaustive targets retain all materially distinct source content, while any summarisation or omission is explicitly target-authorised;
+- omitted material has not made retained material false, misleading, or detached from a necessary qualification, dependency, uncertainty, or context;
+- evidence, attribution, and citation presentation matches the selected target without inventing or disguising support;
+- where the target requires formal citations, required source-supplied citations remain attached to the claims they support;
+- where the target explicitly suppresses formal citation apparatus, no formal citation syntax has leaked into the target-facing text and any necessary attribution is faithfully expressed in the target-appropriate form;
 - peer review did not expand conceptual scope;
-- material qualifications, uncertainty, exclusions, and domain boundaries are preserved;
 - the final peer-review report contains no unresolved source-level blocker;
+- any generated illustrative scaffolding is faithful, traceable to a source-authorised concept, materially accurate, and removable without changing the work's claims or evidentiary support;
 - the human-authored conceptual decisions remain inspectable separately from model realisation.
 
 If any item fails, do **not** approve publication. Repair the authoritative source for source defects,
-or the compiler/prompt layer for compiler defects, then recompile. Do not hand-patch conceptual
+or the compiler/target layer for realisation defects, then recompile. Do not hand-patch conceptual
 content into generated prose.
 
 The source-verification evidence used for this candidate is retained as
-`artifacts/source-audit.json`. Stable bibliographic rendering metadata is retained separately as
-`artifacts/references.bib`. Neither file adds conceptual authority beyond `outline.md`.
+`artifacts/source-audit.json`. Stable bibliographic/provenance metadata is retained separately as
+`artifacts/references.bib`. Neither file adds conceptual authority beyond `outline.md` or requires
+formal citation apparatus in a target that explicitly suppresses it.
 """
 
 
@@ -139,7 +144,7 @@ def build_site(
     safe_run_url = html.escape(run_url, quote=True)
     nav.write_text(
         "<nav>"
-        '<a href="index.html">Final essay</a>'
+        '<a href="index.html">Final text</a>'
         '<a href="outline.html">Authoritative outline</a>'
         '<a href="peer-review.html">Peer review</a>'
         '<a href="acceptance.html">Acceptance review</a>'
@@ -155,9 +160,10 @@ def build_site(
         encoding="utf-8",
     )
 
-    # Use the same bibliographic metadata as LaTeX, through Pandoc's native
-    # citation processor. Do not rewrite citation commands or bibliography text.
-    # Do not override final.tex metadata: its paper title must remain identical
+    # Bibliographic metadata remains available as provenance for every target.
+    # Pandoc's native cite processor only renders formal references when the
+    # generated target text actually contains citation commands.
+    # Do not override final.tex metadata: its title must remain identical
     # between PDF and HTML renderings.
     _run_pandoc(
         build_dir / "final.tex",

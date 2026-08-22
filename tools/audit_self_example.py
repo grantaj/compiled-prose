@@ -16,7 +16,9 @@ CITATION_GROUP_RE = re.compile(r"\[([^\]\n]*(?:19|20)\d{2}[^\]\n]*)\]")
 YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
 BIB_ENTRY_RE = re.compile(r"^@\w+\s*\{\s*([^,\s]+)\s*,", re.MULTILINE)
 LATEX_CITE_RE = re.compile(
-    r"\\(?:cite|parencite|textcite|autocite|citep|citet)\*?"
+    r"\\(?:cite|parencite|textcite|autocite|footcite|smartcite|supercite|fullcite|"
+    r"footfullcite|volcite|pvolcite|fvolcite|tvolcite|avolcite|citeauthor|citetitle|"
+    r"citeyear|citedate|citeurl|nocite|citep|citet)\*?"
     r"(?:\s*\[[^\]]*\]){0,2}\s*\{([^{}]+)\}"
 )
 FAIL_SENTINEL = "@@FAIL"
@@ -179,6 +181,7 @@ def audit(
         final_text = final.read_text(encoding="utf-8")
         if FAIL_SENTINEL in final_text:
             errors.append("final artefact contains compiler failure sentinel")
+
         explicit_final = _citation_keys(final_text)
         unknown_labels = sorted(explicit_final - catalogued)
         if unknown_labels:
@@ -196,25 +199,11 @@ def audit(
                     + ", ".join(unknown_bib_keys)
                 )
 
-            required_bib_keys = {
-                by_key[key]["bib_key"]
-                for key in cited
-                if key in by_key and isinstance(by_key[key].get("bib_key"), str)
-            }
-            missing_final = sorted(required_bib_keys - final_bib_keys)
-            if missing_final:
-                errors.append(
-                    "final artefact dropped source-supplied citations: "
-                    + ", ".join(missing_final)
-                )
-
             bib_filename = bibliography.name
             if final_bib_keys and f"\\addbibresource{{{bib_filename}}}" not in final_text:
                 errors.append(
-                    f"final artefact must bind citations to supplied bibliography {bib_filename!r}"
+                    f"final artefact must bind formal citation commands to supplied bibliography {bib_filename!r}"
                 )
-            if final_bib_keys and "\\printbibliography" not in final_text:
-                errors.append("final artefact cites sources but does not print the supplied bibliography")
             if "\\begin{thebibliography}" in final_text:
                 errors.append(
                     "final artefact must not hand-render thebibliography when supplied bibliography metadata exists"

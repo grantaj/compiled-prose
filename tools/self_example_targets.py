@@ -28,7 +28,7 @@ TARGETS = {
     "explain_like_im_5": TargetSpec(
         identifier="explain_like_im_5",
         path="prompts/targets/explain_like_im_5.md",
-        label="Explain for a non-specialist",
+        label="Explain for a five-year-old",
     ),
 }
 
