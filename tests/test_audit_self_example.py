@@ -130,12 +130,64 @@ class SelfExampleAuditTests(unittest.TestCase):
                 ),
             )
             result = audit(
-                outline, audit_file, bibliography=bibliography, final=final
+                outline,
+                audit_file,
+                bibliography=bibliography,
+                final=final,
+                citation_retention="known_only",
             )
             self.assertFalse(result.ok)
             self.assertTrue(any("unknown bibliography citation keys" in error for error in result.errors))
 
-    def test_final_dropped_source_citation_is_rejected(self):
+    def test_all_source_policy_rejects_dropped_source_citation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\begin{document}\nClaim without citation.\n"
+                    "\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline,
+                audit_file,
+                bibliography=bibliography,
+                final=final,
+                citation_retention="all_source",
+            )
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any(
+                    "dropped source-supplied citations required by target audit policy"
+                    in error
+                    for error in result.errors
+                )
+            )
+
+    def test_known_only_policy_allows_no_formal_citations(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, final = self.write_fixture(
+                root,
+                final=(
+                    "\\documentclass{article}\n"
+                    "\\begin{document}\n"
+                    "A short target-appropriate explanation with narrative provenance only.\n"
+                    "\\end{document}\n"
+                ),
+            )
+            result = audit(
+                outline,
+                audit_file,
+                bibliography=bibliography,
+                final=final,
+                citation_retention="known_only",
+            )
+            self.assertTrue(result.ok, result.errors)
+
+    def test_known_only_policy_still_validates_formal_citations_if_present(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             outline, audit_file, bibliography, final = self.write_fixture(
@@ -144,15 +196,19 @@ class SelfExampleAuditTests(unittest.TestCase):
                     "\\documentclass{article}\n"
                     "\\usepackage[backend=biber,style=authoryear]{biblatex}\n"
                     "\\addbibresource{references.bib}\n"
-                    "\\begin{document}\nClaim without citation.\n"
+                    "\\begin{document}\n"
+                    "A claim \\parencite{known2020}.\n"
                     "\\printbibliography\n\\end{document}\n"
                 ),
             )
             result = audit(
-                outline, audit_file, bibliography=bibliography, final=final
+                outline,
+                audit_file,
+                bibliography=bibliography,
+                final=final,
+                citation_retention="known_only",
             )
-            self.assertFalse(result.ok)
-            self.assertTrue(any("dropped source-supplied citations" in error for error in result.errors))
+            self.assertTrue(result.ok, result.errors)
 
     def test_final_with_supplied_bibliography_contract_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -187,10 +243,26 @@ class SelfExampleAuditTests(unittest.TestCase):
                 ),
             )
             result = audit(
-                outline, audit_file, bibliography=bibliography, final=final
+                outline,
+                audit_file,
+                bibliography=bibliography,
+                final=final,
+                citation_retention="known_only",
             )
             self.assertFalse(result.ok)
             self.assertTrue(any("must not hand-render" in error for error in result.errors))
+
+    def test_unknown_citation_retention_policy_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            outline, audit_file, bibliography, _ = self.write_fixture(root)
+            with self.assertRaisesRegex(ValueError, "citation_retention must be one of"):
+                audit(
+                    outline,
+                    audit_file,
+                    bibliography=bibliography,
+                    citation_retention="academic_everywhere",
+                )
 
 
 if __name__ == "__main__":
