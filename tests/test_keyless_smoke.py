@@ -125,7 +125,12 @@ class KeylessSmokeTests(unittest.TestCase):
     def test_self_enables_fail_fast_latex_stage_validation(self):
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         self.assertIn("VALIDATE_LATEX_STAGES ?= 0", makefile)
-        self.assertIn("VALIDATE_LATEX_STAGES=1 final", makefile)
+        self_compile = next(
+            line
+            for line in makefile.splitlines()
+            if 'BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final' in line
+        )
+        self.assertIn("VALIDATE_LATEX_STAGES=1", self_compile)
         self.assertIn(
             'if [ "$(VALIDATE_LATEX_STAGES)" = "1" ] && [ "$(4)" = "tex" ]; then',
             makefile,
