@@ -204,11 +204,12 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--diagnostic-dir", type=Path)
     args = parser.parse_args()
+    diagnostic_dir = args.diagnostic_dir or args.input.parent / "errors" / "latex"
     try:
         compile_latex(
             args.input,
             args.output,
-            diagnostic_dir=args.diagnostic_dir,
+            diagnostic_dir=diagnostic_dir,
         )
     except (OSError, RuntimeError) as exc:
         print(f"LaTeX validation failed: {exc}", file=sys.stderr)
