@@ -30,6 +30,7 @@ ERROR_MARKERS = (
     "undefined control sequence",
     "latex error:",
     "package biblatex error:",
+    "pdftex error",
     "emergency stop",
     "fatal error",
     "runaway argument",
@@ -95,9 +96,12 @@ def _retain_failure_diagnostics(
         diagnostic_dir.mkdir(parents=True, exist_ok=True)
         (diagnostic_dir / "latexmk.stdout.txt").write_text(stdout, encoding="utf-8")
         for suffix in DIAGNOSTIC_SUFFIXES:
-            source = tmpdir / f"{stem}{suffix}"
-            if source.is_file():
-                shutil.copy2(source, diagnostic_dir / source.name)
+            for source in (
+                tmpdir / f"{stem}{suffix}",
+                tmpdir / f"{stem}{suffix}-SAVE-ERROR",
+            ):
+                if source.is_file():
+                    shutil.copy2(source, diagnostic_dir / source.name)
     except OSError as exc:
         return f"could not retain LaTeX diagnostics in {diagnostic_dir}: {exc}"
     return None
