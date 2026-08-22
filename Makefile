@@ -19,6 +19,10 @@ OPENAI_USAGE_LOG ?= $(BUILD_DIR)/openai-usage.jsonl
 OLLAMA_MODEL ?= llama3.1
 OLLAMA_HOST ?= http://localhost:11434
 
+# Release/self-example builds can opt into transport validation after every
+# emitted LaTeX stage. Generic compilation remains independent of a TeX install.
+VALIDATE_LATEX_STAGES ?= 0
+
 # Inputs
 IN ?=
 BIBLIOGRAPHY ?=
@@ -62,12 +66,13 @@ self-preflight:
 
 # One obvious end-to-end self-example command. This deliberately performs a
 # fresh build. The selected BACKEND controls whether model execution is local
-# or paid; self-preflight always runs before any backend invocation.
+# or paid; self-preflight always runs before any backend invocation. Release
+# validation checks each emitted LaTeX stage before another model stage runs.
 self: self-preflight
 	@$(MAKE) --no-print-directory clobber
 	@mkdir -p "$(BUILD_DIR)"
 	@cp "$(SELF_BIBLIOGRAPHY)" "$(BUILD_BIBLIOGRAPHY)"
-	@$(MAKE) --no-print-directory IN="$(SELF_SOURCE)" BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final
+	@$(MAKE) --no-print-directory IN="$(SELF_SOURCE)" BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final VALIDATE_LATEX_STAGES=1
 	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)" --bibliography "$(BUILD_BIBLIOGRAPHY)" --final "$(FINAL_OUT)"
 	@$(MAKE) --no-print-directory validate-latex
 
@@ -121,7 +126,9 @@ python tools/render_prompt.py \
 endef
 
 # Capture backend output privately, then publish the nominal artefact only after
-# the backend-independent success/failure protocol has been enforced.
+# the backend-independent success/failure protocol has been enforced. Release
+# builds additionally compile every emitted TeX artefact before proceeding, but
+# do not rewrite or repair model output mechanically.
 define RUN_STAGE
 rm -f "$(5)" "$(ERROR_DIR)/$(1).md"; \
 raw="$$(mktemp "$(BUILD_DIR)/.$(1).raw.XXXXXX")"; \
@@ -130,6 +137,14 @@ if $(call RUN_LLM,$(2),$(3),$(4),$(6)) > "$$raw"; then \
   python tools/enforce_protocol.py \
     --stage "$(1)" --output-type "$(4)" \
     --output "$(5)" --diagnostic "$(ERROR_DIR)/$(1).md" < "$$raw"; \
+  if [ "$(VALIDATE_LATEX_STAGES)" = "1" ] && [ "$(4)" = "tex" ]; then \
+    validation_dir="$(ERROR_DIR)/latex-$(1)"; \
+    rm -rf "$$validation_dir"; \
+    python tools/validate_latex.py \
+      --input "$(5)" --output "$$validation_dir/validated.pdf" \
+      --diagnostic-dir "$$validation_dir"; \
+    rm -rf "$$validation_dir"; \
+  fi; \
 else \
   status="$$?"; \
   python tools/enforce_protocol.py \

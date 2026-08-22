@@ -59,6 +59,8 @@ class KeylessSmokeTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(FIXTURE.read_text(encoding="utf-8").strip(), result.stdout)
         self.assertEqual(result.stdout.count("OUTPUT_TYPE: tex"), 1)
+        self.assertIn("It must compile as emitted", result.stdout)
+        self.assertIn("package explicitly loaded in the document preamble", result.stdout)
 
     def test_nominal_success_cannot_mix_failure_sentinel(self):
         cases = (
@@ -119,6 +121,21 @@ class KeylessSmokeTests(unittest.TestCase):
             dependencies,
             {"check-python", "check-shell", "test", "self-preflight"},
         )
+
+    def test_self_enables_fail_fast_latex_stage_validation(self):
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+        self.assertIn("VALIDATE_LATEX_STAGES ?= 0", makefile)
+        self_compile = next(
+            line
+            for line in makefile.splitlines()
+            if 'BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final' in line
+        )
+        self.assertIn("VALIDATE_LATEX_STAGES=1", self_compile)
+        self.assertIn(
+            'if [ "$(VALIDATE_LATEX_STAGES)" = "1" ] && [ "$(4)" = "tex" ]; then',
+            makefile,
+        )
+        self.assertIn("python tools/validate_latex.py", makefile)
 
     def test_openai_requirement_declares_responses_api_floor(self):
         requirements = [
