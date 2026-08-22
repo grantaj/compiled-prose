@@ -41,6 +41,12 @@ class LegacyPublishBootstrapTests(unittest.TestCase):
             self.content,
         )
 
+    def test_latest_means_latest_successful_workflow_run_not_artifact_upload(self):
+        self.assertIn("Date.parse(run.created_at)", self.content)
+        self.assertIn("Date.parse(newest.run.created_at)", self.content)
+        self.assertNotIn("Date.parse(right.created_at)", self.content)
+        self.assertNotIn("Date.parse(left.created_at)", self.content)
+
 
 if __name__ == "__main__":
     unittest.main()
