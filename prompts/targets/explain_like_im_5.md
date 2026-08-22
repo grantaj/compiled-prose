@@ -41,12 +41,14 @@ TONE:
 - Do not use baby talk, forced cuteness, or a patronising voice.
 - Do not turn the explanation into entertainment at the expense of the retained source meaning.
 
-CITATION AND PROVENANCE:
-- Scholarly citation apparatus is not required merely by this target.
-- When source material is legitimately omitted or compressed under this target, citations attached only to that omitted detail need not appear in the child-facing realisation.
-- Preserve attribution or citation where it is necessary to keep retained material faithful, properly attributed, or non-misleading.
-- Never invent a source or use a citation to introduce material not authorised by the source.
-- An adult reviewer should be able to trace the retained ideas and generated explanatory devices back to the authoritative source even though the child-facing text is selective.
+EVIDENCE, ATTRIBUTION, AND CITATIONS:
+- Do not use formal scholarly citation apparatus in the child-facing realisation. Do not emit parenthetical author-year citations, numbered references, citation footnotes, BibLaTeX citation commands, a bibliography, or a references section.
+- Formal citation syntax is not required for fidelity. The authoritative source and retained compilation artefacts preserve provenance outside the child-facing prose.
+- When the identity of a person, group, prior idea, observation, or source of a claim matters to the retained explanation, express that source-authorised attribution in ordinary narrative language that a child can understand.
+- When an attributed or externally supported detail is omitted under this target's coverage permission, its formal citation and attribution may also be omitted.
+- Do not turn narrative attribution into an appeal to unexplained authority. Explain the retained idea itself at the child's level rather than asking the child to accept it merely because an expert or institution said it.
+- Never invent a source, person, group, observation, or attribution. Do not use model knowledge as evidence.
+- An adult reviewer should be able to trace the retained ideas, narrative attributions, and generated explanatory devices back to the authoritative source even though the child-facing text contains no formal citation apparatus.
 
 FORMAT:
 - No commentary about simplification, compilation, or writing for children unless that subject is itself necessary to the retained explanation.
