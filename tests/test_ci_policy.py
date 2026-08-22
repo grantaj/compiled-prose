@@ -144,32 +144,63 @@ class CiSpendingPolicyTests(unittest.TestCase):
         for forbidden in ("push", "pull_request", "schedule", "workflow_run"):
             self.assertNotIn(forbidden, trigger_block)
 
-    def test_publish_workflow_uses_explicit_compile_run_ids_and_showcase_builder(self):
+    def test_publish_workflow_exposes_target_not_run_id_inputs(self):
         content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("base_publish_run_id:", content)
-        self.assertIn("pattern: self-example-showcase-*", content)
-        self.assertIn("run-id: ${{ inputs.base_publish_run_id }}", content)
-        self.assertIn("--base-showcase base-showcase", content)
-        for target, env_name in (
-            ("journal_academic", "JOURNAL_RUN_ID"),
-            ("magazine_general", "MAGAZINE_RUN_ID"),
-            ("explain_like_im_5", "ELI5_RUN_ID"),
+        trigger_block = content.split("permissions:", 1)[0]
+        self.assertIn("target:", trigger_block)
+        self.assertIn('description: "Target to publish from its latest successful compilation"', trigger_block)
+        self.assertIn("type: choice", trigger_block)
+        self.assertIn("default: journal_academic", trigger_block)
+        for target in (
+            "journal_academic",
+            "magazine_general",
+            "explain_like_im_5",
         ):
-            self.assertIn(f"{target}_run_id:", content)
-            self.assertIn(f'--candidate "{target}=candidates/{target}"', content)
-            self.assertIn(f'--candidate-run-id "{target}=${env_name}"', content)
+            self.assertIn(f"          - {target}\n", trigger_block)
+        for obsolete in (
+            "base_publish_run_id:",
+            "journal_academic_run_id:",
+            "magazine_general_run_id:",
+            "explain_like_im_5_run_id:",
+        ):
+            self.assertNotIn(obsolete, trigger_block)
+
+    def test_publish_workflow_resolves_latest_successful_retained_artifacts(self):
+        content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("actions/github-script@v8", content)
+        self.assertIn("listArtifactsForRepo", content)
+        self.assertIn("getWorkflowRun", content)
+        self.assertIn('run.conclusion !== "success"', content)
+        self.assertIn('run.event !== "workflow_dispatch"', content)
+        self.assertIn('run.path !== workflowPath', content)
+        self.assertIn('run.head_branch !== "main"', content)
+        self.assertIn("`self-example-candidate-${target}-`", content)
+        self.assertIn('"self-example-showcase-"', content)
+        self.assertIn('".github/workflows/compile-self-example.yml"', content)
+        self.assertIn('".github/workflows/publish-self-example.yml"', content)
+        self.assertIn("artifact.expired", content)
+        self.assertIn("candidate-run-id", content)
+        self.assertIn("base-run-id", content)
+
+    def test_publish_workflow_preserves_base_and_overlays_only_selected_target(self):
+        content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("name: Download prior published showcase", content)
+        self.assertIn("name: Download selected target candidate", content)
+        self.assertIn("run-id: ${{ steps.retained.outputs.base-run-id }}", content)
+        self.assertIn("run-id: ${{ steps.retained.outputs.candidate-run-id }}", content)
+        self.assertIn("--base-showcase base-showcase", content)
+        self.assertIn('--candidate "$TARGET_ID=candidate"', content)
+        self.assertIn('--candidate-run-id "$TARGET_ID=$CANDIDATE_RUN_ID"', content)
         self.assertIn("actions/download-artifact@v4", content)
         self.assertIn("tools/build_self_example_showcase.py", content)
-        self.assertNotIn("latest candidate", content.lower())
-        self.assertNotIn("/latest", content.lower())
 
-    def test_first_publish_requires_academic_candidate_or_base(self):
+    def test_first_publish_requires_academic_target_without_retained_base(self):
         content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn(
-            'if [ -z "$BASE_PUBLISH_RUN_ID" ] && [ -z "$JOURNAL_RUN_ID" ]; then',
+            "steps.retained.outputs.base-run-id == '' && inputs.target != 'journal_academic'",
             content,
         )
-        self.assertIn("legacy top-level URLs remain valid", content)
+        self.assertIn("legacy academic URLs", content)
 
     def test_assemble_job_has_no_pages_write_authority(self):
         content = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
