@@ -65,11 +65,11 @@ jobs:
               (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at)
             );
 
-            async function newestSuccessful(prefix, workflowPath) {
+            async function newestSuccessfulMatching(matchesArtifact, workflowPath) {
               for (const artifact of artifacts) {
                 if (
                   artifact.expired ||
-                  !artifact.name.startsWith(prefix) ||
+                  !matchesArtifact(artifact) ||
                   !artifact.workflow_run?.id
                 ) {
                   continue;
@@ -91,6 +91,13 @@ jobs:
                 return { artifact, run };
               }
               return null;
+            }
+
+            function newestSuccessful(prefix, workflowPath) {
+              return newestSuccessfulMatching(
+                artifact => artifact.name.startsWith(prefix),
+                workflowPath
+              );
             }
 
             const target = process.env.TARGET_ID;
@@ -123,14 +130,34 @@ jobs:
               );
               core.setOutput("base-run-id", String(base.run.id));
               core.setOutput("base-artifact", base.artifact.name);
+              core.setOutput("base-kind", "showcase");
+              return;
+            }
+
+            // Before the multi-target publish workflow existed, the successful
+            // publication retained the exact academic site as a candidate named
+            // self-example-candidate-<40-hex-source-sha>. Reuse that exact
+            // published candidate once to bootstrap the first modern showcase.
+            const legacyAcademic = await newestSuccessfulMatching(
+              artifact => /^self-example-candidate-[0-9a-f]{40}$/.test(artifact.name),
+              ".github/workflows/publish-self-example.yml"
+            );
+            if (legacyAcademic) {
+              core.info(
+                `Preserving legacy published academic candidate from run ` +
+                `${legacyAcademic.run.id} (${legacyAcademic.artifact.name}).`
+              );
+              core.setOutput("base-run-id", String(legacyAcademic.run.id));
+              core.setOutput("base-artifact", legacyAcademic.artifact.name);
+              core.setOutput("base-kind", "legacy-academic");
             } else {
-              core.info("No prior successful retained showcase found; this is a first publication.");
+              core.info("No prior successful retained publication found; this is a first publication.");
             }
 
       - name: Require academic target for first publication
         if: ${{ steps.retained.outputs.base-run-id == '' && inputs.target != 'journal_academic' }}
         run: |
-          echo "No prior published showcase is available to preserve the legacy academic URLs." >&2
+          echo "No prior published academic candidate is available to preserve the legacy academic URLs." >&2
           echo "Publish journal_academic first, then publish additional targets normally." >&2
           exit 2
 
@@ -141,11 +168,21 @@ jobs:
           pandoc --version
 
       - name: Download prior published showcase
-        if: ${{ steps.retained.outputs.base-run-id != '' }}
+        if: ${{ steps.retained.outputs.base-kind == 'showcase' }}
         uses: actions/download-artifact@v4
         with:
           name: ${{ steps.retained.outputs.base-artifact }}
           path: base-showcase
+          run-id: ${{ steps.retained.outputs.base-run-id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Download legacy published academic candidate
+        if: ${{ steps.retained.outputs.base-kind == 'legacy-academic' && inputs.target != 'journal_academic' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.retained.outputs.base-artifact }}
+          path: legacy-academic
           run-id: ${{ steps.retained.outputs.base-run-id }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
@@ -163,6 +200,7 @@ jobs:
         env:
           CANDIDATE_RUN_ID: ${{ steps.retained.outputs.candidate-run-id }}
           BASE_RUN_ID: ${{ steps.retained.outputs.base-run-id }}
+          BASE_KIND: ${{ steps.retained.outputs.base-kind }}
         run: |
           args=(
             --output-dir site
@@ -170,8 +208,11 @@ jobs:
             --candidate "$TARGET_ID=candidate"
             --candidate-run-id "$TARGET_ID=$CANDIDATE_RUN_ID"
           )
-          if [ -n "$BASE_RUN_ID" ]; then
+          if [ "$BASE_KIND" = "showcase" ]; then
             args+=(--base-showcase base-showcase)
+          elif [ "$BASE_KIND" = "legacy-academic" ] && [ "$TARGET_ID" != "journal_academic" ]; then
+            args+=(--candidate "journal_academic=legacy-academic")
+            args+=(--candidate-run-id "journal_academic=$BASE_RUN_ID")
           fi
           python tools/build_self_example_showcase.py "${args[@]}"
 
