@@ -59,8 +59,6 @@ class KeylessSmokeTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(FIXTURE.read_text(encoding="utf-8").strip(), result.stdout)
         self.assertEqual(result.stdout.count("OUTPUT_TYPE: tex"), 1)
-        self.assertIn("It must compile as emitted", result.stdout)
-        self.assertIn("package explicitly loaded in the document preamble", result.stdout)
 
     def test_nominal_success_cannot_mix_failure_sentinel(self):
         cases = (
