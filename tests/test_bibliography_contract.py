@@ -11,10 +11,10 @@ def text(path: str) -> str:
 
 
 class BibliographyContractTests(unittest.TestCase):
-    def test_tex_prompt_uses_supplied_bibliography_as_non_conceptual_metadata(self):
-        rendered = render_prompt(
+    def render_with_bibliography(self, target_path: str) -> str:
+        return render_prompt(
             system=text("prompts/00_system.md"),
-            target=text("prompts/targets/journal_academic.md"),
+            target=text(target_path),
             stage=text("prompts/10_draft.md"),
             source_text="# Source\nClaim [Known 2020].",
             input_text="# Source\nClaim [Known 2020].",
@@ -22,16 +22,45 @@ class BibliographyContractTests(unittest.TestCase):
             bibliography_text="@article{known2020, title={Known}, year={2020}}",
             bibliography_name="references.bib",
         )
+
+    def test_tex_prompt_uses_supplied_bibliography_as_non_conceptual_metadata(self):
+        rendered = self.render_with_bibliography(
+            "prompts/targets/journal_academic.md"
+        )
         self.assertIn(
             "# Citation Metadata (Bibliographic Only; Non-Conceptual)", rendered
         )
         self.assertIn("BIBLIOGRAPHY_RESOURCE: references.bib", rendered)
         self.assertIn("CITATION_PROTOCOL:", rendered)
-        self.assertIn("Citation presentation is owned by the selected target", rendered)
-        self.assertIn("Use biblatex with `backend=biber`", rendered)
+        self.assertIn("The selected target owns their visible presentation", rendered)
+        self.assertIn(
+            "If the selected target requires or preserves formal citation apparatus",
+            rendered,
+        )
+        self.assertIn("use biblatex with `backend=biber`", rendered)
         self.assertIn("\\addbibresource{references.bib}", rendered)
         self.assertIn("\\printbibliography", rendered)
-        self.assertIn("Do not emit a `thebibliography` environment", rendered)
+        self.assertIn("do not emit a `thebibliography` environment", rendered)
+
+    def test_citation_protocol_allows_target_to_suppress_formal_apparatus(self):
+        rendered = self.render_with_bibliography(
+            "prompts/targets/explain_like_im_5.md"
+        )
+        self.assertIn(
+            "If the selected target explicitly requires no formal citation apparatus",
+            rendered,
+        )
+        self.assertIn(
+            "do not emit biblatex citation commands", rendered
+        )
+        self.assertIn(
+            "Do not use formal scholarly citation apparatus in the child-facing realisation.",
+            rendered,
+        )
+        self.assertIn(
+            "use source-authorised narrative attribution only where the retained meaning requires it",
+            rendered,
+        )
 
     def test_citation_protocol_does_not_hard_code_target_presentation(self):
         for target_path in (
@@ -40,21 +69,12 @@ class BibliographyContractTests(unittest.TestCase):
             "prompts/targets/explain_like_im_5.md",
         ):
             with self.subTest(target=target_path):
-                rendered = render_prompt(
-                    system=text("prompts/00_system.md"),
-                    target=text(target_path),
-                    stage=text("prompts/10_draft.md"),
-                    source_text="# Source\nClaim [Known 2020].",
-                    input_text="# Source\nClaim [Known 2020].",
-                    output_type="tex",
-                    bibliography_text="@article{known2020, title={Known}, year={2020}}",
-                    bibliography_name="references.bib",
-                )
+                rendered = self.render_with_bibliography(target_path)
                 self.assertNotIn("style=authoryear", rendered)
                 self.assertNotIn("\\parencite{key}", rendered)
                 self.assertNotIn("\\textcite{key}", rendered)
                 self.assertIn(
-                    "Do not hard-code an author-year, numeric, or other presentation",
+                    "do not hard-code an author-year, numeric, or other presentation",
                     rendered,
                 )
 
@@ -92,6 +112,11 @@ class BibliographyContractTests(unittest.TestCase):
         self.assertIn('BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final', makefile)
         self.assertIn("--bibliography $(BIBLIOGRAPHY)", makefile)
         self.assertIn('--bibliography "$(SELF_BIBLIOGRAPHY)"', makefile)
+        self.assertIn(
+            'python tools/self_example_targets.py --path "$(TARGET_STYLE)" --field citation_audit',
+            makefile,
+        )
+        self.assertIn('--citation-retention "$$citation_audit"', makefile)
 
 
 if __name__ == "__main__":
