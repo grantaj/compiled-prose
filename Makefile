@@ -19,6 +19,10 @@ OPENAI_USAGE_LOG ?= $(BUILD_DIR)/openai-usage.jsonl
 OLLAMA_MODEL ?= llama3.1
 OLLAMA_HOST ?= http://localhost:11434
 
+# Release/self-example builds can opt into transport validation after every
+# emitted LaTeX stage. Generic compilation remains independent of a TeX install.
+VALIDATE_LATEX_STAGES ?= 0
+
 # Inputs
 IN ?=
 BIBLIOGRAPHY ?=
@@ -62,12 +66,13 @@ self-preflight:
 
 # One obvious end-to-end self-example command. This deliberately performs a
 # fresh build. The selected BACKEND controls whether model execution is local
-# or paid; self-preflight always runs before any backend invocation.
+# or paid; self-preflight always runs before any backend invocation. Release
+# validation checks each emitted LaTeX stage before another model stage runs.
 self: self-preflight
 	@$(MAKE) --no-print-directory clobber
 	@mkdir -p "$(BUILD_DIR)"
 	@cp "$(SELF_BIBLIOGRAPHY)" "$(BUILD_BIBLIOGRAPHY)"
-	@$(MAKE) --no-print-directory IN="$(SELF_SOURCE)" BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final
+	@$(MAKE) --no-print-directory IN="$(SELF_SOURCE)" BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" VALIDATE_LATEX_STAGES=1 final
 	@python tools/audit_self_example.py --outline "$(SELF_SOURCE)" --audit "$(SELF_SOURCE_AUDIT)" --bibliography "$(BUILD_BIBLIOGRAPHY)" --final "$(FINAL_OUT)"
 	@$(MAKE) --no-print-directory validate-latex
 
@@ -121,7 +126,9 @@ python tools/render_prompt.py \
 endef
 
 # Capture backend output privately, then publish the nominal artefact only after
-# the backend-independent success/failure protocol has been enforced.
+# the backend-independent success/failure protocol has been enforced. Release
+# builds additionally compile every emitted TeX artefact before proceeding, but
+# do not rewrite or repair model output mechanically.
 define RUN_STAGE
 rm -f "$(5)" "$(ERROR_DIR)/$(1).md"; \
 raw="$$(mktemp "$(BUILD_DIR)/.$(1).raw.XXXXXX")"; \
@@ -130,6 +137,14 @@ if $(call RUN_LLM,$(2),$(3),$(4),$(6)) > "$$raw"; then \
   python tools/enforce_protocol.py \
     --stage "$(1)" --output-type "$(4)" \
     --output "$(5)" --diagnostic "$(ERROR_DIR)/$(1).md" < "$$raw"; \
+  if [ "$(VALIDATE_LATEX_STAGES)" = "1" ] && [ "$(4)" = "tex" ]; then \
+    validation_dir="$(ERROR_DIR)/latex-$(1)"; \
+    rm -rf "$$validation_dir"; \
+    python tools/validate_latex.py \
+      --input "$(5)" --output "$$validation_dir/validated.pdf" \
+      --diagnostic-dir "$$validation_dir"; \
+    rm -rf "$$validation_dir"; \
+  fi; \
 else \
   status="$$?"; \
   python tools/enforce_protocol.py \
@@ -142,24 +157,24 @@ endef
 
 DRAFT_IN := $(IN)
 
-$(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/validate_latex.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make draft IN=outline.md" >&2; exit 1; fi
 	@echo "Draft input: $(DRAFT_IN)"
 	@$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)
 
-$(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_SMOOTH) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_SMOOTH) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/validate_latex.py tools/llm_run.sh tools/openai_responses.py
 	@$(call RUN_STAGE,smooth,$(P_SMOOTH),$(DRAFT_OUT),tex,$@)
 
-$(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/validate_latex.py tools/llm_run.sh tools/openai_responses.py
 	@$(call RUN_STAGE,revise,$(P_REVISE),$(SMOOTH_OUT),tex,$@)
 
 # review: LaTeX in -> structured Markdown diagnostic out
-$(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/validate_latex.py tools/llm_run.sh tools/openai_responses.py
 	@$(call RUN_STAGE,review,$(P_REVIEW),$(REVISE_OUT),md,$@)
 
 # final: validate peer-review authority first. PASS promotes revise.tex without
 # another model call; only REVISE_REALISATION may invoke one bounded final pass.
-$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_FINAL) $(TARGET_STYLE) tools/review_decision.py tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_FINAL) $(TARGET_STYLE) tools/review_decision.py tools/render_prompt.py tools/enforce_protocol.py tools/validate_latex.py tools/llm_run.sh tools/openai_responses.py
 	@decision="$$(python tools/review_decision.py \
 	  --review "$(REVIEW_OUT)" --revised "$(REVISE_OUT)" \
 	  --output "$(FINAL_OUT)" --diagnostic "$(ERROR_DIR)/review.md" \
@@ -175,7 +190,7 @@ $(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(BIBLIOGRAPHY) $(SYSTEM)
 	    ;; \
 	esac
 
-$(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) prompts/05_summarize.md $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/validate_latex.py tools/llm_run.sh tools/openai_responses.py
 	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make summarize IN=outline.md" >&2; exit 1; fi
 	@echo "Summarize input: $(IN)"
 	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
