@@ -6,6 +6,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -33,7 +34,9 @@ Provider-free release bibliography smoke test.
 """
 
 
-def smoke_bibliography(bibliography: Path, diagnostic_dir: Path | None = None) -> None:
+def smoke_bibliography(
+    bibliography: Path, diagnostic_dir: Optional[Path] = None
+) -> None:
     if not bibliography.is_file() or bibliography.stat().st_size == 0:
         raise RuntimeError(f"bibliography does not exist or is empty: {bibliography}")
 
