@@ -249,7 +249,7 @@ class TargetAwarePromptTests(unittest.TestCase):
         journal = text("prompts/targets/journal_academic.md")
         eli5 = text("prompts/targets/explain_like_im_5.md")
         self.assertIn(
-            "Within the core target-driven publication stages, the default is exhaustive conceptual coverage",
+            "Within the core target-driven realisation stages, the default is exhaustive conceptual coverage",
             system,
         )
         self.assertIn(
