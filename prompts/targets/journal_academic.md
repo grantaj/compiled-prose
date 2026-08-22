@@ -6,6 +6,12 @@ TARGET STYLE REQUIREMENTS:
 - Audience: domain-competent readers (graduate level or above).
 - Assume familiarity with general concepts, but not with this specific argument.
 
+COVERAGE REQUIREMENTS:
+- Coverage is exhaustive for this target. Realise the complete authored argument rather than a summary or selective account.
+- Do not omit materially distinct claims, warrants, qualifications, dependencies, evidence, authored examples, or other source-authorised conceptual content for brevity.
+- Textual compression, synthesis, and structural consolidation are permitted when they improve the journal realisation without reducing conceptual coverage or changing authored relationships among ideas.
+- Preserve the authored hierarchy of importance while retaining all materially distinct conceptual content.
+
 EPISTEMIC REALISATION:
 - Preserve the epistemic and normative stance of the authoritative source.
 - Express uncertainty explicitly where the source contains it.
