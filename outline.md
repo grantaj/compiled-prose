@@ -2,12 +2,12 @@
 
 ## Anchor
 
-- **Question:** can academic/technical prose be treated as a realisation of an upstream authored specification rather than the unique locus of the work?
+- **Question:** can academic or technical prose be treated as a realisation of an upstream authored specification rather than the unique locus of the work?
 - **Domain:** writing primarily for reliable transmission of concepts, arguments, procedures, or results.
 - **Claim:** conceptual authorship and linguistic execution can sometimes be usefully separated and independently inspected.
-- **Model:** authoritative source = claims, warrants, dependencies, scope, sources, uncertainty, constraints; prose = reviewed downstream realisation.
-- **Functions:** practical prose-compiler model + art-informed critical intervention into academic writing.
-- **Critical frame:** conceptual art provides precedent for separating conception from execution; academic discourse research shows prose also performs disciplinary/social functions. [LeWitt 1967; LeWitt 1971; Hyland 2008; Hyland 2012; Hyland 2013]
+- **Model:** the authoritative source contains claims, warrants, dependencies, scope, sources, uncertainty, and constraints. Prose is the reviewed downstream realisation.
+- **Functions:** practical prose-compiler model and art-informed critical intervention into academic writing.
+- **Critical frame:** conceptual art provides precedent for separating conception from execution. Academic discourse research shows prose also performs disciplinary and social functions. [LeWitt 1967; LeWitt 1971; Hyland 2008; Hyland 2012; Hyland 2013]
 - **Experiment:** produce this essay by the method it describes and expose source, prompts, passes, review, and realisations separately.
 - **Boundaries:** not universal; prose still matters; wording may carry meaning.
 
@@ -25,32 +25,32 @@
 
 Human specifies, where material:
 
-- claims, dependencies, warrants;
-- evidence, sources, attribution;
-- scope, exclusions, uncertainty;
-- argumentative order;
+- claims, dependencies, warrants.
+- evidence, sources, attribution.
+- scope, exclusions, uncertainty.
+- argumentative order.
 - wording constraints carrying conceptual weight.
 
-Machine contributes causal execution labour by producing grammatical/coherent realisation.
+Machine contributes causal execution labour by producing grammatical and coherent realisation.
 
 **Proposition:** if materially different texts faithfully realise the same sufficiently detailed specification, that specification can coherently function as the primary authored object.
 
 ### I.3 Responsibility
 
 - Conceptual authority upstream does not transfer responsibility.
-- Human remains responsible for specification/source, source choices, interpretation, generated realisation, and final claims.
-- ICMJE: AI assistance disclosed; AI not author; humans retain responsibility. [ICMJE 2026]
-- Use as practical example of execution/accountability separation, not universal authorship theory.
+- Human remains responsible for the authoritative source, choices of sources, interpretation, generated realisation, and final claims.
+- ICMJE: AI assistance disclosed. AI not author. Humans retain responsibility. [ICMJE 2026]
+- Use as practical example of the distinction between execution and accountability, not universal authorship theory.
 
 ---
 
 ## II. The Compiled Prose Model
 
-### II.1 Source / realisation boundary
+### II.1 Source and realisation boundary
 
-**Source authority:** claims; warrants; evidence; citations/attribution; dependencies; scope; uncertainty; exclusions; unresolved choices; material terminology/wording.
+**Source authority:** claims; warrants; evidence; citations and attribution; dependencies; scope; uncertainty; exclusions; unresolved choices; material terminology and wording.
 
-**Realisation choices:** sentences; paragraphing; transitions; syntax; register; explanation density; target presentation; formatting/style.
+**Realisation choices:** sentences; paragraphing; transitions; syntax; register; explanation density; target presentation; formatting and style.
 
 **Invariant:** anything whose variation materially changes meaning belongs in source.
 
@@ -59,50 +59,50 @@ Machine contributes causal execution labour by producing grammatical/coherent re
 - `outline.md` is authoritative conceptual source, not disposable planning material.
 - Must be complete enough to avoid downstream invention of argument, evidence, scope, or warrants.
 - Sparse source requiring conceptual invention fails the model.
-- Conceptual repair → source → recompile.
+- Conceptual defects are repaired in the source and then recompiled.
 
 ### II.3 Compiler analogy
 
-- source ↔ upstream, authoritative, structured, inspectable, maintainable;
-- prose ↔ target-adapted, replaceable conforming output;
-- source defect ↔ repaired upstream, not patched into output.
-- Boundary: natural language is not machine code; semantic equivalence is not mechanically guaranteed.
+- Source corresponds to the upstream, authoritative, structured, inspectable, maintainable artefact.
+- Prose corresponds to target-adapted, replaceable conforming output.
+- Source defects are repaired upstream rather than patched into output.
+- Boundary: natural language is not machine code. Semantic equivalence is not mechanically guaranteed.
 
 ### II.4 Pipeline and targets
 
 Passes:
 
 1. **Draft:** faithful expansion.
-2. **Smooth:** local readability/coherence.
-3. **Revise:** cross-sectional consistency/redundancy.
+2. **Smooth:** local readability and coherence.
+3. **Revise:** cross-sectional consistency and redundancy control.
 4. **Peer review:** diagnostic challenge.
 5. **Final:** bounded accepted repairs.
 
 Targets:
 
-- govern audience/genre realisation: voice, register, formatting, explanation density, coverage choices, citation/attribution presentation;
-- may yield materially different legitimate realisations;
-- must not silently alter claims, evidence, attribution, or scope;
-- conceptual target differences require source/source variant.
+- govern audience and genre realisation: voice, register, formatting, explanation density, coverage choices, citation and attribution presentation.
+- may yield materially different legitimate realisations.
+- must not silently alter claims, evidence, attribution, or scope.
+- conceptual target differences require a corresponding source variant.
 
 ### II.5 Equivalence and LLM role
 
-Required invariants across runs/targets:
+Required invariants across runs and targets:
 
 - claims, dependencies, scope, evidence, qualifications, attribution, explicit constraints.
 
 Permitted:
 
-- surface variation;
-- faithful expansion, coherence, target adaptation, bounded revision;
-- target-permitted illustrative scaffolding that does not become evidence/argument.
+- surface variation.
+- faithful expansion, coherence, target adaptation, bounded revision.
+- target-permitted illustrative scaffolding that does not become evidence or argument.
 
 Not permitted:
 
-- new claims or missing warrants;
-- unsupported evidence/theories;
-- invented citations/attribution;
-- silent authorial decisions;
+- new claims or missing warrants.
+- unsupported evidence or theories.
+- invented citations or attribution.
+- silent authorial decisions.
 - target-driven conceptual drift.
 
 "Compiler" describes assigned role, not formal fidelity guarantee.
@@ -113,30 +113,30 @@ Not permitted:
 
 ### III.1 Conception before execution
 
-- LeWitt: planning/decisions precede execution; idea acts as generative mechanism. [LeWitt 1967]
+- LeWitt: planning and decisions precede execution. Idea acts as generative mechanism. [LeWitt 1967]
 - Structural relevance: substantial conception can precede physical execution.
 
 ### III.2 Delegated execution
 
 LeWitt wall drawings: [LeWitt 1971]
 
-- artist conceives/plans;
-- draftsman executes;
-- different draftsmen may produce different realisations;
+- artist conceives and plans.
+- draftsman executes.
+- different draftsmen may produce different realisations.
 - variation need not erase prior plan.
 
 Correspondence:
 
-- plan ↔ conceptual source;
-- draftsman ↔ execution engine;
-- drawing ↔ prose realisation;
-- fidelity to plan ↔ semantic fidelity.
+- plan corresponds to conceptual source.
+- draftsman corresponds to execution engine.
+- drawing corresponds to prose realisation.
+- fidelity to plan corresponds to semantic fidelity.
 
 ### III.3 Wider context and limit
 
-- Conceptual art questioned idea/object/process/fabrication relations.
+- Conceptual art questioned relations among idea, object, process, and fabrication.
 - "Dematerialization" context: material object not sole locus of work. [Lippard and Chandler 1968]
-- Establishes possibility, not proof: conception/execution may be distinct; delegated execution may coexist with retained authorship; multiple realisations may instantiate a prior specification.
+- Establishes possibility, not proof: conception and execution may be distinct, delegated execution may coexist with retained authorship, and multiple realisations may instantiate a prior specification.
 - Do not assert identity between conceptual art and academic writing.
 
 ---
@@ -151,30 +151,30 @@ Correspondence:
 
 Functions:
 
-1. transmit/negotiate intellectual content;
+1. transmit and negotiate intellectual content.
 2. perform competent disciplinary participation.
 
 ### IV.2 Convention versus conceptual necessity
 
 Useful convention can:
 
-- reduce ambiguity;
-- communicate stance/evidential status;
-- establish genre expectations;
-- coordinate specialist readers/writers;
-- signal expertise/membership.
+- reduce ambiguity.
+- communicate stance and evidential status.
+- establish genre expectations.
+- coordinate specialist readers and writers.
+- signal expertise and membership.
 
-Critical distinction: functional convention is not a defect; ask what must be conceptually fixed versus what may vary in execution.
+Critical distinction: functional convention is not a defect. Ask what must be conceptually fixed and what may vary in execution.
 
 ### IV.3 "Sacred" execution hypothesis
 
-Authored critical hypothesis; not prevalence/historical claim.
+Authored critical hypothesis, not a prevalence or historical claim.
 
 - Premise: disciplinary forms participate in recognition, standing, identity. [Hyland 2008; Hyland 2012; Hyland 2013]
 - Inference: accepted sentence-level performance may be treated as evidence of intellectual authorship, not merely execution.
-- Test: hold authored argument fixed/inspectable while making prose replaceable.
+- Test: hold authored argument fixed and inspectable while making prose replaceable.
 - Hypothesis tested: execution may receive authority beyond semantic function.
-- Interpretive conclusion: in this limited sense, the experiment desacralises execution; prose remains important but is not automatically the authoritative object.
+- Interpretive conclusion: in this limited sense, the experiment desacralises execution. Prose remains important but is not automatically the authoritative object.
 
 ### IV.4 Liturgical limit case
 
@@ -182,18 +182,18 @@ Derived limit case of IV.3 disciplinary-recognition premise.
 
 Pathological conditions:
 
-- inherited forms gain authority through correct performance;
-- insider recognition depends on mastery;
-- deviation penalised independently of argument;
+- inherited forms gain authority through correct performance.
+- insider recognition depends on mastery.
+- deviation penalised independently of argument.
 - surface performance contributes to legitimacy.
 
 **Conditional:** sufficiently ritualised style can allow performance to partly substitute for inspectable argumentative structure.
 
-Qualifications: no prevalence claim; specialised/difficult prose is not automatically ritual; conceptual difficulty may require difficult language.
+Qualifications: no prevalence claim; specialised or difficult prose is not automatically ritual; conceptual difficulty may require difficult language.
 
 ### IV.5 Gesture
 
-**Definition:** linguistic performance serving mainly rhetorical/disciplinary effect rather than semantic precision or necessary argumentative structure.
+**Definition:** linguistic performance serving mainly rhetorical or disciplinary effect rather than semantic precision or necessary argumentative structure.
 
 Examples: borrowed weight; displays of seriousness; unnecessary opacity; rhetorical camouflage; legitimacy signals.
 
@@ -207,16 +207,16 @@ Operational test: whether the feature must be fixed in source or may vary withou
 
 ### V.1 Two objects of review
 
-**Source:** correctness; logic/warrants; evidence/attribution; scope; omissions; citation support; ambiguity.
+**Source:** correctness; logic and warrants; evidence and attribution; scope; omissions; citation support; ambiguity.
 
-**Realisation:** fidelity; readability/clarity; target appropriateness; semantic drift.
+**Realisation:** fidelity; readability and clarity; target appropriateness; semantic drift.
 
 ### V.2 Revision routing
 
-- conceptual defect → source;
-- evidence/attribution defect → source/support;
-- target/style defect → target contract;
-- execution defect → compiler/recompile.
+- conceptual defect: repair source.
+- evidence or attribution defect: repair source or its support.
+- target or style defect: repair target contract.
+- execution defect: repair compiler or recompile.
 
 Result: conceptual change distinguishable from realisation change.
 
@@ -224,10 +224,10 @@ Result: conceptual change distinguishable from realisation change.
 
 ## VI. Limits and Objections
 
-- **Writing as thinking:** sentence-level composition can be constitutive of thought; especially relevant to exploratory/literary/philosophical/poetic work. Model applies only where upstream specification is useful.
-- **Wording affects meaning:** phrasing changes emphasis, implication, ambiguity, force, proposition; material wording belongs in source; final realisation requires review.
-- **Execution quality matters:** prose can be unclear, misleading, generic, or target-inappropriate; downstream status does not make execution irrelevant.
-- **Specifications fail:** missing warrants, distinctions, sources, transitions, or choices are source defects; expose/repair upstream rather than invent downstream.
+- **Writing as thinking:** sentence-level composition can be constitutive of thought. Especially relevant to exploratory, literary, philosophical, or poetic work. Model applies only where upstream specification is useful.
+- **Wording affects meaning:** phrasing changes emphasis, implication, ambiguity, force, or proposition. Material wording belongs in source. Final realisation requires review.
+- **Execution quality matters:** prose can be unclear, misleading, generic, or target-inappropriate. Downstream status does not make execution irrelevant.
+- **Specifications fail:** missing warrants, distinctions, sources, transitions, or choices are source defects. Expose and repair upstream rather than invent downstream.
 
 ---
 
@@ -237,19 +237,19 @@ Result: conceptual change distinguishable from realisation change.
 
 Expose separately:
 
-- authoritative outline and identified sources;
-- stage prompts and target contracts;
-- compilation tools;
-- peer review;
+- authoritative outline and identified sources.
+- stage prompts and target contracts.
+- compilation tools.
+- peer review.
 - generated realisations.
 
-Roles: implementation; worked example; audit trail; process/art component.
+Roles: implementation; worked example; audit trail; process-art component.
 
 ### VII.2 Repair rule
 
-**Conceptual defect → repair `outline.md` → recompile.**
+- Conceptual defects are repaired in `outline.md`. Recompilation regenerates the prose.
 
-Source defects include missing argument/warrant, unsupported assertion, inadequate scope, missing citation/attribution, unresolved ambiguity.
+Source defects include missing argument or warrant, unsupported assertion, inadequate scope, missing citation or attribution, unresolved ambiguity.
 
 Downstream-only repairs: non-conceptual failures such as malformed LaTeX, formatting, compiler implementation bugs.
 
@@ -257,17 +257,17 @@ Downstream-only repairs: non-conceptual failures such as malformed LaTeX, format
 
 Success would show:
 
-- non-trivial argument maintained as structured source;
-- prose generated without intentional conceptual delegation;
-- upstream repair propagated through recompilation;
+- non-trivial argument maintained as structured source.
+- prose generated without intentional conceptual delegation.
+- upstream repair propagated through recompilation.
 - distinct realisations can preserve one authored conceptual object.
 
 Does not show:
 
-- all writing should be compiled;
-- conceptual authorship can always be fully specified;
-- LLM output is automatically faithful;
-- style lacks intellectual/aesthetic value.
+- all writing should be compiled.
+- conceptual authorship can always be fully specified.
+- LLM output is automatically faithful.
+- style lacks intellectual or aesthetic value.
 
 ---
 
@@ -277,17 +277,17 @@ Does not show:
 
 Dependencies:
 
-- conceptual art → precedent for conception/execution separation;
-- academic discourse → prose also has disciplinary/social functions;
-- compiled prose → source and performance separately inspectable;
-- self-example → test of retained human conceptual authorship under machine realisation.
+- conceptual art supplies precedent for separation of conception from execution.
+- academic discourse shows that prose also has disciplinary and social functions.
+- compiled prose makes source and performance separately inspectable.
+- self-example tests retained human conceptual authorship under machine realisation.
 
 Distinctions exposed:
 
-- conception / execution;
-- semantic structure / linguistic realisation;
-- responsibility / sentence production;
-- disciplinary convention / conceptual necessity.
+- conception and execution.
+- semantic structure and linguistic realisation.
+- responsibility and sentence production.
+- disciplinary convention and conceptual necessity.
 
 ---
 
@@ -298,17 +298,17 @@ Distinctions exposed:
 **LeWitt 1967**  
 Sol LeWitt, "Paragraphs on Conceptual Art," *Artforum* 5, no. 10 (June 1967): 79–83.
 
-Supports: priority of conception/prior planning; idea as generative mechanism.
+Supports: priority of conception and prior planning; idea as generative mechanism.
 
 **LeWitt 1971**  
 Sol LeWitt, "Doing Wall Drawings," *Art Now: New York* 3, no. 2 (June 1971).
 
-Supports: artist/plan/draftsman/work distinction; delegated execution; variation among realisations.
+Supports: distinction among artist, plan, draftsman, and work; delegated execution; variation among realisations.
 
 **Lippard and Chandler 1968**  
 Lucy R. Lippard and John Chandler, "The Dematerialization of Art," *Art International* 12, no. 2 (February 1968): 31–36.
 
-Supports: conceptual-art context; movement away from material object as sole locus of artistic work.
+Supports: conceptual-art context; movement away from material object as sole locus of work.
 
 ### Academic discourse
 
