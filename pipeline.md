@@ -31,7 +31,7 @@ The repository self-example adds release-specific mechanical checks around its a
 
 ### Prompt contracts
 
-A **prompt contract** is an executable instruction supplied to the model but not semantically proved by the build system. Source fidelity, absence of invented claims, preservation of conceptual scope, target-relative coverage, summarisation depth, omission choices, faithful attribution/evidence presentation, and correct classification of a review finding as `SOURCE` or `REALISATION` fall into this category.
+A **prompt contract** is an executable instruction supplied to the model but not semantically proved by the build system. Source fidelity, absence of invented claims, preservation of conceptual scope and conceptual topology, target-relative coverage, rhetorical organisation, summarisation depth, omission choices, faithful attribution/evidence presentation, and correct classification of a review finding as `SOURCE` or `REALISATION` fall into this category.
 
 The build system can detect malformed transport/output structure. It cannot in general prove that valid-looking prose is faithful or target-appropriate. A structurally valid LaTeX result that silently invents a claim, preserves far too much material for a child target, or uses an inappropriate citation presentation is therefore a prompt-contract violation, not something `enforce_protocol.py` can currently discover by itself.
 
@@ -39,7 +39,7 @@ The build system can detect malformed transport/output structure. It cannot in g
 
 A **design constraint** states an architectural property future implementation changes are expected to preserve even where no single current test proves it completely. The principal design constraints are backend independence, explicit failure over improvisation, file-driven/Git-friendly operation, keeping conceptual authority upstream of generated prose, model-stage economy, and keeping semantic target decisions in the model/prompt layer rather than duplicating them as deterministic policy code.
 
-Coverage selection, summarisation level, omission, explanatory strategy, and evidence/attribution/citation presentation are semantic target-realisation decisions. Mechanical code may validate protocol and provenance of whatever the model emits, but it must not encode a second deterministic implementation of those target semantics.
+Coverage selection, summarisation level, omission, rhetorical organisation, explanatory strategy, and evidence/attribution/citation presentation are semantic target-realisation decisions. Mechanical code may validate protocol and provenance of whatever the model emits, but it must not encode a second deterministic implementation of those target semantics. In particular, deterministic code must not try to force or suppress lists, headings, section counts, or one-source-item mappings as a proxy for prose quality.
 
 Model-stage economy means a conceptual responsibility should be folded into an existing model-backed stage when that stage can perform it reliably. New model-backed stages require empirical justification from compilation quality or failure behaviour; cleaner conceptual decomposition by itself is insufficient because every additional stage increases user cost.
 
@@ -95,7 +95,7 @@ The file supplied as `IN=...` is the authoritative conceptual source for the wor
 Its role is:
 
 - The sole source of conceptual authorship throughout the pipeline.
-- The authority for claims, argument, conceptual scope, distinctions, authored examples, evidence, citations, attributions, and unresolved authorial choices.
+- The authority for claims, argument, conceptual scope, distinctions, authored examples, evidence, citations, attributions, unresolved authorial choices, and conceptual topology: dependencies, qualification scope, taxonomy membership, semantically meaningful ordering, hierarchy of importance, and support relationships.
 
 Changing a model-generated artefact does not retroactively change this source.
 
@@ -107,7 +107,11 @@ Changing a model-generated artefact does not retroactively change this source.
 
 `prompts/targets/*.md` define audience- or venue-specific realisation requirements: register, reading level, coverage and compression, formatting, evidence/attribution/citation presentation, explanatory explicitness, level of rigour, and similar constraints.
 
-A target is not conceptual authority. In the core publication pipeline, conceptual coverage is exhaustive by default. A target may explicitly authorise summarisation, compression, selective omission, or presentation reordering. That permission selects which source-authorised material appears, and at what resolution, but does not change what the source says or the conceptual scope or meaning of retained material. Omission must not remove qualifications, dependencies, uncertainty, attribution, or context needed to keep retained content faithful and non-misleading. Material omitted from one target realisation remains authoritative source content.
+A target is not conceptual authority. In the core publication pipeline, conceptual coverage is exhaustive by default. A target may explicitly authorise summarisation, compression, or selective omission. Those permissions select which source-authorised material appears, and at what resolution, but do not change what the source says or the conceptual scope or meaning of retained material. Omission must not remove qualifications, dependencies, uncertainty, attribution, or context needed to keep retained content faithful and non-misleading. Material omitted from one target realisation remains authoritative source content.
+
+Conceptual topology and presentation topology are deliberately separate. The source is authoritative for substantive relationships among ideas: logical dependencies, qualification and uncertainty scope, taxonomy membership, genuine procedures or ordered sequences, hierarchy of importance, scope, and evidence/attribution/citation attachment. Source bullets, numbering, heading depth, adjacency, fragment boundaries, and navigation order are presentation topology. They may encode a substantive relationship, but they are not target-facing authority merely because the author used them to write the source. Core realisation stages may therefore synthesise, consolidate, split, rhetorically group, and reorder source-authorised material without a special target permission when that changes only presentation topology. A target may further constrain or direct presentation. Semantically meaningful ordering must survive; when changing an ambiguous local order could change meaning, the model is instructed to preserve it or fail closed rather than guess.
+
+Rhetorical reorganisation is not permission to invent connective reasoning. Target-facing grouping must not create a new category, dependency, cause, equivalence, contrast, or warrant, and qualifications, uncertainty, evidence, attribution, and citations must remain attached to the conceptual units they govern.
 
 Evidence, attribution, and citation **presentation** are also target-owned realisation dimensions. The source owns the support relationships and authored citations/attributions; a target may require formal scholarly citation apparatus, ordinary narrative attribution, or explicitly no visible formal citation apparatus. A less formal target is not required to mimic academic citation syntax. It must nevertheless retain whatever attribution or support relationship is necessary for represented material to remain faithful and non-misleading, and it may never invent a source, citation, attribution, or evidentiary relationship.
 
@@ -215,7 +219,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced:** the source path is required when the draft recipe runs, and a successful result must satisfy the structural `tex` protocol.
 
-**Prompt contract:** realise the source faithfully at the selected target's required coverage without inventing claims, evidence, sources, attributions, citations, content-bearing examples, or authorial choices. Core-pipeline coverage is exhaustive unless the target explicitly authorises reduction. The model decides which permitted material to compress or omit based on the target contract and source relationships rather than a deterministic selection rule. The target also controls whether source-authorised support appears as formal citations, narrative attribution, or another permitted presentation. When the target explicitly permits illustrative scaffolding, the draft may generate it only under the provenance and fidelity constraints above. Source insufficiency that would require conceptual invention is a blocking condition to report with `@@FAIL`.
+**Prompt contract:** realise the source faithfully at the selected target's required coverage without inventing claims, relationships, evidence, sources, attributions, citations, content-bearing examples, or authorial choices. Core-pipeline coverage is exhaustive unless the target explicitly authorises reduction. The draft chooses target-facing rhetorical architecture from the source as a whole rather than treating bullets, headings, adjacency, or navigation order as a target-output map. It may synthesise, consolidate, split, group, and reorder presentation while preserving conceptual topology, including genuine procedures, dependencies, taxonomy membership, qualifications, epistemic stance, and support attachment. The model decides which permitted material to compress or omit based on the target contract and source relationships rather than a deterministic selection rule. The target also controls whether source-authorised support appears as formal citations, narrative attribution, or another permitted presentation. When the target explicitly permits illustrative scaffolding, the draft may generate it only under the provenance and fidelity constraints above. Source insufficiency that would require conceptual invention is a blocking condition to report with `@@FAIL`.
 
 ### 2. Smooth
 
@@ -226,7 +230,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced:** Make orders this after draft and applies the same structural `tex` result protocol.
 
-**Prompt contract:** improve local coherence, readability, and flow without changing the meaning of retained content. The stage must preserve or correct target-authorised coverage and evidence/attribution/citation presentation rather than imposing academic defaults. Earlier drift may be repaired only when the source and target determine the correction; otherwise the stage is instructed to fail closed. Target-permitted illustrative scaffolding may be refined as realisation but never promoted to conceptual authority.
+**Prompt contract:** improve local coherence, readability, integration, and flow without changing the meaning or conceptual relationships of retained content. Inherited stage-input structure is a realisation choice, so smoothing may merge mechanically fragmented units or reduce source-skeleton cadence while preserving genuine ordered/procedural/taxonomic structure and support attachment. The stage must preserve or correct target-authorised coverage and evidence/attribution/citation presentation rather than imposing academic defaults. Earlier drift may be repaired only when the source and target determine the correction; otherwise the stage is instructed to fail closed. Target-permitted illustrative scaffolding may be refined as realisation but never promoted to conceptual authority.
 
 ### 3. Revise
 
@@ -237,7 +241,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced:** Make orders this after smooth and applies the structural `tex` protocol.
 
-**Prompt contract:** tighten the realised prose and global consistency while respecting target-owned coverage, ordering permissions, and evidence/attribution/citation presentation without expanding conceptual scope or turning target conventions into new content authority. Target-permitted illustrative scaffolding remains a removable realisation device rather than authored content.
+**Prompt contract:** tighten the realised prose, document-level coherence, and rhetorical architecture while respecting target-owned coverage and evidence/attribution/citation presentation without expanding conceptual scope or turning target conventions into new content authority. The revision stage explicitly checks for structural inertia from the outline—such as one-item paragraphs, ordinal discharge, heading mirroring, or copied list shape—and may restructure it when the structure serves neither the target nor a source-authorised conceptual relation. Lists, taxonomies, procedures, and other explicit structures remain appropriate where their visibility carries meaning. Target-permitted illustrative scaffolding remains a removable realisation device rather than authored content.
 
 ### 4. Peer review
 
@@ -248,7 +252,7 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Mechanically enforced at stage publication:** the result uses the declared `md` transport protocol rather than the `tex` protocol.
 
-**Prompt contract:** use this existing review pass for two ordered responsibilities rather than adding another model-backed stage. First perform source assurance against a target-independent epistemic floor: inspect the authoritative source for coherent argument, necessary warrants, contradictions, conceptual scope, and support appropriate to the nature of its claims. That floor does not itself impose scholarly citation syntax or academic presentation. Then review the revised artefact at the coverage, style, explanatory depth, rigour, and evidence/attribution/citation presentation expected by the selected target. The target may raise explicit rigour or evidence requirements above the source-assurance floor, but may not lower that floor. The review must not import academic or otherwise stricter venue conventions into a target that does not require them. Target-authorised omission is not source drift by itself; target-permitted illustrative scaffolding is likewise reviewed as realisation. Findings remain diagnostic and are classified as source-owned or realisation-owned; review is not permitted to rewrite the source.
+**Prompt contract:** use this existing review pass for two ordered responsibilities rather than adding another model-backed stage. First perform source assurance against a target-independent epistemic floor: inspect the authoritative source for coherent argument, necessary warrants, contradictions, conceptual scope, conceptual relationships, and support appropriate to the nature of its claims. That floor does not itself impose scholarly citation syntax or academic presentation. Then review the revised artefact at the coverage, style, explanatory depth, rigour, rhetorical architecture, and evidence/attribution/citation presentation expected by the selected target. The review treats mechanical projection of source presentation topology as a realisation problem when it produces weak target prose, including item-by-item discharge, heading mirroring, checklist conclusions, or isolated mini-sections without conceptual or target-facing justification. These are diagnostic signals rather than banned forms: genuine taxonomies, procedures, comparisons, and other meaningful explicit structures remain valid. The review also checks that reorganisation has not flattened dependencies, qualifications, taxonomy membership, sequence semantics, uncertainty, or support attachment, and that improved integration does not rely on invented connective reasoning. The target may raise explicit rigour or evidence requirements above the source-assurance floor, but may not lower that floor. The review must not import academic or otherwise stricter venue conventions into a target that does not require them. Target-authorised omission is not source drift by itself; target-permitted illustrative scaffolding is likewise reviewed as realisation. Findings remain diagnostic and are classified as source-owned or realisation-owned; review is not permitted to rewrite the source.
 
 The exact machine grammar below is mechanically validated by the final review decision gate. Therefore `make review` alone can publish Markdown that later proves malformed; `make final` will fail closed rather than guess how to interpret it.
 
@@ -299,7 +303,7 @@ Review suggestions never become source authority at this gate.
 
 **Mechanically enforced:** the Makefile exposes only one forward invocation of this model-backed final stage per dependency-chain execution, and its result must satisfy the structural `tex` protocol. There is no automatic route back to peer review.
 
-**Prompt contract:** apply only the validated realisation-level corrections. If a requested correction actually requires authorial source work, the stage is instructed to fail rather than reinterpret diagnostic text as authority. Coverage and evidence/attribution/citation presentation remain target-owned; formal citation apparatus may therefore be repaired, transformed, or removed when the target explicitly requires that realisation. Target-permitted illustrative scaffolding may be repaired under the same provenance and fidelity constraints.
+**Prompt contract:** apply only the validated realisation-level corrections. If a requested correction actually requires authorial source work, the stage is instructed to fail rather than reinterpret diagnostic text as authority. Validated structural findings may be repaired by consolidating, splitting, grouping, or reordering presentation topology while preserving semantically meaningful order, dependency, taxonomy membership, qualification scope, and support attachment; the final stage may not invent connective reasoning to make that restructuring work. Coverage and evidence/attribution/citation presentation remain target-owned; formal citation apparatus may therefore be repaired, transformed, or removed when the target explicitly requires that realisation. Target-permitted illustrative scaffolding may be repaired under the same provenance and fidelity constraints.
 
 ## Auxiliary summarize transform
 
@@ -333,11 +337,12 @@ The semantic conditions below are **prompt-contract blocking conditions**, not c
 - invent a claim, warrant, content-bearing example, evidence item, source, attribution, or citation;
 - use target-permitted illustrative scaffolding as evidence, argument, scope, or conceptual authority;
 - choose between unresolved interpretations or contradictory source instructions;
-- change authored conceptual scope or claim strength;
+- change authored conceptual scope, conceptual relationships, semantically meaningful order, or claim strength;
 - satisfy an additional target-required evidence, explicit-rigour, attribution, or citation obligation not supplied by the source;
+- invent connective reasoning or a conceptual relationship in order to make a rhetorical reorganisation coherent;
 - repair conceptual drift when the source and target do not uniquely determine the repair.
 
-Target-authorised summarisation, compression, selective omission, presentation reordering, or suppression/transformation of formal citation apparatus is not by itself a blocking condition when it remains within the target contract and preserves the meaning and necessary support relationships of retained material.
+Target-authorised summarisation, compression, selective omission, target-appropriate reorganisation of non-authoritative presentation topology, or suppression/transformation of formal citation apparatus is not by itself a blocking condition when it remains within the target contract and preserves conceptual topology, meaning, and necessary support relationships of retained material.
 
 Separately, the following are **mechanical blocking conditions** and stop the Make dependency chain:
 
@@ -373,7 +378,7 @@ Backend selection occurs in `tools/llm_run.sh`. Both supported backends consume 
 
 The project targets **semantic and specification-level reproducibility**, not byte-level determinism of model-generated prose.
 
-The stable/reviewable inputs are source files, prompts, target requirements, optional bibliography metadata, Make dependencies, backend/model configuration, and the common enforcement rules. Re-running those inputs should preserve the same authority boundaries, stage responsibilities, target-owned coverage/presentation rules, citation identifiers when used, and failure protocol.
+The stable/reviewable inputs are source files, prompts, target requirements, optional bibliography metadata, Make dependencies, backend/model configuration, and the common enforcement rules. Re-running those inputs should preserve the same authority boundaries, stage responsibilities, conceptual-topology invariants, target-owned coverage/presentation rules, citation identifiers when used, and failure protocol. Target-facing sectioning or sentence-by-sentence structure is intentionally not expected to reproduce source presentation topology deterministically.
 
 Model-generated wording can vary across runs, backends, model revisions, provider implementations, or platforms. Temperature and seed controls may reduce variance where supported; they do not create a repository-wide guarantee of identical bytes.
 
