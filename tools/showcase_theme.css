@@ -28,3 +28,25 @@ h3 {
 .target-card {
   border: 1px solid var(--line);
 }
+
+/* Keep navigation geometry independent of which page is being viewed. */
+nav {
+  justify-content: flex-start;
+}
+
+nav .repo-link {
+  margin-left: 0;
+}
+
+@media (max-width: 42rem) {
+  nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+
+  nav a {
+    width: 100%;
+    white-space: normal;
+  }
+}
