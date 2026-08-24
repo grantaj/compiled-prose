@@ -2,7 +2,7 @@
 
 This document is the canonical specification for the compiled-prose pipeline implemented in this repository. It describes the stage graph, authority model, output/failure protocol, review gate, build-directory behaviour, and reproducibility boundary.
 
-The implementation remains intentionally small: GNU Make orchestrates file dependencies, `tools/render_prompt.py` creates one flattened prompt per model-backed stage, `tools/llm_run.sh` selects the backend, `tools/enforce_protocol.py` enforces the common result protocol, and `tools/review_decision.py` enforces the peer-review decision gate.
+The implementation remains intentionally small: GNU Make orchestrates file dependencies, `tools/render_prompt.py` creates one flattened prompt per model-backed stage, `tools/llm_run.sh` selects the backend, `tools/enforce_protocol.py` enforces the common result protocol, and `tools/review_decision.py` enforces the peer-review decision gate. Provider-specific capabilities remain in their backend adapter; the OpenAI Responses adapter exposes web search only to academic-journal peer review.
 
 Model-backed stage count is part of the user-visible cost surface, not merely an internal architectural choice. Each model-backed stage incurs user-visible execution cost. The existing staged decomposition is retained because empirical use showed that reliable source-to-paper compilation required multiple transformations rather than a one-shot generation. Architectural separation alone is not sufficient justification for adding another model-backed stage: a new stage requires empirical evidence that an existing stage cannot absorb the responsibility reliably without materially degrading compilation quality.
 
@@ -145,6 +145,8 @@ A downstream stage therefore receives the current representation alongside the o
 
 `peer_review.md` and files under `$(BUILD_DIR)/errors/` are diagnostics. They can identify problems or request source/realisation work; they do not supply authored answers.
 
+Compilation is deliberately closed-world: draft, smooth, revise, finalisation, and auxiliary prose transforms may use only the authoritative source plus source-supplied bibliography metadata. Academic-journal peer review is the narrow exception. It may inspect external scholarship to challenge novelty and positioning, but any discovered work remains review evidence only. Material that would change the article must be returned upstream as a `SOURCE` finding and can enter later prose only after the author explicitly changes the authoritative source.
+
 The model backend is an execution engine, not an authority layer.
 
 ## Flattened prompt composition
@@ -254,6 +256,10 @@ There is no backend-specific enforcement path: OpenAI and Ollama feed the same r
 
 **Prompt contract:** use this existing review pass for two independent judgements rather than adding another model-backed stage. **Compilation integrity** checks the target-independent source-assurance floor and whether the derived artefact remains a faithful, supportable realisation of the authoritative source under the selected target. **Target writing quality** judges the artefact as writing by the normal standards of the selected target, as though reviewing that kind of work directly rather than auditing a source transformation. Fidelity is not evidence of writing quality: a fully faithful artefact can still require realisation revision because it is weak writing. The reviewer uses ordinary editorial judgement rather than a catalogue of prohibited surface forms, while still respecting the target and the source-authority boundary. Findings remain diagnostic and are classified as source-owned or realisation-owned; review is not permitted to rewrite the source.
 
+For `journal_academic`, normal target quality includes novelty, significance, and scholarly positioning. The reviewer therefore performs a proportional adversarial search for prior formulations, established theories or terminology, adjacent work that narrows the contribution, materially different explanations, and obvious foundational omissions. The purpose is not bibliography growth: only external work that materially changes positioning, support, scope, or the stated contribution should become a finding. A failed search never verifies novelty. Any finding that relies on externally discovered work is `SOURCE`, hence blocking, because the author must decide whether and how to change the authoritative source.
+
+**OpenAI transport configuration:** when the stage is `prompts/40_peer_review.md` and the target is `prompts/targets/journal_academic.md`, `tools/openai_responses.py` supplies the hosted `web_search` tool with required tool use. No prose-producing stage and no other built-in target receives that search capability.
+
 The exact machine grammar below is mechanically validated by the final review decision gate. Therefore `make review` alone can publish Markdown that later proves malformed; `make final` will fail closed rather than guess how to interpret it.
 
 ### 5. Review decision gate
@@ -291,7 +297,7 @@ Decision behaviour is mechanically enforced:
 - `BLOCKED_SOURCE` removes any stale final output, writes `$(BUILD_DIR)/errors/review.md`, and exits non-zero;
 - malformed/inconsistent review likewise writes an external review diagnostic and exits non-zero.
 
-Review suggestions never become source authority at this gate.
+Review suggestions never become source authority at this gate. Externally discovered literature follows the same rule, and the academic review contract requires any finding that depends on it to be `SOURCE`, so it cannot flow into the conditional final-realisation path.
 
 ### 6. Final realisation revision
 
@@ -372,7 +378,7 @@ The implemented core is a single forward compilation path: draft -> smooth -> re
 
 Backend selection occurs in `tools/llm_run.sh`. Both supported backends consume a rendered prompt on standard input and expose their model result on standard output to the same enforcement layer.
 
-**Design constraint:** backend adapters may handle provider-specific transport, but stage prompts, authority semantics, result routing, diagnostics, and review policy remain backend-independent.
+**Design constraint:** backend adapters may handle provider-specific transport and capabilities, but stage prompts, authority semantics, result routing, diagnostics, and review policy remain backend-independent. The OpenAI adapter's academic-review web-search grant is a narrow transport capability, not a new authority channel: all resulting material is still governed by the same `SOURCE`/`REALISATION` review protocol and downstream source boundary.
 
 ## Reproducibility boundary
 
@@ -380,7 +386,7 @@ The project targets **semantic and specification-level reproducibility**, not by
 
 The stable/reviewable inputs are source files, prompts, target requirements, optional bibliography metadata, Make dependencies, backend/model configuration, and the common enforcement rules. Re-running those inputs should preserve the same authority boundaries, stage responsibilities, conceptual-topology invariants, target-owned coverage/presentation rules, citation identifiers when used, and failure protocol. Target-facing sectioning or sentence-by-sentence structure is intentionally not expected to reproduce source presentation topology deterministically.
 
-Model-generated wording can vary across runs, backends, model revisions, provider implementations, or platforms. Temperature and seed controls may reduce variance where supported; they do not create a repository-wide guarantee of identical bytes.
+Model-generated wording can vary across runs, backends, model revisions, provider implementations, or platforms. Academic peer review with external search also depends on the scholarly web state and search retrieval at run time. Temperature and seed controls may reduce variance where supported; they do not create a repository-wide guarantee of identical bytes or identical search evidence.
 
 One narrow byte-level property is mechanically guaranteed: after a `PASS` review, `final.tex` is an exact copy of `revise.tex` because no final model call occurs.
 
