@@ -10,6 +10,12 @@ on:
     paths:
       - ".github/workflows/rebuild-self-example-showcase.yml"
       - "tools/build_self_example_showcase.py"
+      - "tools/showcase_theme.css"
+  workflow_run:
+    workflows:
+      - Publish self-example
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -22,6 +28,7 @@ concurrency:
 jobs:
   rebuild:
     name: Rebuild retained showcase
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,6 +37,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -123,6 +132,8 @@ jobs:
             --output-dir site \
             --expected-outline outline.md \
             --base-showcase base-showcase
+
+          cat tools/showcase_theme.css >> site/style.css
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
