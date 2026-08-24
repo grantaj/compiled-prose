@@ -206,10 +206,16 @@ class BoundedOrchestrationTests(unittest.TestCase):
         self.assertIn("STATUS: BLOCKED_SOURCE", prompt)
         self.assertNotIn("unsupported non-trivial claim", prompt)
         self.assertIn("target-independent source-assurance floor", prompt)
-        self.assertIn("1. Compilation integrity", prompt)
-        self.assertIn("2. Target writing quality", prompt)
+        self.assertIn("1. Independent target review", prompt)
+        self.assertIn("2. Source comparison and defect classification", prompt)
+        self.assertIn("3. Compilation integrity", prompt)
+        self.assertIn(
+            "Source comparison determines where the defect belongs, not whether the defect exists",
+            prompt,
+        )
         self.assertIn("Fidelity is not evidence of writing quality", prompt)
         self.assertIn("source material genuinely missing for an explicit target requirement", prompt)
+        self.assertIn("Fidelity alone can never justify PASS", prompt)
         self.assertNotIn('"REVIEW AGAIN: YES"', prompt)
 
 
