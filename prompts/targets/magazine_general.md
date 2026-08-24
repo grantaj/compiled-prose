@@ -6,7 +6,7 @@ TARGET STYLE REQUIREMENTS:
 - Audience: intelligent non-specialists.
 
 STRUCTURAL REQUIREMENTS:
-- Preserve the argument's structure and order.
+- Preserve the argument's structure and order. This refers to its conceptual structure and any semantically meaningful order, not to source navigation, bullet sequence, or heading layout; choose target-facing organisation for reader orientation under the global conceptual-topology rules.
 - Transitions should prioritise reader orientation.
 - Abstract ideas may be expressed with light explanation using only content licensed by the authoritative source; do not add anecdotes or examples.
 
