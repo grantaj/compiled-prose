@@ -20,7 +20,15 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("Coverage and compression are realisation responsibilities", system)
         self.assertIn("the default is exhaustive conceptual coverage", system)
         self.assertIn(
-            "A target may explicitly authorise summarisation, compression, selective omission, or presentation reordering",
+            "A target may explicitly authorise summarisation, compression, or selective omission.",
+            system,
+        )
+        self.assertIn(
+            "Presentation reorganisation is a baseline realisation freedom, not a coverage reduction",
+            system,
+        )
+        self.assertNotIn(
+            "summarisation, compression, selective omission, or presentation reordering",
             system,
         )
         self.assertIn(
