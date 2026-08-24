@@ -206,6 +206,7 @@ jobs:
           fi
 
           python tools/build_self_example_showcase.py "${args[@]}"
+          cat tools/showcase_theme.css >> site/style.css
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
