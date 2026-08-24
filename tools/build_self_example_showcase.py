@@ -23,7 +23,7 @@ else:
 
 
 REPOSITORY_URL = "https://github.com/grantaj/compiled-prose"
-SHOWCASE_TITLE = "Compiled Prose self-example"
+SHOWCASE_TITLE = "Compiled Prose"
 
 STYLE = """\
 :root {
@@ -386,8 +386,8 @@ def _run_pandoc(
 
 def _nav_html(candidates: list[Candidate], *, prefix: str, info: str = "") -> str:
     links = [
-        f'<a href="{prefix}index.html">Showcase</a>',
-        f'<a href="{prefix}outline.html">Authoritative outline</a>',
+        f'<a href="{prefix}index.html">About</a>',
+        f'<a href="{prefix}outline.html">Outline</a>',
     ]
     for candidate in candidates:
         links.append(
@@ -411,7 +411,7 @@ def _candidate_info(candidate: Candidate) -> str:
         f"Model: <code>{html.escape(str(metadata['model']))}</code><br>"
         f"Compilation commit: <code>{html.escape(str(metadata['source_sha']))}</code><br>"
         f"Compilation run: <code>{candidate.workflow_run_id}</code><br>"
-        f"Authoritative outline SHA-256: <code>{candidate.outline_sha256}</code><br>"
+        f"Outline SHA-256: <code>{candidate.outline_sha256}</code><br>"
         f'<a href="{run_url}">Compilation workflow run</a> · '
         '<a href="peer-review.html">Peer review</a> · '
         '<a href="acceptance.html">Acceptance review</a> · '
@@ -432,15 +432,16 @@ def _landing_markdown(candidates: list[Candidate]) -> str:
             "</div>"
         )
     return (
-        "This showcase holds the authored argument fixed and compiles it for different "
-        "audiences and genres. The **authoritative outline** is the conceptual source; the "
-        "target renderings are derived realisations, not progressively better versions of the "
-        "essay.\n\n"
+        "Compiled Prose turns an outline into finished prose for a particular audience and purpose.\n\n"
+        "This site uses one outline to produce several versions of the same work. The outline "
+        "is the common source; each version is compiled from it using a different target.\n\n"
+        "The outline used here is itself about Compiled Prose.\n\n"
         '<div class="target-grid">\n'
         + "\n".join(cards)
         + "\n</div>\n\n"
-        "Start with the [authoritative outline](outline.html), then compare the target renderings. "
-        f"The compiler, prompts, and source for this example are in the [GitHub repository]({REPOSITORY_URL}).\n"
+        "Read the [outline](outline.html), choose any version, or compare them to see what changes "
+        "and what stays the same. "
+        f"The compiler, prompts, and source are in the [GitHub repository]({REPOSITORY_URL}).\n"
     )
 
 
@@ -531,9 +532,8 @@ def build_showcase(
     (output_dir / "artifacts" / "outline.md").write_bytes(candidates[0].outline_bytes)
 
     root_info = (
-        "All renderings on this page use the same authoritative outline. "
-        "Targets are audience/genre contracts, not quality levels.<br>"
-        f"Authoritative outline SHA-256: <code>{authoritative_digest}</code>"
+        "All renderings use the same outline. Each target specifies a different audience and purpose.<br>"
+        f"Outline SHA-256: <code>{authoritative_digest}</code>"
     )
     root_nav = output_dir / "_nav.html"
     root_nav.write_text(_nav_html(candidates, prefix="", info=root_info), encoding="utf-8")
@@ -552,7 +552,7 @@ def build_showcase(
         output_dir / "outline.html",
         css="style.css",
         nav=root_nav,
-        title="Authoritative outline",
+        title="Outline",
     )
 
     # Every published showcase includes the academic target so these legacy URLs

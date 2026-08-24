@@ -20,6 +20,14 @@ class ShowcasePresentationTests(unittest.TestCase):
         self.assertIn("GitHub repository", nav)
         self.assertIn('class="repo-link"', nav)
 
+    def test_navigation_uses_plain_public_labels(self):
+        nav = _nav_html([], prefix="")
+
+        self.assertIn(">About</a>", nav)
+        self.assertIn(">Outline</a>", nav)
+        self.assertNotIn("Showcase", nav)
+        self.assertNotIn("Authoritative outline", nav)
+
     def test_navigation_layout_does_not_use_auto_margin(self):
         theme = SHOWCASE_THEME.read_text(encoding="utf-8")
 
@@ -35,9 +43,19 @@ class ShowcasePresentationTests(unittest.TestCase):
     def test_landing_uses_pandoc_title_only_once(self):
         landing = _landing_markdown([])
 
+        self.assertEqual("Compiled Prose", SHOWCASE_TITLE)
         self.assertFalse(
             any(line == f"# {SHOWCASE_TITLE}" for line in landing.splitlines())
         )
+
+    def test_landing_orients_without_old_meta_labels(self):
+        landing = _landing_markdown([])
+        lower = landing.lower()
+
+        self.assertIn("The outline used here is itself about Compiled Prose.", landing)
+        self.assertNotIn("showcase", lower)
+        self.assertNotIn("self-example", lower)
+        self.assertNotIn("authoritative outline", lower)
 
     def test_landing_also_links_repository_in_body_copy(self):
         landing = _landing_markdown([])
