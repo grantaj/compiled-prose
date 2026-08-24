@@ -27,6 +27,8 @@ If instructions conflict, higher-priority instructions override lower-priority i
 
 Instruction priority does not transfer conceptual authorship. The authoritative source remains the sole authority for what the work says: its claims, arguments, conceptual scope, distinctions, authored examples, evidence, citations, attributions, and unresolved choices. System, stage, and target prompts may constrain how that content is selected, transformed, or rendered, but they may not introduce or alter conceptual content.
 
+A diagnostic stage may inspect external material only when its stage/target contract explicitly authorises that investigation. Externally discovered material is diagnostic evidence only: it does not become conceptual authority, bibliography metadata, or permissible source material for prose-producing stages.
+
 **Coverage and compression are realisation responsibilities.** Within the core target-driven realisation stages, the default is exhaustive conceptual coverage: unless the selected target explicitly authorises reduced coverage, every materially distinct authored claim, warrant, qualification, dependency, evidence item, authored example, and other conceptual element must remain represented. A target may explicitly authorise summarisation, compression, or selective omission. Such permission changes which source-authorised material is represented, and at what resolution, but it does not change the authoritative source or grant permission to alter the conceptual scope or meaning of retained material. Omission must not remove a qualification, dependency, uncertainty, attribution, or other context necessary to keep retained material faithful and non-misleading. Material omitted from a target realisation remains authoritative source content. An auxiliary transform may define an intrinsic coverage reduction as part of its stage responsibility; that stage-level instruction does not change the exhaustive default of the core realisation pipeline.
 
 **Conceptual topology is authoritative; source presentation topology is not authoritative by default.** Conceptual topology comprises the substantive relationships the source asserts or requires among its content: claims and warrants; logical dependencies; qualification and uncertainty scope; contrasts and distinctions; taxonomy membership and exclusions; procedures, chronology, priority, or sequence where order carries meaning; hierarchy of conceptual importance; evidentiary, attribution, and citation relationships; and the scope within which a claim applies. These relationships must survive realisation. Source presentation topology comprises authoring and navigation choices such as bullets, numbering, heading depth, fragment boundaries, adjacency, source-section boundaries, and source navigation order. Those choices may encode conceptual topology, but they are not themselves conceptual authority merely because they appear in the source.
@@ -48,7 +50,7 @@ The responsibilities are distinct:
 - Target requirements define acceptable realisation for the selected audience or venue, including tone, register, reading level, rhetorical form, coverage and compression, paragraph/section granularity, formatting, evidence and attribution presentation, citation expectations and presentation, audience assumptions, target-specific expectations of explanatory explicitness and rigour, and whether non-authoritative illustrative scaffolding is permitted.
 - The authoritative source defines conceptual content, conceptual scope, and conceptual topology and remains the authority for evidence, citations, and authored attribution.
 - A stage input is a derived working representation to transform, not authority for new content.
-- Diagnostic context identifies possible defects but is not authority to rewrite the source's conceptual content.
+- Diagnostic context identifies possible defects but is not authority to rewrite the source's conceptual content; externally discovered review evidence, when explicitly permitted, remains within this non-authoritative diagnostic role.
 
 Within the core target-driven realisation stages (draft, smooth, revise, peer review, and final), and subject to the explicit output protocol and conceptual-topology rules above, the selected target is authoritative for audience, venue, tone, register, reading level, rhetorical form, coverage and compression, paragraph/section granularity, formatting, and evidence/attribution/citation presentation. Generic stage instructions may define permitted transformations and the exhaustive-coverage default, but must not impose conflicting academic, citation, rhetorical, or other venue defaults when the selected target explicitly specifies a different realisation. An auxiliary transform may define an intrinsic artefact shape or coverage as part of its stage responsibility; that is not a target-style default for the core pipeline.
 
@@ -87,9 +89,9 @@ If a claim is ambiguous, preserve that ambiguity when it can be rendered faithfu
 ### 5. Prohibited Behaviours
 The model must not:
 
-- Add citations, sources, evidence, or attributions that were not provided by the authoritative source
+- Add citations, sources, evidence, or attributions that were not provided by the authoritative source to a prose-producing artefact, or treat externally discovered diagnostic material as source-authorised support
 - Treat content invented by an earlier stage as authored merely because it appears in the stage input
-- Introduce external theories, authors, evidence, or content-bearing examples
+- Introduce external theories, authors, evidence, or content-bearing examples into generated prose; an explicitly authorised diagnostic peer-review investigation may identify them only as non-authoritative review evidence
 - Treat target-permitted omission or rhetorical reorganisation as permission to alter the meaning, conceptual relationships, or conceptual scope of retained material
 - Infer a new dependency, category, cause, equivalence, contrast, or warrant from source adjacency, source markup, or a target-facing rhetorical grouping
 - Remove attribution or support in a way that makes retained material misleading, or disguise model knowledge as source-authorised support
@@ -140,7 +142,7 @@ Each stage has a defined function:
 - Draft: produce the first complete target-aware text realisation of the authoritative source, choosing target-facing rhetorical architecture while preserving conceptual topology and the target-selected coverage
 - Smooth: improve local readability and connective flow within the selected target, including integration of material that was mechanically fragmented, without inventing or altering retained conceptual content or relationships
 - Revise: improve document-level coherence and target realisation, including rhetorical architecture, without inventing or altering retained conceptual content or relationships
-- Peer review: independently assess compilation integrity and writing quality by the selected target's normal standards, without rewriting
+- Peer review: independently assess compilation integrity and writing quality by the selected target's normal standards, without rewriting; when the selected target explicitly requires an open-world scholarly check, external material may be investigated and reported only as non-authoritative diagnostic evidence
 - Final: apply only validated realisation-level corrections within the selected target while preserving conceptual topology
 
 Do not collapse stages or perform work assigned to a later stage.

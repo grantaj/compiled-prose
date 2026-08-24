@@ -9,6 +9,8 @@ from typing import Optional
 
 
 USAGE_SCHEMA = "compiled-prose-openai-usage/1"
+ACADEMIC_REVIEW_STAGE = "prompts/40_peer_review.md"
+ACADEMIC_JOURNAL_TARGET = "prompts/targets/journal_academic.md"
 
 # Standard API text-token pricing verified 2026-08-21.
 # Values are USD per 1M tokens: input, cached input, output.
@@ -38,6 +40,18 @@ _PRICING = (
         (Decimal("1.250"), Decimal("0.125"), Decimal("10.000")),
     ),
 )
+
+
+def response_tool_kwargs(*, stage: str, target: str) -> dict:
+    """Return provider tools for the one intentionally open-world review case."""
+    if stage == ACADEMIC_REVIEW_STAGE and target == ACADEMIC_JOURNAL_TARGET:
+        return {
+            "tools": [{"type": "web_search"}],
+            # With only one configured tool, `required` guarantees that academic
+            # peer review actually performs external search at least once.
+            "tool_choice": "required",
+        }
+    return {}
 
 
 def pricing_for_model(model: str):
@@ -134,10 +148,13 @@ def main():
     seed = int(seed) if seed is not None else None
     max_output = os.environ.get("OPENAI_MAX_OUTPUT_TOKENS")
     max_output = int(max_output) if max_output is not None else None
+    stage = os.environ.get("COMPILED_PROSE_STAGE", "unknown")
+    target = os.environ.get("COMPILED_PROSE_TARGET", "")
 
     client = OpenAI()
 
     kwargs = {"model": model, "input": prompt}
+    kwargs.update(response_tool_kwargs(stage=stage, target=target))
     no_temp_prefixes = ("gpt-5",)
     if temperature is not None and not model.startswith(no_temp_prefixes):
         kwargs["temperature"] = temperature
@@ -167,7 +184,7 @@ def main():
 
         if input_tokens is not None and output_tokens is not None:
             record = usage_record(
-                stage=os.environ.get("COMPILED_PROSE_STAGE", "unknown"),
+                stage=stage,
                 model=model,
                 input_tokens=input_tokens,
                 cached_input_tokens=cached_tokens or 0,
