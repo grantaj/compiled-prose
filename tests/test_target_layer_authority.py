@@ -96,7 +96,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("Draft: produce the first complete target-aware text realisation", system)
         self.assertIn("Smooth: improve local readability and connective flow", system)
         self.assertIn("Revise: improve document-level coherence and target realisation", system)
-        self.assertIn("Peer review: perform source assurance, then diagnose target-relative", system)
+        self.assertIn("Peer review: independently assess compilation integrity and writing quality", system)
 
     def test_generic_chain_does_not_impose_adult_publication_shape(self):
         generic = "\n".join(
