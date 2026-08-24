@@ -72,8 +72,12 @@ h1, h2, h3 {
   line-height: 1.14;
   letter-spacing: -0.025em;
 }
-h1 { font-size: clamp(2.25rem, 7vw, 4.35rem); margin: 0 0 1.4rem; }
-h1.title { max-width: 13ch; }
+h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); margin: 3rem 0 1.2rem; }
+h1.title {
+  max-width: 20ch;
+  margin-top: 0;
+  font-size: clamp(2.3rem, 6vw, 3.4rem);
+}
 h2 { font-size: 1.55rem; margin-top: 2.8rem; }
 h3 { font-size: 1.15rem; margin-top: 2rem; }
 p, li { max-width: 46rem; }
@@ -144,9 +148,7 @@ nav .repo-link {
   border-radius: 0.6rem;
   box-shadow: var(--shadow);
   padding: 1.1rem 1.15rem 1.2rem;
-  transition: transform 140ms ease, box-shadow 140ms ease;
 }
-.target-card:hover { transform: translateY(-2px); }
 .target-card h2 {
   margin: 0 0 1.35rem;
   font-size: 1.05rem;
@@ -197,11 +199,6 @@ a:hover { text-decoration-thickness: 0.12em; }
   body { padding: 1.25rem 1rem 4rem; }
   nav .repo-link { margin-left: 0; }
   body > header { margin-top: 2.35rem; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .target-card { transition: none; }
-  .target-card:hover { transform: none; }
 }
 
 @media print {
