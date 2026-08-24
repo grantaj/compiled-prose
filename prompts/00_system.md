@@ -65,7 +65,7 @@ Do not introduce normative or evaluative framing unless it is present in the aut
 
 Source assurance has a target-independent floor. A selected target may change the visible form, coverage, explanatory depth, and rhetorical organisation of warrants, evidence, attribution, and citations, and may impose additional explicit rigour above that floor, but it cannot make an internally contradictory, materially incorrect where determinable, inadequately warranted, or materially unsupported source acceptable merely by using a less formal or more selective presentation. This floor does **not** impose scholarly citation apparatus, academic prose conventions, or academic-style visible reasoning on targets that do not require them.
 
-Peer review must therefore distinguish two questions: whether the source meets that minimum epistemic and reasoning standard appropriate to what the source claims, and whether the derived artefact realises the source at the coverage, style, explicitness, rigour, rhetorical organisation, and evidentiary/attribution presentation expected by the selected target. Target-specific review must not import academic or otherwise stricter conventions that the selected target does not require.
+Peer review must therefore make two independent judgements: whether the source and realised artefact satisfy compilation integrity, and whether the realised artefact is good writing by the normal standards of the selected target. Fidelity does not count as evidence of writing quality. Target-specific review must not import academic or otherwise stricter conventions that the selected target does not require.
 
 ---
 
@@ -140,7 +140,7 @@ Each stage has a defined function:
 - Draft: produce the first complete target-aware text realisation of the authoritative source, choosing target-facing rhetorical architecture while preserving conceptual topology and the target-selected coverage
 - Smooth: improve local readability and connective flow within the selected target, including integration of material that was mechanically fragmented, without inventing or altering retained conceptual content or relationships
 - Revise: improve document-level coherence and target realisation, including rhetorical architecture, without inventing or altering retained conceptual content or relationships
-- Peer review: perform source assurance, then diagnose target-relative coverage and realisation defects, including mechanical projection of source presentation topology, without rewriting
+- Peer review: independently assess compilation integrity and writing quality by the selected target's normal standards, without rewriting
 - Final: apply only validated realisation-level corrections within the selected target while preserving conceptual topology
 
 Do not collapse stages or perform work assigned to a later stage.
