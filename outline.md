@@ -224,7 +224,7 @@ Result: conceptual change distinguishable from realisation change.
 
 ## VI. Limits and Objections
 
-- **Writing as thinking:** sentence-level composition can be constitutive of thought. Especially relevant to exploratory, literary, philosophical, or poetic work. Model applies only where upstream specification is useful.
+- **Writing as thinking:** sentence-level composition can be constitutive of thought. Especially relevant to exploratory, literary, philosophical, or poetic work. [Menary 2007] Model applies only where upstream specification is useful.
 - **Wording affects meaning:** phrasing changes emphasis, implication, ambiguity, force, or proposition. Material wording belongs in source. Final realisation requires review.
 - **Execution quality matters:** prose can be unclear, misleading, generic, or target-inappropriate. Downstream status does not make execution irrelevant.
 - **Specifications fail:** missing warrants, distinctions, sources, transitions, or choices are source defects. Expose and repair upstream rather than invent downstream.
@@ -326,6 +326,13 @@ Supports: discourse and disciplinary identity; positioning, conformity, individu
 Ken Hyland, "Writing in the University: Education, Knowledge and Reputation," *Language Teaching* 46, no. 1 (2013): 53–70. DOI: 10.1017/S0261444811000036.
 
 Supports: specialist literacies embedded in disciplinary practice; knowledge construction and professional academic life.
+
+### Writing and cognition
+
+**Menary 2007**  
+Richard Menary, "Writing as Thinking," *Language Sciences* 29, no. 5 (2007): 621–632. DOI: 10.1016/j.langsci.2007.01.005.
+
+Supports: creation and manipulation of written sentences as part of cognitive processing; writing can participate in rather than merely record thought.
 
 ### AI-assisted academic authorship
 
