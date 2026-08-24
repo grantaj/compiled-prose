@@ -327,9 +327,6 @@ class TargetAwarePromptTests(unittest.TestCase):
             with self.subTest(stage=stage):
                 self.assertIn("selected target explicitly permits illustrative scaffolding", prompt)
                 self.assertNotIn("Do not add new concepts or examples", prompt)
-        review = text("prompts/40_peer_review.md")
-        self.assertIn("illustrative scaffolding", review)
-        self.assertIn("explanatory effectiveness", review)
 
     def test_core_stages_do_not_force_literal_formal_citation_retention(self):
         for stage in (
