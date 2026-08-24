@@ -5,10 +5,11 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 REBUILD_WORKFLOW = WORKFLOWS / "rebuild-self-example-showcase.yml"
 PUBLISH_WORKFLOW = WORKFLOWS / "publish-self-example.yml"
+SHOWCASE_THEME = ROOT / "tools" / "showcase_theme.css"
 
 
 class ShowcaseRebuildPolicyTests(unittest.TestCase):
-    def test_rebuild_is_automatic_only_for_showcase_renderer_changes_on_main(self):
+    def test_rebuild_is_automatic_only_for_showcase_presentation_changes_on_main(self):
         content = REBUILD_WORKFLOW.read_text(encoding="utf-8")
         trigger_block = content.split("permissions:", 1)[0]
 
@@ -19,9 +20,11 @@ class ShowcaseRebuildPolicyTests(unittest.TestCase):
             trigger_block,
         )
         self.assertIn('      - "tools/build_self_example_showcase.py"\n', trigger_block)
+        self.assertIn('      - "tools/showcase_theme.css"\n', trigger_block)
         self.assertNotIn("build_self_example_*", trigger_block)
         self.assertNotIn("self_example_targets.py", trigger_block)
         self.assertNotIn("workflow_dispatch:", trigger_block)
+        self.assertNotIn("workflow_run:", trigger_block)
 
     def test_rebuild_is_keyless_and_cannot_select_or_compile_prose(self):
         content = REBUILD_WORKFLOW.read_text(encoding="utf-8")
@@ -54,6 +57,21 @@ class ShowcaseRebuildPolicyTests(unittest.TestCase):
         self.assertIn("--base-showcase base-showcase", content)
         self.assertIn("--expected-outline outline.md", content)
         self.assertIn("cmp -s base-showcase/artifacts/outline.md outline.md", content)
+
+    def test_publication_and_rebuild_apply_the_same_showcase_theme(self):
+        rebuild = REBUILD_WORKFLOW.read_text(encoding="utf-8")
+        publish = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
+        theme = SHOWCASE_THEME.read_text(encoding="utf-8")
+        apply_theme = "cat tools/showcase_theme.css >> site/style.css"
+
+        self.assertIn(apply_theme, rebuild)
+        self.assertIn(apply_theme, publish)
+        self.assertIn("font-family: ui-sans-serif, system-ui", theme)
+        self.assertIn(".build-info,\n.target-card {\n  border: 1px solid var(--line);", theme)
+        self.assertNotIn("border-left:", theme)
+        self.assertNotIn("border-top:", theme)
+        self.assertIn("font-size: clamp(1.75rem, 4vw, 2.35rem);", theme)
+        self.assertIn("font-size: 1.3rem;", theme)
 
     def test_rebuild_serializes_with_manual_publish(self):
         rebuild = REBUILD_WORKFLOW.read_text(encoding="utf-8")
