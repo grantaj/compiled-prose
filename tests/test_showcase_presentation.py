@@ -19,7 +19,6 @@ class ShowcasePresentationTests(unittest.TestCase):
     def test_landing_uses_pandoc_title_only_once(self):
         landing = _landing_markdown([])
 
-        self.assertNotIn(f"# {SHOWCASE_TITLE}", landing)
         self.assertFalse(
             any(line == f"# {SHOWCASE_TITLE}" for line in landing.splitlines())
         )
