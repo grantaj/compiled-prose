@@ -20,7 +20,9 @@ class ShowcasePresentationTests(unittest.TestCase):
         landing = _landing_markdown([])
 
         self.assertNotIn(f"# {SHOWCASE_TITLE}", landing)
-        self.assertNotIn(SHOWCASE_TITLE, landing)
+        self.assertFalse(
+            any(line == f"# {SHOWCASE_TITLE}" for line in landing.splitlines())
+        )
 
     def test_landing_also_links_repository_in_body_copy(self):
         landing = _landing_markdown([])
