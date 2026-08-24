@@ -83,16 +83,22 @@ class OutlineStructureRealisationTests(unittest.TestCase):
         self.assertIn("A source list may become integrated prose", draft)
         self.assertNotIn("Avoid list formatting by default", draft)
 
-    def test_peer_review_independently_checks_integrity_and_target_writing_quality(self):
+    def test_peer_review_judges_target_quality_before_source_classification(self):
         review = text("prompts/40_peer_review.md")
-        self.assertIn("Review the result on two independent axes. Both must pass.", review)
-        self.assertIn("1. Compilation integrity", review)
-        self.assertIn("2. Target writing quality", review)
-        self.assertIn("Judge the artefact as writing by the normal standards of the selected target", review)
-        self.assertIn("Fidelity is not evidence of writing quality", review)
+        self.assertIn("Review order is mandatory", review)
+        self.assertIn("1. Independent target review", review)
+        self.assertIn("2. Source comparison and defect classification", review)
+        self.assertIn("3. Compilation integrity", review)
+        self.assertIn("submitted directly as a finished work of the selected target", review)
         self.assertIn("Exercise ordinary editorial judgement", review)
         self.assertIn("Do not reduce this judgement to a checklist of surface forms", review)
         self.assertIn("Lists, headings, short sections, serial exposition", review)
+        self.assertIn(
+            "Source comparison determines where the defect belongs, not whether the defect exists",
+            review,
+        )
+        self.assertIn("Fidelity alone can never justify PASS", review)
+        self.assertIn("would require no material revision", review)
 
     def test_journal_preserves_complete_argument_without_source_item_inventory(self):
         journal = text("prompts/targets/journal_academic.md")
