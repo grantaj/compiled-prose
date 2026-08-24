@@ -145,7 +145,7 @@ jobs:
       - name: Require academic target for first publication
         if: ${{ steps.retained.outputs.base-run-id == '' && inputs.target != 'journal_academic' }}
         run: |
-          echo "No prior published showcase is available to preserve the academic compatibility URLs." >&2
+          echo "No prior published showcase is available to preserve the legacy academic URLs." >&2
           echo "Publish journal_academic first, then publish additional targets normally." >&2
           exit 2
 
