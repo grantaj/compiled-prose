@@ -67,11 +67,14 @@ class ShowcaseRebuildPolicyTests(unittest.TestCase):
         self.assertIn("--expected-outline outline.md", content)
         self.assertIn("cmp -s base-showcase/artifacts/outline.md outline.md", content)
 
-    def test_rebuild_applies_current_showcase_theme(self):
-        content = REBUILD_WORKFLOW.read_text(encoding="utf-8")
+    def test_publication_and_rebuild_apply_the_same_showcase_theme(self):
+        rebuild = REBUILD_WORKFLOW.read_text(encoding="utf-8")
+        publish = PUBLISH_WORKFLOW.read_text(encoding="utf-8")
         theme = SHOWCASE_THEME.read_text(encoding="utf-8")
+        apply_theme = "cat tools/showcase_theme.css >> site/style.css"
 
-        self.assertIn("cat tools/showcase_theme.css >> site/style.css", content)
+        self.assertIn(apply_theme, rebuild)
+        self.assertIn(apply_theme, publish)
         self.assertIn("font-family: ui-sans-serif, system-ui", theme)
         self.assertIn(".build-info,\n.target-card {\n  border: 1px solid var(--line);", theme)
         self.assertNotIn("border-left:", theme)
