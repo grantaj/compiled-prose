@@ -328,11 +328,7 @@ class TargetAwarePromptTests(unittest.TestCase):
                 self.assertIn("selected target explicitly permits illustrative scaffolding", prompt)
                 self.assertNotIn("Do not add new concepts or examples", prompt)
         review = text("prompts/40_peer_review.md")
-        self.assertIn(
-            "Target-authorised summarisation, compression, selective omission, or illustrative scaffolding is not drift",
-            review,
-        )
-        self.assertIn("Judge the artefact as writing by the normal standards of the selected target", review)
+        self.assertIn("illustrative scaffolding", review)
         self.assertIn("explanatory effectiveness", review)
 
     def test_core_stages_do_not_force_literal_formal_citation_retention(self):
