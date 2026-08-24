@@ -92,7 +92,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
             "Revise: coherence and flow only",
         ):
             with self.subTest(summary=leaked_summary):
-                self.assertNotIn(summary, system)
+                self.assertNotIn(leaked_summary, system)
         self.assertIn("Draft: produce the first complete target-aware text realisation", system)
         self.assertIn("Smooth: improve local readability and connective flow", system)
         self.assertIn("Revise: improve document-level coherence and target realisation", system)
