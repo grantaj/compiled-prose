@@ -205,11 +205,11 @@ class BoundedOrchestrationTests(unittest.TestCase):
         self.assertIn("STATUS: REVISE_REALISATION", prompt)
         self.assertIn("STATUS: BLOCKED_SOURCE", prompt)
         self.assertNotIn("unsupported non-trivial claim", prompt)
-        self.assertIn("Source assurance has a target-independent floor", prompt)
-        self.assertIn("1. Source assurance", prompt)
-        self.assertIn("2. Target realisation assurance", prompt)
-        self.assertIn("may not lower the source-assurance floor", prompt)
-        self.assertIn("absent from the source is a SOURCE action", prompt)
+        self.assertIn("target-independent source-assurance floor", prompt)
+        self.assertIn("1. Compilation integrity", prompt)
+        self.assertIn("2. Target writing quality", prompt)
+        self.assertIn("Fidelity is not evidence of writing quality", prompt)
+        self.assertIn("source material genuinely missing for an explicit target requirement", prompt)
         self.assertNotIn('"REVIEW AGAIN: YES"', prompt)
 
 
