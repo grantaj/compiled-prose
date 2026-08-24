@@ -108,24 +108,11 @@ jobs:
               );
             }
 
-            // Before compile and publish became separate workflows, the accepted
-            // academic publication retained its compilation as
-            // self-example-candidate-<40-hex-source-sha>. It is a real successful
-            // academic compilation and remains eligible until a newer academic
-            // compile-only candidate supersedes it.
-            const legacyAcademic = await newestSuccessfulMatching(
-              artifact => /^self-example-candidate-[0-9a-f]{40}$/.test(artifact.name),
-              ".github/workflows/publish-self-example.yml"
-            );
-
             const target = process.env.TARGET_ID;
-            const modernCandidate = await newestSuccessful(
+            const candidate = await newestSuccessful(
               `self-example-candidate-${target}-`,
               ".github/workflows/compile-self-example.yml"
             );
-            const candidate = target === "journal_academic"
-              ? newerCandidate(modernCandidate, legacyAcademic)
-              : modernCandidate;
             if (!candidate) {
               core.setFailed(
                 `No successful retained compilation exists for target ${target}. ` +
@@ -147,34 +134,18 @@ jobs:
             );
             if (base) {
               core.info(
-                `Preserving unselected targets from successful publish run ${base.run.id}.`
+                `Considering unselected targets from successful publish run ${base.run.id}.`
               );
               core.setOutput("base-run-id", String(base.run.id));
               core.setOutput("base-artifact", base.artifact.name);
-              core.setOutput("base-kind", "showcase");
-              return;
-            }
-
-            // A non-academic target needs the legacy academic publication only
-            // until the first modern multi-target showcase has been retained.
-            // When journal_academic itself is selected, the legacy candidate is
-            // already the selected candidate and must not be imported twice.
-            if (target !== "journal_academic" && legacyAcademic) {
-              core.info(
-                `Preserving legacy published academic candidate from run ` +
-                `${legacyAcademic.run.id} (${legacyAcademic.artifact.name}).`
-              );
-              core.setOutput("base-run-id", String(legacyAcademic.run.id));
-              core.setOutput("base-artifact", legacyAcademic.artifact.name);
-              core.setOutput("base-kind", "legacy-academic");
             } else {
-              core.info("No separate prior retained publication base is needed.");
+              core.info("No prior retained publication base is available.");
             }
 
       - name: Require academic target for first publication
         if: ${{ steps.retained.outputs.base-run-id == '' && inputs.target != 'journal_academic' }}
         run: |
-          echo "No prior published academic candidate is available to preserve the legacy academic URLs." >&2
+          echo "No prior published showcase is available to preserve the academic compatibility URLs." >&2
           echo "Publish journal_academic first, then publish additional targets normally." >&2
           exit 2
 
@@ -185,21 +156,11 @@ jobs:
           pandoc --version
 
       - name: Download prior published showcase
-        if: ${{ steps.retained.outputs.base-kind == 'showcase' }}
+        if: ${{ steps.retained.outputs.base-run-id != '' }}
         uses: actions/download-artifact@v4
         with:
           name: ${{ steps.retained.outputs.base-artifact }}
           path: base-showcase
-          run-id: ${{ steps.retained.outputs.base-run-id }}
-          github-token: ${{ github.token }}
-          repository: ${{ github.repository }}
-
-      - name: Download legacy published academic candidate
-        if: ${{ steps.retained.outputs.base-kind == 'legacy-academic' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ steps.retained.outputs.base-artifact }}
-          path: legacy-academic
           run-id: ${{ steps.retained.outputs.base-run-id }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
@@ -217,20 +178,33 @@ jobs:
         env:
           CANDIDATE_RUN_ID: ${{ steps.retained.outputs.candidate-run-id }}
           BASE_RUN_ID: ${{ steps.retained.outputs.base-run-id }}
-          BASE_KIND: ${{ steps.retained.outputs.base-kind }}
         run: |
+          if ! cmp -s candidate/artifacts/outline.md outline.md; then
+            echo "The latest successful $TARGET_ID compilation does not use the current authoritative outline." >&2
+            echo "Compile $TARGET_ID successfully from the current outline before publishing it." >&2
+            exit 2
+          fi
+
           args=(
             --output-dir site
             --expected-outline outline.md
             --candidate "$TARGET_ID=candidate"
             --candidate-run-id "$TARGET_ID=$CANDIDATE_RUN_ID"
           )
-          if [ "$BASE_KIND" = "showcase" ]; then
-            args+=(--base-showcase base-showcase)
-          elif [ "$BASE_KIND" = "legacy-academic" ]; then
-            args+=(--candidate "journal_academic=legacy-academic")
-            args+=(--candidate-run-id "journal_academic=$BASE_RUN_ID")
+
+          if [ -n "$BASE_RUN_ID" ]; then
+            if cmp -s base-showcase/artifacts/outline.md outline.md; then
+              echo "Preserving compatible unselected targets from publish run $BASE_RUN_ID."
+              args+=(--base-showcase base-showcase)
+            elif [ "$TARGET_ID" = "journal_academic" ]; then
+              echo "Prior showcase uses an older authoritative outline; starting a new coherent showcase."
+            else
+              echo "Prior showcase uses an older authoritative outline and cannot be mixed with $TARGET_ID." >&2
+              echo "Publish journal_academic first to start a showcase for the current outline, then publish $TARGET_ID." >&2
+              exit 2
+            fi
           fi
+
           python tools/build_self_example_showcase.py "${args[@]}"
 
       - name: Configure GitHub Pages
