@@ -1,0 +1,156 @@
+name: Rebuild self-example showcase
+
+# Presentation changes can redeploy the already accepted showcase without
+# choosing a target again or invoking any model/provider. The latest successful
+# manual publication remains the canonical candidate selection.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/rebuild-self-example-showcase.yml"
+      - "tools/build_self_example_showcase.py"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: compiled-prose-self-example-publish
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    name: Rebuild retained showcase
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pages: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Resolve latest successful published showcase
+        id: retained
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+
+            let newest = null;
+            for (const artifact of artifacts) {
+              if (
+                artifact.expired ||
+                !artifact.name.startsWith("self-example-showcase-") ||
+                !artifact.workflow_run?.id
+              ) {
+                continue;
+              }
+
+              const { data: run } = await github.rest.actions.getWorkflowRun({
+                owner,
+                repo,
+                run_id: artifact.workflow_run.id,
+              });
+              if (
+                run.conclusion !== "success" ||
+                run.event !== "workflow_dispatch" ||
+                run.path !== ".github/workflows/publish-self-example.yml"
+              ) {
+                continue;
+              }
+
+              if (
+                newest === null ||
+                Date.parse(run.created_at) > Date.parse(newest.run.created_at) ||
+                (
+                  Date.parse(run.created_at) === Date.parse(newest.run.created_at) &&
+                  run.id > newest.run.id
+                )
+              ) {
+                newest = { artifact, run };
+              }
+            }
+
+            if (newest === null) {
+              core.setFailed(
+                "No successful retained publication exists. Publish a self-example target first."
+              );
+              return;
+            }
+
+            core.info(
+              `Rebuilding the accepted showcase from publish run ${newest.run.id} ` +
+              `(${newest.artifact.name}).`
+            );
+            core.setOutput("run-id", String(newest.run.id));
+            core.setOutput("artifact", newest.artifact.name);
+
+      - name: Install keyless rendering dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes pandoc
+          pandoc --version
+
+      - name: Download accepted showcase
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.retained.outputs.artifact }}
+          path: base-showcase
+          run-id: ${{ steps.retained.outputs.run-id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Rebuild accepted showcase with current renderer
+        run: |
+          if ! cmp -s base-showcase/artifacts/outline.md outline.md; then
+            echo "The accepted showcase does not use the current authoritative outline." >&2
+            echo "Compile and publish the current outline before redeploying presentation changes." >&2
+            exit 2
+          fi
+
+          python tools/build_self_example_showcase.py \
+            --output-dir site \
+            --expected-outline outline.md \
+            --base-showcase base-showcase
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload inspectable rebuild bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-example-rebuild-${{ github.run_id }}
+          path: site
+          include-hidden-files: true
+          retention-days: 30
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    name: Deploy rebuilt accepted showcase
+    needs: rebuild
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy rebuilt showcase to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
