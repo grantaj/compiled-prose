@@ -152,20 +152,6 @@ Do not change authored concepts, grouping, order, or scope to create them.
         self.assertNotIn("Prefer a small number of coherent publication sections", rendered)
         self.assertNotIn("Only emit LaTeX lists when the authoritative source explicitly specifies list structure", rendered)
 
-    def test_peer_review_separates_source_integrity_from_target_writing_quality(self):
-        review = text("prompts/40_peer_review.md")
-        self.assertNotIn("unsupported non-trivial claim", review)
-        self.assertIn("target-independent source-assurance floor", review)
-        self.assertIn("two independent axes", review)
-        self.assertIn("1. Compilation integrity", review)
-        self.assertIn("2. Target writing quality", review)
-        self.assertIn("Fidelity is not evidence of writing quality", review)
-        self.assertIn("Apply target-specific coverage, rigour, evidence, attribution, and citation requirements", review)
-        self.assertIn(
-            "Do not import academic, adult-publication, argumentative, or otherwise stricter conventions",
-            review,
-        )
-
     def test_non_academic_target_composition_keeps_support_floor_without_academic_leakage(self):
         rendered = render_prompt(
             system=text("prompts/00_system.md"),

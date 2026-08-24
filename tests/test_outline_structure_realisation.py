@@ -83,16 +83,29 @@ class OutlineStructureRealisationTests(unittest.TestCase):
         self.assertIn("A source list may become integrated prose", draft)
         self.assertNotIn("Avoid list formatting by default", draft)
 
-    def test_peer_review_independently_checks_integrity_and_target_writing_quality(self):
+    def test_peer_review_judges_target_quality_before_source_classification(self):
         review = text("prompts/40_peer_review.md")
-        self.assertIn("Review the result on two independent axes. Both must pass.", review)
-        self.assertIn("1. Compilation integrity", review)
-        self.assertIn("2. Target writing quality", review)
-        self.assertIn("Judge the artefact as writing by the normal standards of the selected target", review)
-        self.assertIn("Fidelity is not evidence of writing quality", review)
-        self.assertIn("Exercise ordinary editorial judgement", review)
-        self.assertIn("Do not reduce this judgement to a checklist of surface forms", review)
-        self.assertIn("Lists, headings, short sections, serial exposition", review)
+        target_review = review.index("1. Independent target review")
+        source_classification = review.index("2. Source comparison and defect classification")
+        integrity = review.index("3. Compilation integrity")
+        constraints = review.index("Further constraints:")
+
+        self.assertLess(target_review, source_classification)
+        self.assertLess(source_classification, integrity)
+        self.assertLess(integrity, constraints)
+
+        first_section = review[target_review:source_classification]
+        classification_section = review[source_classification:integrity]
+        integrity_section = review[integrity:constraints]
+
+        self.assertIn("selected target", first_section)
+        self.assertIn("SOURCE:", classification_section)
+        self.assertIn("REALISATION:", classification_section)
+        self.assertIn("authoritative source", classification_section)
+        self.assertIn("authoritative source", integrity_section)
+        self.assertIn("STATUS: PASS", review)
+        self.assertIn("STATUS: REVISE_REALISATION", review)
+        self.assertIn("STATUS: BLOCKED_SOURCE", review)
 
     def test_journal_preserves_complete_argument_without_source_item_inventory(self):
         journal = text("prompts/targets/journal_academic.md")
