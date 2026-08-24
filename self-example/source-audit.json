@@ -1,7 +1,7 @@
 {
   "schema": "compiled-prose-source-audit/1",
   "authoritative_source": "outline.md",
-  "verified_on": "2026-08-21",
+  "verified_on": "2026-08-24",
   "purpose": "Release-readiness evidence only. This file does not add conceptual authority; outline.md remains the source used by the compiler.",
   "sources": [
     {
@@ -61,6 +61,16 @@
       "claim_support_status": "verified",
       "checked_against": [
         "https://www.cambridge.org/core/journals/language-teaching/article/abs/writing-in-the-university-education-knowledge-and-reputation/7B492A172022246498AEEC470DA461D8"
+      ]
+    },
+    {
+      "citation": "Menary 2007",
+      "bib_key": "menary2007",
+      "metadata_status": "verified",
+      "claim_support_status": "verified",
+      "checked_against": [
+        "https://researchers.mq.edu.au/en/publications/writing-as-thinking/",
+        "https://doi.org/10.1016/j.langsci.2007.01.005"
       ]
     },
     {
