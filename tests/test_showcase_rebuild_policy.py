@@ -24,16 +24,7 @@ class ShowcaseRebuildPolicyTests(unittest.TestCase):
         self.assertNotIn("build_self_example_*", trigger_block)
         self.assertNotIn("self_example_targets.py", trigger_block)
         self.assertNotIn("workflow_dispatch:", trigger_block)
-
-    def test_successful_manual_publication_is_followed_by_current_presentation(self):
-        content = REBUILD_WORKFLOW.read_text(encoding="utf-8")
-        trigger_block = content.split("permissions:", 1)[0]
-
-        self.assertIn("workflow_run:", trigger_block)
-        self.assertIn("      - Publish self-example\n", trigger_block)
-        self.assertIn("      - completed\n", trigger_block)
-        self.assertIn("github.event.workflow_run.conclusion == 'success'", content)
-        self.assertIn("ref: main", content)
+        self.assertNotIn("workflow_run:", trigger_block)
 
     def test_rebuild_is_keyless_and_cannot_select_or_compile_prose(self):
         content = REBUILD_WORKFLOW.read_text(encoding="utf-8")
