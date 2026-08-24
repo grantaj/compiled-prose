@@ -20,7 +20,15 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("Coverage and compression are realisation responsibilities", system)
         self.assertIn("the default is exhaustive conceptual coverage", system)
         self.assertIn(
-            "A target may explicitly authorise summarisation, compression, selective omission, or presentation reordering",
+            "A target may explicitly authorise summarisation, compression, or selective omission.",
+            system,
+        )
+        self.assertIn(
+            "Presentation reorganisation is a baseline realisation freedom, not a coverage reduction",
+            system,
+        )
+        self.assertNotIn(
+            "summarisation, compression, selective omission, or presentation reordering",
             system,
         )
         self.assertIn(
@@ -88,7 +96,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         self.assertIn("Draft: produce the first complete target-aware text realisation", system)
         self.assertIn("Smooth: improve local readability and connective flow", system)
         self.assertIn("Revise: improve document-level coherence and target realisation", system)
-        self.assertIn("Peer review: perform source assurance, then diagnose target-relative", system)
+        self.assertIn("Peer review: independently assess compilation integrity and writing quality", system)
 
     def test_generic_chain_does_not_impose_adult_publication_shape(self):
         generic = "\n".join(
@@ -144,24 +152,17 @@ Do not change authored concepts, grouping, order, or scope to create them.
         self.assertNotIn("Prefer a small number of coherent publication sections", rendered)
         self.assertNotIn("Only emit LaTeX lists when the authoritative source explicitly specifies list structure", rendered)
 
-    def test_peer_review_uses_source_assurance_floor_then_target_calibrated_overlay(self):
+    def test_peer_review_separates_source_integrity_from_target_writing_quality(self):
         review = text("prompts/40_peer_review.md")
         self.assertNotIn("unsupported non-trivial claim", review)
-        self.assertIn("Source assurance has a target-independent floor", review)
-        self.assertIn("Perform the review in this order", review)
-        self.assertIn("1. Source assurance", review)
-        self.assertIn("2. Target realisation assurance", review)
-        self.assertIn(
-            "may impose additional explicitness, rigour, evidence, attribution, or citation requirements",
-            review,
-        )
-        self.assertIn("may not lower the source-assurance floor", review)
+        self.assertIn("target-independent source-assurance floor", review)
+        self.assertIn("two independent axes", review)
+        self.assertIn("1. Compilation integrity", review)
+        self.assertIn("2. Target writing quality", review)
+        self.assertIn("Fidelity is not evidence of writing quality", review)
+        self.assertIn("Apply target-specific coverage, rigour, evidence, attribution, and citation requirements", review)
         self.assertIn(
             "Do not import academic, adult-publication, argumentative, or otherwise stricter conventions",
-            review,
-        )
-        self.assertIn(
-            "Do not classify a claim as SOURCE merely because it is non-trivial or lacks scholarly citation",
             review,
         )
 
@@ -175,12 +176,9 @@ Do not change authored concepts, grouping, order, or scope to create them.
             output_type="md",
         )
         self.assertIn("Scholarly citations are not required merely by this target", rendered)
-        self.assertIn("Source assurance has a target-independent floor", rendered)
-        self.assertIn(
-            "Ask first whether the claim and any source-authored supporting reasoning satisfy the target-independent",
-            rendered,
-        )
-        self.assertIn("do not convert adequate support into an academic-style explanation burden", rendered)
+        self.assertIn("target-independent source-assurance floor", rendered)
+        self.assertIn("Formal scholarly citation apparatus is not globally required", rendered)
+        self.assertIn("Do not import academic, adult-publication, argumentative, or otherwise stricter conventions", rendered)
         self.assertNotIn("unsupported non-trivial claim", rendered)
 
     def test_pipeline_requires_empirical_justification_for_new_model_stages(self):

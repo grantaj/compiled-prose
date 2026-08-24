@@ -139,11 +139,11 @@ class TargetAwarePromptTests(unittest.TestCase):
             stage_input="\\documentclass{article}\n\\begin{document}claim\\end{document}",
         )
         self.assertIn(
-            "Scholarly citation support is required for claims that depend on external literature",
+            "Scholarly citation support is required for represented claims that depend on external literature",
             rendered,
         )
         self.assertIn(
-            "Apply scholarly citation expectations only when the selected target requires them.",
+            "Apply target-specific coverage, rigour, evidence, attribution, and citation requirements",
             rendered,
         )
         self.assertIn(
@@ -161,7 +161,10 @@ class TargetAwarePromptTests(unittest.TestCase):
             "Scholarly citations are not required merely by this target.", rendered
         )
         self.assertIn(
-            "When the target does not require scholarly citations, do not demand references",
+            "Formal scholarly citation apparatus is not globally required", rendered
+        )
+        self.assertIn(
+            "when the target requires another presentation or none, review against that requirement instead",
             rendered,
         )
         self.assertNotIn("You are an academic journal peer reviewer", rendered)
@@ -256,8 +259,14 @@ class TargetAwarePromptTests(unittest.TestCase):
             "An auxiliary transform may define an intrinsic coverage reduction as part of its stage responsibility",
             system,
         )
-        self.assertIn("Coverage is exhaustive for this target.", journal)
-        self.assertIn("Realise the complete authored argument", journal)
+        self.assertIn(
+            "Preserve the complete authored argument, not an inventory of source fragments",
+            journal,
+        )
+        self.assertIn(
+            "Source scaffolding, repetition, navigation, and alternative formulations need not receive independent surface representation",
+            journal,
+        )
         self.assertIn(
             "explicitly permits summarisation, compression, selective omission, and reordering",
             eli5,
@@ -297,10 +306,7 @@ class TargetAwarePromptTests(unittest.TestCase):
             system,
         )
         self.assertIn("Scholarly citation support is required", journal)
-        self.assertIn(
-            "Use the supplied verified bibliography metadata through formal BibLaTeX citation commands",
-            journal,
-        )
+        self.assertIn("formal BibLaTeX citation commands", journal)
         self.assertIn(
             "Do not use formal scholarly citation apparatus in the child-facing realisation.",
             eli5,
@@ -322,9 +328,12 @@ class TargetAwarePromptTests(unittest.TestCase):
                 self.assertIn("selected target explicitly permits illustrative scaffolding", prompt)
                 self.assertNotIn("Do not add new concepts or examples", prompt)
         review = text("prompts/40_peer_review.md")
-        self.assertIn("may be absent from the source without being source drift", review)
-        self.assertIn("conceptual density, explanatory progression, overall length", review)
-        self.assertIn("not merely vocabulary or sentence length", review)
+        self.assertIn(
+            "Target-authorised summarisation, compression, selective omission, or illustrative scaffolding is not drift",
+            review,
+        )
+        self.assertIn("Judge the artefact as writing by the normal standards of the selected target", review)
+        self.assertIn("explanatory effectiveness", review)
 
     def test_core_stages_do_not_force_literal_formal_citation_retention(self):
         for stage in (
@@ -342,33 +351,39 @@ class TargetAwarePromptTests(unittest.TestCase):
             "Formal scholarly citation apparatus is not globally required", review
         )
         self.assertIn(
-            "formal citation apparatus retained when the target explicitly forbids it",
+            "when the target requires another presentation or none, review against that requirement instead",
             review,
         )
 
     def test_peer_review_distinguishes_coverage_from_source_drift(self):
         review = text("prompts/40_peer_review.md")
         self.assertIn(
-            "do not classify target-authorised summarisation, compression, or omission as drift merely because source material is absent",
+            "Target-authorised summarisation, compression, selective omission, or illustrative scaffolding is not drift",
             review,
         )
-        self.assertIn("incorrect target coverage", review)
-        self.assertIn("source-authored material accidentally omitted", review)
-        self.assertIn("REALISATION defect", review)
+        self.assertIn("loss or distortion of target-required content", review)
+        self.assertIn("misleading omission", review)
+        self.assertIn("Poor target writing is a REALISATION defect", review)
 
-    def test_existing_academic_target_rules_and_coverage_are_preserved(self):
+    def test_academic_target_preserves_complete_argument_and_scholarly_support(self):
         journal = text("prompts/targets/journal_academic.md")
-        self.assertIn("Coverage is exhaustive for this target.", journal)
-        self.assertIn("Do not omit materially distinct claims", journal)
-        self.assertIn("without reducing conceptual coverage", journal)
-        self.assertIn("Do not oversimplify for accessibility.", journal)
         self.assertIn(
-            "Do not appeal to authority except through explicit argument", journal
+            "Preserve the complete authored argument, not an inventory of source fragments",
+            journal,
         )
         self.assertIn(
-            "Preserve source-supplied citations for all represented material", journal
+            "Retain the material claims, warrants, distinctions, qualifications, dependencies, evidence, attribution, examples, and uncertainty",
+            journal,
         )
+        self.assertIn(
+            "Source fragments may be synthesised, compressed, subordinated, consolidated, split, or reorganised",
+            journal,
+        )
+        self.assertIn("Produce a strong academic article", journal)
+        self.assertIn("normal standards of good peer-reviewed academic writing", journal)
+        self.assertIn("Preserve source-supplied citations", journal)
         self.assertIn("include a bibliography/reference list", journal)
+        self.assertIn("never invent, substitute, or complete a reference", journal)
 
 
 if __name__ == "__main__":
