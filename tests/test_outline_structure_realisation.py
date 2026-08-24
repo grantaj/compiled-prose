@@ -67,8 +67,8 @@ class OutlineStructureRealisationTests(unittest.TestCase):
         self.assertIn("When an authored ordering is semantically meaningful", system)
         self.assertIn("procedure, dependency chain, chronology, priority", system)
         self.assertIn("Preserve explicit list, table, taxonomy, or numbered form", draft)
-        self.assertIn("genuine procedures", review)
-        self.assertIn("taxonomy membership", review)
+        self.assertIn("conceptual topology and provenance are preserved", review)
+        self.assertIn("altered dependencies or qualifications", review)
         self.assertIn("turn an ordered procedure into unordered prose", final)
 
     def test_draft_does_not_map_outline_items_or_headings_one_to_one(self):
@@ -83,27 +83,26 @@ class OutlineStructureRealisationTests(unittest.TestCase):
         self.assertIn("A source list may become integrated prose", draft)
         self.assertNotIn("Avoid list formatting by default", draft)
 
-    def test_peer_review_checks_structural_realisation_without_banning_lists(self):
+    def test_peer_review_independently_checks_integrity_and_target_writing_quality(self):
         review = text("prompts/40_peer_review.md")
-        self.assertIn("mechanical projection of source presentation topology", review)
-        self.assertIn("One-source-item → one-target-unit mapping", review)
-        self.assertIn("signals to inspect, not violations themselves", review)
-        self.assertIn("Do not penalise explicit structure merely for being explicit", review)
-        self.assertIn("numbered procedure can be the correct target form", review)
-        self.assertIn("Assess development and integration, not only sentence polish", review)
+        self.assertIn("Review the result on two independent axes. Both must pass.", review)
+        self.assertIn("1. Compilation integrity", review)
+        self.assertIn("2. Target writing quality", review)
+        self.assertIn("Judge the artefact as writing by the normal standards of the selected target", review)
+        self.assertIn("Fidelity is not evidence of writing quality", review)
+        self.assertIn("Exercise ordinary editorial judgement", review)
+        self.assertIn("Do not reduce this judgement to a checklist of surface forms", review)
+        self.assertIn("Lists, headings, short sections, serial exposition", review)
 
-    def test_journal_exhaustive_coverage_is_semantic_not_checklist_visible(self):
+    def test_journal_preserves_complete_argument_without_source_item_inventory(self):
         journal = text("prompts/targets/journal_academic.md")
-        self.assertIn("Coverage is exhaustive for this target.", journal)
-        self.assertIn(
-            "Exhaustive conceptual coverage is not a requirement to visibly discharge source items one by one",
-            journal,
-        )
-        self.assertIn("rhetorical reorganisation are permitted and expected", journal)
-        self.assertIn("not as a one-to-one projection of source headings", journal)
-        self.assertIn("Lists, tables, taxonomies, classifications, and numbered procedures", journal)
-        self.assertIn("Do not inherit them merely because the source used bullets or enumeration", journal)
-        self.assertIn("rather than mechanically replaying the source's terminal bullets", journal)
+        self.assertIn("Preserve the complete authored argument, not an inventory of source fragments", journal)
+        self.assertNotIn("Coverage is exhaustive for this target.", journal)
+        self.assertIn("synthesised, compressed, subordinated, consolidated, split, or reorganised", journal)
+        self.assertIn("should read as an article conceived for this venue", journal)
+        self.assertIn("normal standards of good peer-reviewed academic writing", journal)
+        self.assertIn("Source bullets, numbering, heading depth", journal)
+        self.assertIn("Use lists, tables, classifications, numbered procedures", journal)
 
     def test_pipeline_spec_records_the_same_topology_boundary(self):
         pipeline = text("pipeline.md")
@@ -136,8 +135,8 @@ class OutlineStructureRealisationTests(unittest.TestCase):
         journal = text("prompts/targets/journal_academic.md")
         self.assertIn("taxonomy membership", system)
         self.assertIn("procedure", system)
-        self.assertIn("checklist-style progression", journal)
-        self.assertIn("numbered procedures are appropriate", journal)
+        self.assertIn("numbered procedures", journal)
+        self.assertIn("genuine logical and conceptual structure", journal)
 
     def test_reorganisation_cannot_invent_connective_reasoning_or_detach_support(self):
         for path in (
