@@ -114,7 +114,7 @@ class OutlineStructureRealisationTests(unittest.TestCase):
             "without a special target permission when that changes only presentation topology",
             pipeline,
         )
-        self.assertIn("mechanical projection of source presentation topology", pipeline)
+        self.assertIn("Target writing quality", pipeline)
         self.assertNotIn("target-owned coverage, ordering permissions", pipeline)
 
     def test_censorship_shape_exercises_both_presentation_and_conceptual_structure(self):
