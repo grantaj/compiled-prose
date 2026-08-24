@@ -22,20 +22,191 @@ else:
     from self_example_targets import TARGETS, TargetSpec, resolve_target
 
 
+REPOSITORY_URL = "https://github.com/grantaj/compiled-prose"
+SHOWCASE_TITLE = "Compiled Prose self-example"
+
 STYLE = """\
-:root { color-scheme: light dark; }
-html { font-family: Georgia, 'Times New Roman', serif; line-height: 1.6; }
-body { max-width: 58rem; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
-nav, .build-info, .target-grid { font-family: system-ui, sans-serif; }
-nav { padding-bottom: 1rem; border-bottom: 1px solid #8886; margin-bottom: 2rem; }
-nav a { margin-right: 1rem; white-space: nowrap; }
-.build-info { font-size: 0.9rem; padding: 1rem; margin: 1rem 0 2rem; border: 1px solid #8886; border-radius: 0.4rem; }
-.target-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; margin: 2rem 0; }
-.target-card { border: 1px solid #8886; border-radius: 0.4rem; padding: 1rem; }
-.target-card h2 { margin-top: 0; font-size: 1.05rem; }
-code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-pre { overflow-x: auto; padding: 1rem; background: #8881; }
-a { text-underline-offset: 0.15em; }
+:root {
+  color-scheme: light dark;
+  --page: #f4f2ed;
+  --surface: #fcfbf8;
+  --ink: #17191e;
+  --muted: #656a73;
+  --line: #d7d3ca;
+  --accent: #3d50d9;
+  --accent-soft: #e8eaff;
+  --code-bg: #ece9e2;
+  --shadow: 0 12px 32px rgb(23 25 30 / 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #15171b;
+    --surface: #1d2026;
+    --ink: #ececf0;
+    --muted: #a7abb4;
+    --line: #343841;
+    --accent: #98a5ff;
+    --accent-soft: #2a3158;
+    --code-bg: #252932;
+    --shadow: 0 14px 36px rgb(0 0 0 / 0.2);
+  }
+}
+
+* { box-sizing: border-box; }
+html {
+  background: var(--page);
+  color: var(--ink);
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+}
+body {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+}
+body > header { margin: 3.25rem 0 1.75rem; }
+h1, h2, h3 {
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+}
+h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); margin: 3rem 0 1.2rem; }
+h1.title {
+  max-width: 20ch;
+  margin-top: 0;
+  font-size: clamp(2.3rem, 6vw, 3.4rem);
+}
+h2 { font-size: 1.55rem; margin-top: 2.8rem; }
+h3 { font-size: 1.15rem; margin-top: 2rem; }
+p, li { max-width: 46rem; }
+strong { font-weight: 700; }
+
+nav, .build-info, .target-grid {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.35rem;
+  align-items: center;
+  padding: 0.4rem 0 1rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 2.4rem;
+}
+nav a {
+  display: inline-block;
+  color: var(--muted);
+  border-radius: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+}
+nav a:hover, nav a:focus-visible {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+nav .repo-link {
+  margin-left: auto;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding-inline: 0.7rem;
+}
+
+.build-info {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 0.55rem;
+  box-shadow: var(--shadow);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.65;
+  padding: 0.9rem 1rem;
+  margin: 1rem 0 2.6rem;
+}
+.build-info code { color: var(--ink); }
+.build-info a { font-weight: 650; }
+
+.target-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin: 2.25rem 0;
+}
+.target-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 9rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  border-radius: 0.6rem;
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.15rem 1.2rem;
+}
+.target-card h2 {
+  margin: 0 0 1.35rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+.target-card h2 a { text-decoration: none; }
+.target-card p {
+  max-width: none;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+code {
+  border-radius: 0.25rem;
+  background: var(--code-bg);
+  padding: 0.08em 0.28em;
+  font-size: 0.88em;
+}
+pre {
+  overflow-x: auto;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+pre code { background: transparent; padding: 0; }
+blockquote {
+  margin-left: 0;
+  border-left: 3px solid var(--line);
+  padding-left: 1.1rem;
+  color: var(--muted);
+}
+hr { border: 0; border-top: 1px solid var(--line); margin: 3rem 0; }
+table { border-collapse: collapse; max-width: 100%; }
+th, td { border-bottom: 1px solid var(--line); padding: 0.45rem 0.7rem; text-align: left; }
+img { max-width: 100%; height: auto; }
+a {
+  color: var(--accent);
+  text-decoration-thickness: 0.07em;
+  text-underline-offset: 0.16em;
+}
+a:hover { text-decoration-thickness: 0.12em; }
+
+@media (max-width: 42rem) {
+  body { padding: 1.25rem 1rem 4rem; }
+  nav .repo-link { margin-left: 0; }
+  body > header { margin-top: 2.35rem; }
+}
+
+@media print {
+  :root { --page: #fff; --surface: #fff; --ink: #000; --muted: #444; --line: #bbb; }
+  body { max-width: none; padding: 0; }
+  nav { display: none; }
+  .build-info, .target-card { box-shadow: none; }
+}
 """
 
 REQUIRED_RAW_ARTIFACTS = (
@@ -223,6 +394,9 @@ def _nav_html(candidates: list[Candidate], *, prefix: str, info: str = "") -> st
             f'<a href="{prefix}targets/{candidate.spec.identifier}/index.html">'
             f"{html.escape(candidate.spec.label)}</a>"
         )
+    links.append(
+        f'<a class="repo-link" href="{REPOSITORY_URL}">GitHub repository ↗</a>'
+    )
     block = "<nav>" + "".join(links) + "</nav>"
     if info:
         block += f'<div class="build-info">{info}</div>'
@@ -243,6 +417,30 @@ def _candidate_info(candidate: Candidate) -> str:
         '<a href="acceptance.html">Acceptance review</a> · '
         '<a href="artifacts/final.pdf">PDF</a> · '
         '<a href="artifacts/final.tex">Raw LaTeX</a>'
+    )
+
+
+def _landing_markdown(candidates: list[Candidate]) -> str:
+    cards = []
+    for candidate in candidates:
+        cards.append(
+            '<div class="target-card">'
+            f"<h2><a href=\"targets/{candidate.spec.identifier}/index.html\">"
+            f"{html.escape(candidate.spec.label)}</a></h2>"
+            f"<p><code>{candidate.spec.identifier}</code><br>"
+            f"Model: <code>{html.escape(str(candidate.metadata['model']))}</code></p>"
+            "</div>"
+        )
+    return (
+        "This showcase holds the authored argument fixed and compiles it for different "
+        "audiences and genres. The **authoritative outline** is the conceptual source; the "
+        "target renderings are derived realisations, not progressively better versions of the "
+        "essay.\n\n"
+        '<div class="target-grid">\n'
+        + "\n".join(cards)
+        + "\n</div>\n\n"
+        "Start with the [authoritative outline](outline.html), then compare the target renderings. "
+        f"The compiler, prompts, and source for this example are in the [GitHub repository]({REPOSITORY_URL}).\n"
     )
 
 
@@ -340,35 +538,14 @@ def build_showcase(
     root_nav = output_dir / "_nav.html"
     root_nav.write_text(_nav_html(candidates, prefix="", info=root_info), encoding="utf-8")
 
-    cards = []
-    for candidate in candidates:
-        cards.append(
-            '<div class="target-card">'
-            f"<h2><a href=\"targets/{candidate.spec.identifier}/index.html\">"
-            f"{html.escape(candidate.spec.label)}</a></h2>"
-            f"<p><code>{candidate.spec.identifier}</code><br>"
-            f"Model: <code>{html.escape(str(candidate.metadata['model']))}</code></p>"
-            "</div>"
-        )
     landing = output_dir / "_index.md"
-    landing.write_text(
-        "# Compiled Prose self-example\n\n"
-        "This showcase holds the authored argument fixed and compiles it for different "
-        "audiences and genres. The **authoritative outline** is the conceptual source; the "
-        "target renderings are derived realisations, not progressively better versions of the "
-        "essay.\n\n"
-        '<div class="target-grid">\n'
-        + "\n".join(cards)
-        + "\n</div>\n\n"
-        "Start with the [authoritative outline](outline.html), then compare the target renderings.\n",
-        encoding="utf-8",
-    )
+    landing.write_text(_landing_markdown(candidates), encoding="utf-8")
     _run_pandoc(
         landing,
         output_dir / "index.html",
         css="style.css",
         nav=root_nav,
-        title="Compiled Prose self-example",
+        title=SHOWCASE_TITLE,
     )
     _run_pandoc(
         candidates[0].artifacts / "outline.md",
