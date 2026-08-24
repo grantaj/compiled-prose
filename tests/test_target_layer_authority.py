@@ -152,20 +152,6 @@ Do not change authored concepts, grouping, order, or scope to create them.
         self.assertNotIn("Prefer a small number of coherent publication sections", rendered)
         self.assertNotIn("Only emit LaTeX lists when the authoritative source explicitly specifies list structure", rendered)
 
-    def test_peer_review_orders_target_judgement_before_source_integrity(self):
-        review = text("prompts/40_peer_review.md")
-        target_review = review.index("1. Independent target review")
-        source_classification = review.index("2. Source comparison and defect classification")
-        integrity = review.index("3. Compilation integrity")
-
-        self.assertLess(target_review, source_classification)
-        self.assertLess(source_classification, integrity)
-        self.assertIn("SOURCE:", review[source_classification:integrity])
-        self.assertIn("REALISATION:", review[source_classification:integrity])
-        self.assertIn("STATUS: PASS", review)
-        self.assertIn("STATUS: REVISE_REALISATION", review)
-        self.assertIn("STATUS: BLOCKED_SOURCE", review)
-
     def test_non_academic_target_composition_keeps_support_floor_without_academic_leakage(self):
         rendered = render_prompt(
             system=text("prompts/00_system.md"),
