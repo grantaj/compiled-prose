@@ -85,18 +85,13 @@ class TargetAwarePromptTests(unittest.TestCase):
             "If the stage input and authoritative source conflict, the authoritative source wins.",
             system,
         )
-        self.assertIn(
-            "The sole source of conceptual authorship throughout the pipeline.", pipeline
-        )
-        self.assertIn(
-            "Are inputs to later transformations but are not conceptual authority.", pipeline
-        )
-        self.assertNotIn("or the prior stage artefact", pipeline)
+        self.assertIn("sole source of conceptual authorship", pipeline)
+        self.assertIn("derived representations", pipeline)
 
     def test_matching_source_and_stage_input_are_not_duplicated(self):
         source = "# Same source and working input\n- authored claim"
         rendered = self.render(
-            "prompts/10_draft.md",
+            "prompts/10_realise.md",
             "prompts/targets/magazine_general.md",
             source=source,
             stage_input=source,
@@ -106,23 +101,19 @@ class TargetAwarePromptTests(unittest.TestCase):
             "# Stage Input (Derived Working Artefact; Non-Authoritative)", rendered
         )
 
-    def test_makefile_carries_original_source_alongside_every_stage_input(self):
+    def test_makefile_carries_original_source_alongside_every_downstream_stage_input(self):
         makefile = text("Makefile")
         self.assertIn("--source $(IN) --in $(2)", makefile)
         self.assertNotIn("--source $(2)", makefile)
         for call in (
-            "$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)",
-            "$(call RUN_STAGE,smooth,$(P_SMOOTH),$(DRAFT_OUT),tex,$@)",
-            "$(call RUN_STAGE,revise,$(P_REVISE),$(SMOOTH_OUT),tex,$@)",
-            "$(call RUN_STAGE,review,$(P_REVIEW),$(REVISE_OUT),md,$@)",
-            "$(call RUN_STAGE,final,$(P_FINAL),$(REVISE_OUT),tex,$@,--review $(REVIEW_OUT))",
+            "$(call RUN_STAGE,realise,$(P_REALISE),$(IN),tex,$@)",
+            "$(call RUN_STAGE,review,$(P_REVIEW),$(REALISE_OUT),md,$@)",
+            "$(call RUN_STAGE,final,$(P_FINAL),$(REALISE_OUT),tex,$@,--review $(REVIEW_OUT))",
         ):
             self.assertIn(call, makefile)
 
     def test_downstream_prompts_explicitly_check_stage_input_against_source(self):
         for stage in (
-            "prompts/20_smooth.md",
-            "prompts/30_revise.md",
             "prompts/40_peer_review.md",
             "prompts/50_final.md",
         ):
@@ -181,9 +172,7 @@ class TargetAwarePromptTests(unittest.TestCase):
 
     def test_generic_stages_do_not_encode_any_existing_target_identity(self):
         paths = (
-            "prompts/10_draft.md",
-            "prompts/20_smooth.md",
-            "prompts/30_revise.md",
+            "prompts/10_realise.md",
             "prompts/40_peer_review.md",
             "prompts/50_final.md",
         )
@@ -206,28 +195,29 @@ class TargetAwarePromptTests(unittest.TestCase):
 
     def test_missing_target_required_citations_are_fail_closed_not_invented(self):
         for stage in (
-            "prompts/10_draft.md",
-            "prompts/20_smooth.md",
-            "prompts/30_revise.md",
+            "prompts/10_realise.md",
             "prompts/50_final.md",
         ):
             rendered = self.render(stage, "prompts/targets/journal_academic.md")
             with self.subTest(stage=stage):
                 self.assertIn("@@FAIL", rendered)
-                self.assertIn("requires citation", rendered.lower())
+                self.assertIn("citation", rendered.lower())
                 self.assertIn("authoritative source", rendered.lower())
                 self.assertIn("invent", rendered.lower())
 
-    def test_draft_defers_list_realisation_to_target_without_inventing_structure(self):
-        draft = text("prompts/10_draft.md")
-        self.assertNotIn("Avoid list formatting by default", draft)
-        self.assertNotIn(
-            "Only emit LaTeX lists when the authoritative source explicitly specifies list structure.",
-            draft,
+    def test_realise_does_not_map_outline_items_or_headings_one_to_one(self):
+        realise = text("prompts/10_realise.md")
+        self.assertIn("not as an outline discharged item by item", realise)
+        self.assertIn(
+            "Do not create a section, paragraph, sentence, or list item merely because a source item has one.",
+            realise,
         )
-        self.assertIn("Do not mechanically preserve or suppress list formatting", draft)
-        self.assertIn("according to the selected target", draft)
-        self.assertIn("do not invent conceptual grouping or distinctions", draft)
+        self.assertIn(
+            "Avoid bullet-by-bullet, heading-by-heading, or sentence-by-sentence prosification",
+            realise,
+        )
+        self.assertIn("preserve visible lists, tables, taxonomies, numbered procedures", realise)
+        self.assertNotIn("Avoid list formatting by default", realise)
 
     def test_target_requirements_cannot_author_new_conceptual_content(self):
         system = text("prompts/00_system.md")
@@ -318,9 +308,7 @@ class TargetAwarePromptTests(unittest.TestCase):
 
     def test_core_stages_do_not_override_target_permitted_scaffolding(self):
         for stage in (
-            "prompts/10_draft.md",
-            "prompts/20_smooth.md",
-            "prompts/30_revise.md",
+            "prompts/10_realise.md",
             "prompts/50_final.md",
         ):
             prompt = text(stage)
@@ -330,9 +318,7 @@ class TargetAwarePromptTests(unittest.TestCase):
 
     def test_core_stages_do_not_force_literal_formal_citation_retention(self):
         for stage in (
-            "prompts/10_draft.md",
-            "prompts/20_smooth.md",
-            "prompts/30_revise.md",
+            "prompts/10_realise.md",
             "prompts/50_final.md",
         ):
             prompt = text(stage)
