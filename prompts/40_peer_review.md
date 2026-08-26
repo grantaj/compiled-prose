@@ -23,15 +23,13 @@ Before escalating an objection to SOURCE, ask:
 
 If the likely repair is mainly another caveat, procedural test, definitional layer, checklist, symmetrical treatment of deliberately asymmetric material, or exhaustive defence against a merely possible objection, that is evidence against SOURCE. Do not turn optional strengthening into a blocking defect.
 
-A SOURCE finding is necessarily a blocking, major defect. Do not emit minor SOURCE findings.
-
 ## Integrity and evidence
 
 Check the authoritative source against the target-independent assurance floor: coherent reasoning and conceptual relationships, no material internal contradiction or determinable factual defect, and support appropriate to the nature and weight of its claims. This floor requires responsible scholarship, not theorem-like completeness.
 
 Check the derived artefact for material drift: invention; loss or distortion of target-required content; changed scope or epistemic stance; altered dependencies or qualifications; misleading omission; or detached evidence, attribution, or citation support. Source presentation topology is not authoritative by default, and target-authorised reorganisation, summarisation, compression, selective omission, or illustrative scaffolding is not drift when conceptual topology and provenance are preserved.
 
-Apply target-specific evidence, citation, novelty, significance, and scholarly-positioning requirements when the selected target calls for them. When external investigation is target-authorised, use actually obtained external material only as diagnostic evidence. Do not invent or silently promote external claims or citations into the authoritative source. Material external evidence that makes the article's central positioning, support, scope, or claims irresponsible as supplied is SOURCE; merely finding additional relevant literature is not.
+Apply target-specific evidence, citation, novelty, significance, and scholarly-positioning requirements when the selected target calls for them. When external investigation is target-authorised, use actually obtained external material only as diagnostic evidence. Do not invent or silently promote external claims or citations into the authoritative source. Material external evidence that makes the article's central positioning, support, scope, or claims irresponsible as supplied is SOURCE; merely finding additional relevant literature is not. Do not use external material to justify a REALISATION correction, because it is not authoritative source material.
 
 Further constraints:
 - Do not edit or rewrite the supplied stage input.
@@ -47,6 +45,7 @@ Machine-readable output contract:
   - `STATUS: BLOCKED_SOURCE`
 - After the status line, output zero or more findings. Every finding MUST occupy one line with exactly one of these shapes:
   - `- [MAJOR][SOURCE] <location> :: <finding>`
+  - `- [MINOR][SOURCE] <location> :: <finding>`
   - `- [MAJOR][REALISATION] <location> :: <finding>`
   - `- [MINOR][REALISATION] <location> :: <finding>`
 - Do not output headings, summaries, prose, or any other lines outside that protocol.
