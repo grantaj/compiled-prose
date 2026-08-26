@@ -95,7 +95,9 @@ class TargetLayerAuthorityTests(unittest.TestCase):
                 self.assertNotIn(removed_stage, system)
         self.assertIn("Realise: produce one complete target-ready text realisation", system)
         self.assertIn("Peer review: independently assess compilation integrity and writing quality", system)
-        self.assertIn("Final revision: only after a validated `REVISE_REALISATION` decision", system)
+        self.assertIn("Final revision:", system)
+        self.assertIn("`REVISE_REALISATION`", system)
+        self.assertIn("one bounded pass", system)
         self.assertIn("`PASS` requires no second writing pass", system)
         self.assertIn("`BLOCKED_SOURCE` returns control", system)
 
