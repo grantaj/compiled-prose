@@ -55,6 +55,18 @@ def _atomic_write(path: Path, content: str) -> None:
         _unlink(temporary_path)
 
 
+def _atomic_write_bytes(path: Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=str(path.parent))
+    temporary_path = Path(temporary)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(content)
+        os.replace(str(temporary_path), str(path))
+    finally:
+        _unlink(temporary_path)
+
+
 def parse_review(raw: str) -> ReviewDecision:
     """Parse the deliberately small peer-review machine protocol."""
     lines = [line.strip() for line in raw.splitlines() if line.strip()]
@@ -149,7 +161,7 @@ def apply_review_decision(
     _unlink(review_diagnostic)
 
     if decision.status == "PASS":
-        _atomic_write(final_output, realised.read_text(encoding="utf-8"))
+        _atomic_write_bytes(final_output, realised.read_bytes())
 
     return decision
 
