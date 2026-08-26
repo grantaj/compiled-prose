@@ -63,10 +63,8 @@ class BibliographyContractTests(unittest.TestCase):
             "Do not use formal scholarly citation apparatus in the child-facing realisation.",
             rendered,
         )
-        self.assertIn(
-            "use source-authorised narrative attribution only where the retained meaning requires it",
-            rendered,
-        )
+        self.assertIn("source-authored attribution", rendered)
+        self.assertIn("ordinary narrative form required by the target", rendered)
 
     def test_citation_protocol_does_not_infer_scholarly_apparatus_from_metadata(self):
         for target_path in (
