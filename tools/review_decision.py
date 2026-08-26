@@ -114,7 +114,7 @@ def parse_review(raw: str) -> ReviewDecision:
 def apply_review_decision(
     *,
     review: Path,
-    revised: Path,
+    realised: Path,
     final_output: Path,
     review_diagnostic: Path,
     final_diagnostic: Path,
@@ -149,7 +149,7 @@ def apply_review_decision(
     _unlink(review_diagnostic)
 
     if decision.status == "PASS":
-        _atomic_write(final_output, revised.read_text(encoding="utf-8"))
+        _atomic_write(final_output, realised.read_text(encoding="utf-8"))
 
     return decision
 
@@ -157,7 +157,7 @@ def apply_review_decision(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--review", required=True, type=Path)
-    parser.add_argument("--revised", required=True, type=Path)
+    parser.add_argument("--realised", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--diagnostic", required=True, type=Path)
     parser.add_argument("--final-diagnostic", required=True, type=Path)
@@ -166,7 +166,7 @@ def main() -> int:
     try:
         decision = apply_review_decision(
             review=args.review,
-            revised=args.revised,
+            realised=args.realised,
             final_output=args.output,
             review_diagnostic=args.diagnostic,
             final_diagnostic=args.final_diagnostic,

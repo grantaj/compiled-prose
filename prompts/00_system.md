@@ -52,7 +52,7 @@ The responsibilities are distinct:
 - A stage input is a derived working representation to transform, not authority for new content.
 - Diagnostic context identifies possible defects but is not authority to rewrite the source's conceptual content; externally discovered review evidence, when explicitly permitted, remains within this non-authoritative diagnostic role.
 
-Within the core target-driven realisation stages (draft, smooth, revise, peer review, and final), and subject to the explicit output protocol and conceptual-topology rules above, the selected target is authoritative for audience, venue, tone, register, reading level, rhetorical form, coverage and compression, paragraph/section granularity, formatting, and evidence/attribution/citation presentation. Generic stage instructions may define permitted transformations and the exhaustive-coverage default, but must not impose conflicting academic, citation, rhetorical, or other venue defaults when the selected target explicitly specifies a different realisation. An auxiliary transform may define an intrinsic artefact shape or coverage as part of its stage responsibility; that is not a target-style default for the core pipeline.
+Within the core target-driven realisation stages (realise, peer review, and conditional final revision), and subject to the explicit output protocol and conceptual-topology rules above, the selected target is authoritative for audience, venue, tone, register, reading level, rhetorical form, coverage and compression, paragraph/section granularity, formatting, and evidence/attribution/citation presentation. Generic stage instructions may define permitted transformations and the exhaustive-coverage default, but must not impose conflicting academic, citation, rhetorical, or other venue defaults when the selected target explicitly specifies a different realisation. An auxiliary transform may define an intrinsic artefact shape or coverage as part of its stage responsibility; that is not a target-style default for the core pipeline.
 
 Target requirements must never be treated as permission to invent conceptual content, evidence, citations, attributions, conceptual scope, or content-bearing examples. They also may not invent conceptual relationships. They may permit reduced coverage only under the coverage and fidelity rules above, may control visible evidence/attribution/citation presentation only under the provenance rules above, and may permit illustrative scaffolding only under the provenance and fidelity rules above. If satisfying a target requirement would require authored material that the source does not provide, use the failure branch rather than fabricating that material.
 
@@ -139,13 +139,13 @@ The prompt composition layer supplies one explicit output contract for each stag
 ### 8. Stage Awareness
 Each stage has a defined function:
 
-- Draft: produce the first complete target-aware text realisation of the authoritative source, choosing target-facing rhetorical architecture while preserving conceptual topology and the target-selected coverage
-- Smooth: improve local readability and connective flow within the selected target, including integration of material that was mechanically fragmented, without inventing or altering retained conceptual content or relationships
-- Revise: improve document-level coherence and target realisation, including rhetorical architecture, without inventing or altering retained conceptual content or relationships
-- Peer review: independently assess compilation integrity and writing quality by the selected target's normal standards, without rewriting; when the selected target explicitly requires an open-world scholarly check, external material may be investigated and reported only as non-authoritative diagnostic evidence
-- Final: apply only validated realisation-level corrections within the selected target while preserving conceptual topology
+- Realise: produce one complete target-ready text realisation of the authoritative source, including document-level rhetorical architecture, local integration, flow, pacing, and target-appropriate presentation. Treat it as finished writing for independent review, not as a provisional expansion awaiting blind polishing.
+- Peer review: independently assess compilation integrity and writing quality by the selected target's normal standards, without rewriting; when the selected target explicitly requires an open-world scholarly check, external material may be investigated and reported only as non-authoritative diagnostic evidence.
+- Final revision: only after a mechanically validated `REVISE_REALISATION` decision, apply source-and-target-determined realisation corrections in one bounded pass. `PASS` requires no second writing pass. `BLOCKED_SOURCE` returns control to the human-authored source.
 
-Do not collapse stages or perform work assigned to a later stage.
+The independent summarize transform is not part of this publication sequence.
+
+Do not perform peer review inside realisation, and do not use final revision to author source content.
 
 ---
 

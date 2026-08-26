@@ -34,27 +34,21 @@ SELF_SOURCE_AUDIT := self-example/source-audit.json
 SELF_BIBLIOGRAPHY := self-example/references.bib
 BUILD_BIBLIOGRAPHY := $(BUILD_DIR)/references.bib
 
-P_DRAFT := prompts/10_draft.md
-P_SMOOTH := prompts/20_smooth.md
-P_REVISE := prompts/30_revise.md
+P_REALISE := prompts/10_realise.md
 P_REVIEW := prompts/40_peer_review.md
 P_FINAL := prompts/50_final.md
 
 # Outputs
-DRAFT_OUT   := $(BUILD_DIR)/draft.tex
-SMOOTH_OUT  := $(BUILD_DIR)/smooth.tex
-REVISE_OUT  := $(BUILD_DIR)/revise.tex
+REALISE_OUT := $(BUILD_DIR)/realise.tex
 REVIEW_OUT  := $(BUILD_DIR)/peer_review.md
 FINAL_OUT   := $(BUILD_DIR)/final.tex
 FINAL_PDF   := $(BUILD_DIR)/final.pdf
 SUMMARY_OUT := $(BUILD_DIR)/summary.tex
 ERROR_DIR   := $(BUILD_DIR)/errors
 
-.PHONY: all draft smooth revise review final summarize self self-preflight validate-latex check check-python check-shell test check-ollama openai-check print-vars clean clobber
+.PHONY: all realise review final summarize self self-preflight validate-latex check check-python check-shell test check-ollama openai-check print-vars clean clobber
 all: final
-draft: $(DRAFT_OUT)
-smooth: $(SMOOTH_OUT)
-revise: $(REVISE_OUT)
+realise: $(REALISE_OUT)
 review: $(REVIEW_OUT)
 final: $(FINAL_OUT)
 summarize: $(SUMMARY_OUT)
@@ -109,7 +103,6 @@ print-vars:
 	@echo "OPENAI_USAGE_LOG=$(OPENAI_USAGE_LOG)"
 	@echo "MAKEFLAGS=$(MAKEFLAGS)"
 
-
 $(BUILD_DIR):
 	mkdir -p "$(BUILD_DIR)"
 
@@ -155,35 +148,27 @@ else \
 fi
 endef
 
-DRAFT_IN := $(IN)
+$(REALISE_OUT): $(BUILD_DIR) $(IN) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_REALISE) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make realise IN=outline.md" >&2; exit 1; fi
+	@echo "Realise input: $(IN)"
+	@$(call RUN_STAGE,realise,$(P_REALISE),$(IN),tex,$@)
 
-$(DRAFT_OUT): $(BUILD_DIR) $(DRAFT_IN) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_DRAFT) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
-	@if [ -z "$(IN)" ]; then echo "IN is required, e.g. make draft IN=outline.md" >&2; exit 1; fi
-	@echo "Draft input: $(DRAFT_IN)"
-	@$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)
+# review: realised LaTeX in -> structured Markdown diagnostic out
+$(REVIEW_OUT): $(BUILD_DIR) $(REALISE_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+	@$(call RUN_STAGE,review,$(P_REVIEW),$(REALISE_OUT),md,$@)
 
-$(SMOOTH_OUT): $(BUILD_DIR) $(DRAFT_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_SMOOTH) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
-	@$(call RUN_STAGE,smooth,$(P_SMOOTH),$(DRAFT_OUT),tex,$@)
-
-$(REVISE_OUT): $(BUILD_DIR) $(SMOOTH_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_REVISE) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
-	@$(call RUN_STAGE,revise,$(P_REVISE),$(SMOOTH_OUT),tex,$@)
-
-# review: LaTeX in -> structured Markdown diagnostic out
-$(REVIEW_OUT): $(BUILD_DIR) $(REVISE_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_REVIEW) $(TARGET_STYLE) tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
-	@$(call RUN_STAGE,review,$(P_REVIEW),$(REVISE_OUT),md,$@)
-
-# final: validate peer-review authority first. PASS promotes revise.tex without
+# final: validate peer-review authority first. PASS promotes realise.tex without
 # another model call; only REVISE_REALISATION may invoke one bounded final pass.
-$(FINAL_OUT): $(BUILD_DIR) $(REVISE_OUT) $(REVIEW_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_FINAL) $(TARGET_STYLE) tools/review_decision.py tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
+$(FINAL_OUT): $(BUILD_DIR) $(REALISE_OUT) $(REVIEW_OUT) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL) $(P_FINAL) $(TARGET_STYLE) tools/review_decision.py tools/render_prompt.py tools/enforce_protocol.py tools/llm_run.sh tools/openai_responses.py
 	@decision="$$(python tools/review_decision.py \
-	  --review "$(REVIEW_OUT)" --revised "$(REVISE_OUT)" \
+	  --review "$(REVIEW_OUT)" --realised "$(REALISE_OUT)" \
 	  --output "$(FINAL_OUT)" --diagnostic "$(ERROR_DIR)/review.md" \
 	  --final-diagnostic "$(ERROR_DIR)/final.md")"; \
 	case "$$decision" in \
 	  PASS) \
 	    ;; \
 	  REVISE_REALISATION) \
-	    $(call RUN_STAGE,final,$(P_FINAL),$(REVISE_OUT),tex,$@,--review $(REVIEW_OUT)); \
+	    $(call RUN_STAGE,final,$(P_FINAL),$(REALISE_OUT),tex,$@,--review $(REVIEW_OUT)); \
 	    ;; \
 	  *) \
 	    echo "review: unexpected decision '$$decision'" >&2; exit 2; \
@@ -196,7 +181,7 @@ $(SUMMARY_OUT): $(BUILD_DIR) $(IN) $(BIBLIOGRAPHY) $(SYSTEM) $(CITATION_PROTOCOL
 	@$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)
 
 clean:
-	rm -f "$(DRAFT_OUT)" "$(SMOOTH_OUT)" "$(REVISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(FINAL_PDF)" "$(SUMMARY_OUT)" "$(BUILD_BIBLIOGRAPHY)" "$(OPENAI_USAGE_LOG)"
+	rm -f "$(REALISE_OUT)" "$(REVIEW_OUT)" "$(FINAL_OUT)" "$(FINAL_PDF)" "$(SUMMARY_OUT)" "$(BUILD_BIBLIOGRAPHY)" "$(OPENAI_USAGE_LOG)"
 	rm -rf "$(ERROR_DIR)"
 
 clobber:

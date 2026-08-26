@@ -12,9 +12,7 @@ from typing import Iterable, Optional
 
 
 REQUIRED_ARTIFACTS = (
-    "draft.tex",
-    "smooth.tex",
-    "revise.tex",
+    "realise.tex",
     "peer_review.md",
     "final.tex",
     "final.pdf",
