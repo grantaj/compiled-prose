@@ -99,4 +99,186 @@ A target may explicitly permit illustrative scaffolding. Generated analogies, hy
 
 ### Bibliographic rendering metadata
 
-When `BIBLIOGRAPHY=...` is supplied, `tools/render_prompt.py` includes²È="25Ñ…Ñ¥½¸µÁÉ•Í•¹Ñ…Ñ¥½¸ÉÕ±•ÌÉ•µ…¥¸¡…É‰½Õ¹‘…É¥•Ì¸M½ÕÉ”¥¹ÍÕ™™¥¥•¹äÑ¡…Ğİ½Õ±É•ÅÕ¥É”½¹•ÁÑÕ…°¥¹Ù•¹Ñ¥½¸ÕÍ•Ì%1€¸((ŒŒŒ€È¸A••ÈÉ•Ù¥•Ü((¨©5…­”Ñ…É•Ğè¨¨É•Ù¥•İ€€€(¨©MÑ…”ÁÉ½µÁĞè¨¨ÁÉ½µÁÑÌ¼ĞÁ}Á••É}É•Ù¥•Ü¹µ‘€€€(¨©%¹ÁÕÑÌè¨¨…ÕÑ¡½É¥Ñ…Ñ¥Ù”Í½ÕÉ”Á±ÕÌÉ•…±¥Í”¹Ñ•á€°Ñ…É•ĞÉ•ÅÕ¥É•µ•¹ÑÌ°…¹½ÁÑ¥½¹…°‰¥‰±¥½É…Á¡äµ•Ñ…‘…Ñ„€€(¨©=ÕÑÁÕĞè¨¨€¡	U%1}%H¤½Á••É}É•Ù¥•Ü¹µ‘€()A••ÈÉ•Ù¥•Ü¥Ì½¹•ÁÑÕ…±±ä¥¹‘•Á•¹‘•¹Ğ™É½´É•…±¥Í…Ñ¥½¸¸%Ğ™¥ÉÍĞ©Õ‘•ÌÑ¡”É•…±¥Í•…ÉÑ•™…Ğ…ÌÑ¡½Õ ¥Ğİ•É”ÍÕ‰µ¥ÑÑ•‘¥É•Ñ±ä…Ì™¥¹¥Í¡•İÉ¥Ñ¥¹œ™½ÈÑ¡”Í•±•Ñ•Ñ…É•Ğ¸¥‘•±¥Ñä°ÑÉ…•…‰¥±¥Ñä°…¹Ù¥Í¥‰±”ÁÉ•Í•ÉÙ…Ñ¥½¸½˜Í½ÕÉ”ÍÑÉÕÑÕÉ”…É”¹½ĞÁ½Í¥Ñ¥Ù”•Ù¥‘•¹”½˜İÉ¥Ñ¥¹œÅÕ…±¥Ñä¸Q¡”É•Ù¥•İ•ÈÑ¡•¸½µÁ…É•Ì¥‘•¹Ñ¥™¥•‘•™•ÑÌİ¥Ñ Ñ¡”Í½ÕÉ”Ñ¼±…ÍÍ¥™äÑ¡•´…ÌM=UI€½ÈI1%MQ%=9€°…¹™¥¹…±±ä¡•­Ì½µÁ¥±…Ñ¥½¸¥¹Ñ•É¥Ñä™½È‘É¥™Ğ…¹Í½ÕÉ”µ…ÍÍÕÉ…¹”™…¥±ÕÉ•Ì¸()½È©½ÕÉ¹…±}……‘•µ¥€°Ñ…É•ĞÅÕ…±¥Ñä¥¹±Õ‘•Ì¹½Ù•±Ñä°Í¥¹¥™¥…¹”°…¹Í¡½±…É±äÁ½Í¥Ñ¥½¹¥¹œ¸Q¡”É•Ù¥•İ•ÈÁ•É™½ÉµÌ„ÁÉ½Á½ÉÑ¥½¹…°…‘Ù•ÉÍ…É¥…°Í•…É ™½ÈÁÉ¥½È™½ÉµÕ±…Ñ¥½¹Ì°•ÍÑ…‰±¥Í¡•Ñ•Éµ¥¹½±½ä½Ñ¡•½É¥•Ì°…‘©…•¹Ğİ½É¬Ñ¡…Ğ¹…ÉÉ½İÌÑ¡”½¹ÑÉ¥‰ÕÑ¥½¸°µ…Ñ•É¥…±±ä‘¥™™•É•¹Ğ•áÁ±…¹…Ñ¥½¹Ì°…¹™½Õ¹‘…Ñ¥½¹…°½µ¥ÍÍ¥½¹Ì¸™…¥±•Í•…É ¹•Ù•ÈÙ•É¥™¥•Ì¹½Ù•±Ñä¸¹äµ…Ñ•É¥…°•áÑ•É¹…±±ä‘¥Í½Ù•É•™¥¹‘¥¹œ¥ÌM=UI€‰•…ÕÍ”Ñ¡”…ÕÑ¡½ÈµÕÍĞ‘•¥‘”İ¡•Ñ¡•È…¹¡½ÜÑ¼¡…¹”Ñ¡”Í½ÕÉ”¸((¨©=Á•¹$ÑÉ…¹ÍÁ½ÉĞ½¹™¥ÕÉ…Ñ¥½¸è¨¨İ¡•¸Ñ¡”ÍÑ…”¥Ì•á…Ñ±äÁÉ½µÁÑÌ¼ĞÁ}Á••É}É•Ù¥•Ü¹µ‘€…¹Ñ…É•Ğ•á…Ñ±äÁÉ½µÁÑÌ½Ñ…É•ÑÌ½©½ÕÉ¹…±}……‘•µ¥Œ¹µ‘€°Ñ½½±Ì½½Á•¹…¥}É•ÍÁ½¹Í•Ì¹Áå€ÍÕÁÁ±¥•Ì¡½ÍÑ•İ•‰}Í•…É¡€İ¥Ñ É•ÅÕ¥É•Ñ½½°ÕÍ”¸9¼ÁÉ½Í”µÁÉ½‘Õ¥¹œÍÑ…”½È½Ñ¡•È‰Õ¥±Ğµ¥¸Ñ…É•ĞÉ••¥Ù•ÌÑ¡…Ğ…Á…‰¥±¥Ñä¸((ŒŒŒ€Ì¸I•Ù¥•Ü‘•¥Í¥½¸…Ñ”((¨©%µÁ±•µ•¹Ñ…Ñ¥½¸è¨¨Ñ½½±Ì½É•Ù¥•İ}‘•¥Í¥½¸¹Áå€€€(¨©%¹ÁÕÑÌè¨¨Á••É}É•Ù¥•Ü¹µ‘€°É•…±¥Í”¹Ñ•á€€€(¨©I•ÍÕ±Ğè¨¨‘•Ñ•Éµ¥¹¥ÍÑ¥ŒÁÉ½µ½Ñ¥½¸°Á•Éµ¥ÍÍ¥½¸™½È½¹”™¥¹…°É•Ù¥Í¥½¸°½È™…¥±ÕÉ”()Q¡”™¥ÉÍĞ¹½¸µ•µÁÑä±¥¹”µÕÍĞ‰”•á…Ñ±ä½¹”½˜è()Ñ•áĞ)MQQULèAML)MQQULèIY%M}I1%MQ%=8)MQQULè	1=-}M=UI)€()Ù•Éä±…Ñ•È¹½¸µ•µÁÑä±¥¹”µÕÍĞ‰”è()Ñ•áĞ(´m5)=Iñ5%9=IumM=UIñI1%MQ%=9t€ñ±½…Ñ¥½¸ø€èè€ñ™¥¹‘¥¹œø)€()MÑ…ÑÕÌ¥Ìµ•¡…¹¥…±±ä½¹Í¥ÍÑ•¹Ğİ¥Ñ ™¥¹‘¥¹Ìè((´…¹äM=UI€™¥¹‘¥¹œ€´ø	1=-}M=UI€ì(´½Ñ¡•Éİ¥Í”½¹”½Èµ½É”I1%MQ%=9€™¥¹‘¥¹Ì€´øIY%M}I1%MQ%=9€ì(´¹¼™¥¹‘¥¹Ì€´øAMM€¸()•¥Í¥½¸‰•¡…Ù¥½ÕÈè((´AMM€…Ñ½µ¥…±±ä½Á¥•ÌÉ•…±¥Í”¹Ñ•á€Ñ¼™¥¹…°¹Ñ•á€İ¥Ñ €¨©¹¼µ½‘•°…±°¨¨ì(´IY%M}I1%MQ%=9€±•…Ù•Ì™¥¹…°¹Ñ•á€…‰Í•¹Ğ…¹Á•Éµ¥ÑÌ•á…Ñ±ä½¹”½¹‘¥Ñ¥½¹…°™¥¹…°µÉ•Ù¥Í¥½¸…±°ì(´	1=-}M=UI€É•µ½Ù•Ì…¹äÍÑ…±”™¥¹…°½ÕÑÁÕĞ°İÉ¥Ñ•Ì€¡	U%1}%H¤½•ÉÉ½ÉÌ½É•Ù¥•Ü¹µ‘€°…¹•á¥ÑÌ¹½¸µé•É¼ì(´µ…±™½Éµ•½¥¹½¹Í¥ÍÑ•¹ĞÉ•Ù¥•Ü±¥­•İ¥Í”™…¥±Ì±½Í•İ¥Ñ …¸•áÑ•É¹…°‘¥…¹½ÍÑ¥Œ¸()I•Ù¥•ÜÑ•áĞÉ•µ…¥¹Ì‘¥…¹½ÍÑ¥Œ¸%Ğ…¹¹½Ğ¥¹ÑÉ½‘Õ”Í½ÕÉ”…ÕÑ¡½É¥ÑäÑ¡É½Õ Ñ¡¥Ì…Ñ”¸((ŒŒŒ€Ğ¸½¹‘¥Ñ¥½¹…°™¥¹…°É•Ù¥Í¥½¸((¨©5…­”Ñ…É•Ğè¨¨É•…¡•½¹±äÑ¡É½Õ ™¥¹…±€€€(¨©MÑ…”ÁÉ½µÁĞè¨¨ÁÉ½µÁÑÌ¼ÔÁ}™¥¹…°¹µ‘€€€(¨©AÉ•½¹‘¥Ñ¥½¸è¨¨Ù…±¥‘…Ñ•IY%M}I1%MQ%=9€É•Ù¥•Ü€€(¨©%¹ÁÕÑÌè¨¨…ÕÑ¡½É¥Ñ…Ñ¥Ù”Í½ÕÉ”°É•…±¥Í”¹Ñ•á€°Í•±•Ñ•Ñ…É•Ğ°Ù…±¥‘…Ñ•Á••ÈµÉ•Ù¥•Ü™¥¹‘¥¹Ì°…¹½ÁÑ¥½¹…°‰¥‰±¥½É…Á¡äµ•Ñ…‘…Ñ„€€(¨©=ÕÑÁÕĞè¨¨€¡	U%1}%H¤½™¥¹…°¹Ñ•á€()Q¡¥Ì¥Ì½¹”‰½Õ¹‘•İÉ¥Ñ¥¹œÁ…ÍÌ©ÕÍÑ¥™¥•‰äÑ¡”¹•Ü¥¹™½Éµ…Ñ¥½¸ÍÕÁÁ±¥•‰äÁ••ÈÉ•Ù¥•Ü¸%ĞµÕÍĞ…‘‘É•ÍÌÙ…±¥‘…Ñ•É•…±¥Í…Ñ¥½¸™¥¹‘¥¹ÌÕÍ¥¹œ½¹±ä½ÉÉ•Ñ¥½¹Ì™Õ±±ä‘•Ñ•Éµ¥¹•‰äÍ½ÕÉ”…¹Ñ…É•Ğ¸I•Ù¥•Ü½µµ•¹ÑÌ…É”‘¥…¹½ÍÑ¥Œ½¹Ñ•áĞ°¹½Ğ…ÕÑ¡½É¥Ñä¸%˜„É•ÅÕ•ÍÑ•É•Á…¥È…ÑÕ…±±äÉ•ÅÕ¥É•Ì„¹•Üİ…ÉÉ…¹Ğ°±…¥´°•Ù¥‘•¹”¥Ñ•´°Í½ÕÉ”°¥Ñ…Ñ¥½¸°½¹•ÁÑÕ…°É•±…Ñ¥½¹Í¡¥À°Í½Á”¡½¥”°¥¹Ñ•ÉÁÉ•Ñ…Ñ¥½¸°½È½Ñ¡•È…ÕÑ¡½É¥…°‘•¥Í¥½¸°Ñ¡”ÍÑ…”™…¥±ÌÉ…Ñ¡•ÈÑ¡…¸¥µÁÉ½Ù¥Í¥¹œ¸()Q¡•É”¥Ì¹¼…ÕÑ½µ…Ñ¥ŒÉ½ÕÑ”‰…¬Ñ¼Á••ÈÉ•Ù¥•Ü…¹¹¼É•ÕÉÍ¥Ù”É•Ù¥Í¥½¸±½½À¸((ŒŒÕá¥±¥…ÉäÍÕµµ…É¥é”ÑÉ…¹Í™½É´((¨©5…­”Ñ…É•Ğè¨¨ÍÕµµ…É¥é•€€€(¨©MÑ…”ÁÉ½µÁĞè¨¨ÁÉ½µÁÑÌ¼ÀÕ}ÍÕµµ…É¥é”¹µ‘€€€(¨©%¹ÁÕĞè¨¨…ÕÑ¡½É¥Ñ…Ñ¥Ù”Í½ÕÉ”…¹½ÁÑ¥½¹…°‰¥‰±¥½É…Á¡äµ•Ñ…‘…Ñ„€€(¨©=ÕÑÁÕĞè¨¨€¡	U%1}%H¤½ÍÕµµ…Éä¹Ñ•á€()Q¡¥ÌÑÉ…¹Í™½É´¥Ì¥¹‘•Á•¹‘•¹Ğ½˜Ñ¡”ÁÕ‰±¥…Ñ¥½¸É…Á …¹µ…ä‘•™¥¹”¥¹ÑÉ¥¹Í¥Œ½Ù•É…”É•‘ÕÑ¥½¸¸((ŒŒ	Õ¥±‘¥É•Ñ½Éä…¹™¥±”±¥™•å±”()	U%1}%H€üô‰Õ¥±‘€¥ÌÑ¡”•¹•É…Ñ•µ½ÕÑÁÕĞÉ½½Ğ…¹µ…ä‰”½Ù•ÉÉ¥‘‘•¸è()‰…Í )µ…­”	U%1}%Hô½ÑµÀ½½µÁ¥±•µÁÉ½Í”™¥¹…°%8õ½ÕÑ±¥¹”¹µ)€()-¹½İ¸½É”½ÕÑÁÕÑÌ…É”É•…±¥Í”¹Ñ•á€°Á••É}É•Ù¥•Ü¹µ‘€°™¥¹…°¹Ñ•á€°½ÁÑ¥½¹…°™¥¹…°¹Á‘™€°…¹•áÑ•É¹…°‘¥…¹½ÍÑ¥Ì¸Q¡”Í•±˜µ•á…µÁ±”…±Í¼½Á¥•Ì¥ÑÌ…Õ‘¥Ñ•‰¥‰±¥½É…Á¡ä¥¹Ñ¼Ñ¡”‰Õ¥±É½½Ğ¸µ…­”±•…¹€É•µ½Ù•Ì­¹½İ¸•¹•É…Ñ•½ÕÑÁÕÑÌìµ…­”±½‰‰•É€É•µ½Ù•ÌÑ¡”Í•±•Ñ•‰Õ¥±É½½Ğ•¹Ñ¥É•±ä¸()ÍÕ•ÍÍ™Õ°É•Ñ…¥¹•Í•±˜µ•á…µÁ±”…¹‘¥‘…Ñ”É•ÅÕ¥É•ÌÉ•…±¥Í”¹Ñ•á€°Á••É}É•Ù¥•Ü¹µ‘€°™¥¹…°¹Ñ•á€°…¹™¥¹…°¹Á‘™€Á±ÕÌÍ½ÕÉ”½ÁÉ½Ù•¹…¹”™¥±•Ì¸Q¡”ÁÕ‰±¥…Ñ¥½¸½Í¡½İ…Í”…ÍÍ•µ‰±•È½¹ÍÕµ•Ì™¥¹…°½ÕÑÁÕĞ°É•Ù¥•Ü°Í½ÕÉ”°…¹ÁÉ½Ù•¹…¹”…¹‘½•Ì¹½ĞÉ•ÅÕ¥É”É•µ½Ù•ÁÉ”µÉ•Ù¥•Ü¥¹Ñ•Éµ•‘¥…Ñ”…ÉÑ•™…ÑÌ¸((ŒŒ	±½­¥¹œÍ•µ…¹Ñ¥Ì()AÉ½µÁĞµ½¹ÑÉ…Ğ‰±½­¥¹œ½¹‘¥Ñ¥½¹Ì¥¹±Õ‘”…¹ä¹••Ñ¼¥¹Ù•¹Ğ„±…¥´°İ…ÉÉ…¹Ğ°½¹Ñ•¹Ğµ‰•…É¥¹œ•á…µÁ±”°•Ù¥‘•¹”°Í½ÕÉ”°…ÑÑÉ¥‰ÕÑ¥½¸°¥Ñ…Ñ¥½¸°½¹•ÁÑÕ…°É•±…Ñ¥½¹Í¡¥À°½¹¹•Ñ¥Ù”¥¹™•É•¹”°Í½Á”‘•¥Í¥½¸°½È¥¹Ñ•ÉÁÉ•Ñ…Ñ¥½¸ì¡½½Í”‰•Ñİ••¸Õ¹É•Í½±Ù•¥¹Ñ•ÉÁÉ•Ñ…Ñ¥½¹Ìì¡…¹”±…¥´ÍÑÉ•¹Ñ ½Èµ•…¹¥¹™Õ°½É‘•ÈìÍ…Ñ¥Í™äÑ…É•ĞµÉ•ÅÕ¥É•ÍÕÁÁ½ÉĞ…‰Í•¹Ğ™É½´Ñ¡”Í½ÕÉ”ì½ÈÉ•Á…¥È‘É¥™Ğİ¡•¸Í½ÕÉ”…¹Ñ…É•Ğ‘¼¹½Ğ‘•Ñ•Éµ¥¹”Ñ¡”½ÉÉ•Ñ¥½¸¸()5•¡…¹¥…°‰±½­¥¹œ½¹‘¥Ñ¥½¹Ì¥¹±Õ‘”‰…­•¹½ÁÉ½µÁĞµÉ•¹‘•È™…¥±ÕÉ”°•µÁÑä½ÕÑÁÕĞ°µ…±™½Éµ•Í•¹Ñ¥¹•°ÕÍ”°½ÕÑÁÕĞµÁÉ½Ñ½½°Ù¥½±…Ñ¥½¸°µ…±™½Éµ•½¥¹½¹Í¥ÍÑ•¹ĞÉ•Ù¥•ÜÉ…µµ…È°Ù…±¥‘…Ñ•	1=-}M=UI€°½È%1€™É½´½¹‘¥Ñ¥½¹…°™¥¹…°É•Ù¥Í¥½¸¸()…¥±ÕÉ•Ì…É”•áÑ•É¹…±¥Í•É…Ñ¡•ÈÑ¡…¸•µ‰•‘‘•¥¸•¹•É…Ñ•1…Q•`¸((ŒŒ%Ñ•É…Ñ¥½¸…¹É•ÑÉäÁ½±¥ä()Q¡”¥µÁ±•µ•¹Ñ•½É”¥Ì„Í¥¹±”™½Éİ…ÉÁ…Ñ è()Ñ•áĞ)É•…±¥Í”€´øÁ••ÈÉ•Ù¥•Ü€´ø‘•¥Í¥½¸€´ø½ÁÑ¥½¹…°™¥¹…°É•Ù¥Í¥½¸)€()Q¡•É”¥Ì¹¼É•Ù¥•Üµ……¥¸•‘”°É•ÕÉÍ¥Ù”5…­”É•ÑÉä°…ÕÑ½µ…Ñ¥ŒÍ½ÕÉ”É•Á…¥È°‰±¥¹Íµ½½Ñ¡¥¹œÍÑ…”°½ÈÁÉ”µÉ•Ù¥•ÜÉ•Ù¥Í¥½¸ÍÑ…”¸()‘‘¥¹œ…¹½Ñ¡•Èµ½‘•°µ‰…­•ÍÑ…”¥Ì¹½Ğ…¸½É‘¥¹…ÉäÉ•™…Ñ½È¸%Ğ¡…¹•ÌÕÍ•È½ÍĞ…¹É•ÅÕ¥É•Ì•µÁ¥É¥…°•Ù¥‘•¹”Ñ¡…ĞÑ¡”É•ÍÁ½¹Í¥‰¥±¥Ñä…¹¹½Ğ‰”¡…¹‘±•É•±¥…‰±äİ¥Ñ¡¥¸Ñ¡”•á¥ÍÑ¥¹œ‰½Õ¹‘•ÍÑ…•Ì¸((ŒŒ	…­•¹¥¹‘•Á•¹‘•¹”()	…­•¹Í•±•Ñ¥½¸½ÕÉÌ¥¸Ñ½½±Ì½±±µ}ÉÕ¸¹Í¡€¸	½Ñ ÍÕÁÁ½ÉÑ•‰…­•¹‘Ì½¹ÍÕµ”É•¹‘•É•ÁÉ½µÁÑÌ½¸ÍÑ…¹‘…É¥¹ÁÕĞ…¹•áÁ½Í”µ½‘•°É•ÍÕ±ÑÌÑ¼Ñ¡”Í…µ”•¹™½É•µ•¹Ğ±…å•È¸AÉ½Ù¥‘•È…‘…ÁÑ•ÉÌµ…ä¡…¹‘±”ÑÉ…¹ÍÁ½ÉĞµÍÁ•¥™¥Œ…Á…‰¥±¥Ñ¥•Ì°‰ÕĞ…ÕÑ¡½É¥ÑäÍ•µ…¹Ñ¥Ì°ÁÉ½µÁÑÌ°É•ÍÕ±ĞÉ½ÕÑ¥¹œ°‘¥…¹½ÍÑ¥Ì°…¹É•Ù¥•ÜÁ½±¥äÉ•µ…¥¸‰…­•¹µ¥¹‘•Á•¹‘•¹Ğ¸()Q¡”……‘•µ¥ŒµÉ•Ù¥•Üİ•ˆµÍ•…É É…¹Ğ¥Ì„¹…ÉÉ½ÜÁÉ½Ù¥‘•È…Á…‰¥±¥Ñä°¹½Ğ…¸…ÕÑ¡½É¥Ñä¡…¹¹•°¸((ŒŒI•ÁÉ½‘Õ¥‰¥±¥Ñä‰½Õ¹‘…Éä()Q¡”ÁÉ½©•ĞÑ…É•ÑÌÍ•µ…¹Ñ¥Œ…¹ÍÁ•¥™¥…Ñ¥½¸µ±•Ù•°É•ÁÉ½‘Õ¥‰¥±¥Ñä°¹½Ğ‰åÑ”µ±•Ù•°‘•Ñ•Éµ¥¹¥ÍÑ¥ŒÁÉ½Í”¸M½ÕÉ”°ÁÉ½µÁÑÌ°Ñ…É•ĞÉ•ÅÕ¥É•µ•¹ÑÌ°½ÁÑ¥½¹…°‰¥‰±¥½É…Á¡äµ•Ñ…‘…Ñ„°5…­”‘•Á•¹‘•¹¥•Ì°‰…­•¹½µ½‘•°½¹™¥ÕÉ…Ñ¥½¸°…¹½µµ½¸•¹™½É•µ•¹ĞÉÕ±•Ì…É”¥¹ÍÁ•Ñ…‰±”¥¹ÁÕÑÌ¸5½‘•°İ½É‘¥¹œµ…äÙ…Éä…É½ÍÌÉÕ¹Ì°ÁÉ½Ù¥‘•ÉÌ°…¹µ½‘•°É•Ù¥Í¥½¹Ì¸()=¹”‰åÑ”µ±•Ù•°ÁÉ½Á•ÉÑä¥Ìµ•¡…¹¥…±±äÕ…É…¹Ñ••è…™Ñ•È„AMM€É•Ù¥•Ü°™¥¹…°¹Ñ•á€¥Ì…¸•á…Ğ½Áä½˜É•…±¥Í”¹Ñ•á€‰•…ÕÍ”¹¼™¥¹…°İÉ¥Ñ¥¹œ…±°½ÕÉÌ¸((ŒŒ¥±”µ‘É¥Ù•¸Ñ½½±¡…¥¸‘•Í¥¸()Q¡”É•Á½Í¥Ñ½ÉäÕÍ•Ì½É‘¥¹…Éä™¥±•Ì…¹5…­”‘•Á•¹‘•¹¥•ÌÉ…Ñ¡•ÈÑ¡…¸¡¥‘‘•¸½¹Ù•ÉÍ…Ñ¥½¹…°ÍÑ…Ñ”¸M½ÕÉ”°ÁÉ½µÁÑÌ°Ñ…É•ÑÌ°‰¥‰±¥½É…Á¡äµ•Ñ…‘…Ñ„°‘•É¥Ù•…ÉÑ•™…ÑÌ°…¹‘¥…¹½ÍÑ¥Ì…¸‰”¥¹ÍÁ•Ñ•…¹‘¥™™•İ¥Ñ ¹½Éµ…°‘•Ù•±½Áµ•¹ĞÑ½½±Ì¸Q¡¥Ì¥ÌÑ¡”½É”½˜Ñ¡”½µÁ¥±•È™É…µ¥¹œè•áÁ±¥¥Ğ…ÕÑ¡½É¥Ñä°•áÁ±¥¥Ğ™…¥±ÕÉ”°‰½Õ¹‘•µ½‘•°…±±Ì°ÍÑ…‰±”ÁÉ½µÁĞ½µÁ½Í¥Ñ¥½¸°…¹‘¥ÍÁ½Í…‰±”•¹•É…Ñ•½ÕÑÁÕÑÌ¸
+When `BIBLIOGRAPHY=...` is supplied, `tools/render_prompt.py` includes it as a distinct non-conceptual metadata section. Its role is limited to stable citation identifiers and verified bibliographic fields for citations already present in the source. It cannot introduce a new citation, attribution, evidence item, theory, claim, or scope choice.
+
+### Derived artefacts
+
+`realise.tex` and, when produced by a conditional repair, `final.tex` are derived representations. They are not conceptual authority. A downstream prose-producing stage receives the current representation alongside the original source so invented or drifted material cannot become authoritative merely through propagation.
+
+### Diagnostic context
+
+`peer_review.md` and `$(BUILD_DIR)/errors/*.md` are diagnostics. They identify defects; they do not supply authored answers.
+
+Compilation is closed-world for prose-producing stages. Academic-journal peer review is the narrow open-world exception: it may inspect external scholarship to challenge novelty, positioning, support, and foundational omissions. External material remains review evidence only. A finding that depends on such material is `SOURCE` and therefore cannot flow into final revision until the author changes the authoritative source.
+
+## Flattened prompt composition
+
+`tools/render_prompt.py` resolves all file inputs before model execution and composes them in this stable order:
+
+1. system contract (`prompts/00_system.md`);
+2. stage contract;
+3. target requirements;
+4. authoritative source;
+5. bibliography metadata, when supplied;
+6. derived stage input, when it differs from the source;
+7. peer-review diagnostic context, for conditional final revision only;
+8. output and failure contract.
+
+`realise` and `summarize` normally use the authoritative source as their working input, so the renderer avoids duplicating identical payloads.
+
+For a `tex` stage with bibliography metadata, the output contract permits only supplied bibliography keys. Visible citation presentation remains controlled by the target.
+
+## Stage result protocol
+
+Every model-backed stage declares `tex` or `md` output and produces one raw backend result. Backend output is captured privately before the nominal artefact is published.
+
+### Success
+
+A `tex` result must be one structurally complete raw LaTeX document beginning with `\documentclass`, containing ordered `\begin{document}` / `\end{document}`, and no non-whitespace content after the end marker. This is a transport check, not a semantic proof or full TeX compilation.
+
+An `md` result must not be a complete LaTeX document. Peer review's stricter line-oriented grammar is validated by `review_decision.py` at the final gate.
+
+### Explicit stage failure
+
+A stage that cannot faithfully produce its declared artefact returns:
+
+```text
+@@FAIL
+<Markdown diagnostic>
+```
+
+`@@FAIL` must be the first line. The sentinel is stripped before the diagnostic is written to `$(BUILD_DIR)/errors/<stage>.md`. A failed stage leaves no nominal output.
+
+### Execution or protocol failure
+
+Backend failure, empty output, malformed sentinel use, or transport-protocol failure removes the nominal stage output, writes an external diagnostic, and stops Make. A later successful rebuild atomically replaces the nominal artefact and removes its stale diagnostic.
+
+## Core stages
+
+### 1. Realise
+
+**Make target:** `realise`  
+**Stage prompt:** `prompts/10_realise.md`  
+**Input:** authoritative source, selected target, and optional bibliography metadata  
+**Output:** `$(BUILD_DIR)/realise.tex`
+
+The realisation stage is responsible for the whole writing job in one pass. It must produce target-ready finished writing, not a provisional expansion for later smoothing. It chooses document-level rhetorical architecture from the source as a whole; may synthesise, consolidate, split, subordinate, group, and reorder presentation topology; integrates material into target-appropriate paragraphs or other units; manages transitions, pacing, proportion, and local flow; and uses target-authorised compression without flattening conceptual distinctions.
+
+It must avoid bullet-by-bullet or heading-by-heading prosification while preserving visible structure when that structure itself carries conceptual meaning. Conceptual topology, source authority, epistemic stance, evidence/support attachment, target coverage, and citation-presentation rules remain hard boundaries. Source insufficiency that would require conceptual invention uses `@@FAIL`.
+
+### 2. Peer review
+
+**Make target:** `review`  
+**Stage prompt:** `prompts/40_peer_review.md`  
+**Inputs:** authoritative source plus `realise.tex`, target requirements, and optional bibliography metadata  
+**Output:** `$(BUILD_DIR)/peer_review.md`
+
+Peer review is conceptually independent from realisation. It first judges the realised artefact as though it were submitted directly as finished writing for the selected target. Fidelity, traceability, and visible preservation of source structure are not positive evidence of writing quality. The reviewer then compares identified defects with the source to classify them as `SOURCE` or `REALISATION`, and finally checks compilation integrity for drift and source-assurance failures.
+
+For `journal_academic`, target quality includes novelty, significance, and scholarly positioning. The reviewer performs a proportional adversarial search for prior formulations, established terminology/theories, adjacent work that narrows the contribution, materially different explanations, and foundational omissions. A failed search never verifies novelty. Any material externally discovered finding is `SOURCE` because the author must decide whether and how to change the source.
+
+**OpenAI transport configuration:** when the stage is exactly `prompts/40_peer_review.md` and target exactly `prompts/targets/journal_academic.md`, `tools/openai_responses.py` supplies hosted `web_search` with required tool use. No prose-producing stage or other built-in target receives that capability.
+
+### 3. Review decision gate
+
+**Implementation:** `tools/review_decision.py`  
+**Inputs:** `peer_review.md`, `realise.tex`  
+**Result:** deterministic promotion, permission for one final revision, or failure
+
+The first non-empty line must be exactly one of:
+
+```text
+STATUS: PASS
+STATUS: REVISE_REALISATION
+STATUS: BLOCKED_SOURCE
+```
+
+Every later non-empty line must be:
+
+```text
+- [MAJOR|MINOR][SOURCE|REALISATION] <location> :: <finding>
+```
+
+Status is mechanically consistent with findings:
+
+- any `SOURCE` finding -> `BLOCKED_SOURCE`;
+- otherwise one or more `REALISATION` findings -> `REVISE_REALISATION`;
+- no findings -> `PASS`.
+
+Decision behaviour:
+
+- `PASS` atomically copies `realise.tex` to `final.tex` with **no model call**;
+- `REVISE_REALISATION` leaves `final.tex` absent and permits exactly one conditional final-revision call;
+- `BLOCKED_SOURCE` removes any stale final output, writes `$(BUILD_DIR)/errors/review.md`, and exits non-zero;
+- malformed/inconsistent review likewise fails closed with an external diagnostic.
+
+Review text remains diagnostic. It cannot introduce source authority through this gate.
+
+### 4. Conditional final revision
+
+**Make target:** reached only through `final`  
+**Stage prompt:** `prompts/50_final.md`  
+**Precondition:** validated `REVISE_REALISATION` review  
+**Inputs:** authoritative source, `realise.tex`, selected target, validated peer-review findings, and optional bibliography metadata  
+**Output:** `$(BUILD_DIR)/final.tex`
+
+This is one bounded writing pass justified by the new information supplied by peer review. It must address validated realisation findings using only corrections fully determined by source and target. Review comments are diagnostic context, not authority. If a requested repair actually requires a new warrant, claim, evidence item, source, citation, conceptual relationship, scope choice, interpretation, or other authorial decision, the stage fails rather than improvising.
+
+There is no automatic route back to peer review and no recursive revision loop.
+
+## Auxiliary summarize transform
+
+**Make target:** `summarize`  
+**Stage prompt:** `prompts/05_summarize.md`  
+**Input:** authoritative source and optional bibliography metadata  
+**Output:** `$(BUILD_DIR)/summary.tex`
+
+This transform is independent of the publication graph and may define intrinsic coverage reduction.
+
+## Build directory and file lifecycle
+
+`BUILD_DIR ?= build` is the generated-output root and may be overridden:
+
+```bash
+make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
+```
+
+Known core outputs are `realise.tex`, `peer_review.md`, `final.tex`, optional `final.pdf`, and external diagnostics. The self-example also copies its audited bibliography into the build root. `make clean` removes known generated outputs; `make clobber` removes the selected build root entirely.
+
+A successful retained self-example candidate requires `realise.tex`, `peer_review.md`, `final.tex`, and `final.pdf` plus source/provenance files. The publication/showcase assembler consumes final output, review, source, and provenance and does not require removed pre-review intermediate artefacts.
+
+## Blocking semantics
+
+Prompt-contract blocking conditions include any need to invent a claim, warrant, content-bearing example, evidence, source, attribution, citation, conceptual relationship, connective inference, scope decision, or interpretation; choose between unresolved interpretations; change claim strength or meaningful order; satisfy target-required support absent from the source; or repair drift when source and target do not determine the correction.
+
+Mechanical blocking conditions include backend/prompt-render failure, empty output, malformed sentinel use, output-protocol violation, malformed/inconsistent review grammar, validated `BLOCKED_SOURCE`, or `@@FAIL` from conditional final revision.
+
+Failures are externalised rather than embedded in generated LaTeX.
+
+## Iteration and retry policy
+
+The implemented core is a single forward path:
+
+```text
+realise -> peer review -> decision -> optional final revision
+```
+
+There is no review-again edge, recursive Make retry, automatic source repair, blind smoothing stage, or pre-review revision stage.
+
+Adding another model-backed stage is not an ordinary refactor. It changes user cost and requires empirical evidence that the responsibility cannot be handled reliably within the existing bounded stages.
+
+## Backend independence
+
+Backend selection occurs in `tools/llm_run.sh`. Both supported backends consume rendered prompts on standard input and expose model results to the same enforcement layer. Provider adapters may handle transport-specific capabilities, but authority semantics, prompts, result routing, diagnostics, and review policy remain backend-independent.
+
+The academic-review web-search grant is a narrow provider capability, not an authority channel.
+
+## Reproducibility boundary
+
+The project targets semantic and specification-level reproducibility, not byte-level deterministic prose. Source, prompts, target requirements, optional bibliography metadata, Make dependencies, backend/model configuration, and common enforcement rules are inspectable inputs. Model wording may vary across runs, providers, and model revisions.
+
+One byte-level property is mechanically guaranteed: after a `PASS` review, `final.tex` is an exact copy of `realise.tex` because no final writing call occurs.
+
+## File-driven toolchain design
+
+The repository uses ordinary files and Make dependencies rather than hidden conversational state. Source, prompts, targets, bibliography metadata, derived artefacts, and diagnostics can be inspected and diffed with normal development tools. This is the core of the compiler framing: explicit authority, explicit failure, bounded model calls, stable prompt composition, and disposable generated outputs.
