@@ -39,7 +39,7 @@ class TargetLayerAuthorityTests(unittest.TestCase):
     def test_system_makes_target_authoritative_for_core_realisation_dimensions(self):
         system = text("prompts/00_system.md")
         self.assertIn(
-            "Within the core target-driven realisation stages (draft, smooth, revise, peer review, and final)",
+            "Within the core target-driven realisation stages (realise, peer review, and conditional final revision)",
             system,
         )
         self.assertIn("the selected target is authoritative", system)
@@ -86,26 +86,25 @@ class TargetLayerAuthorityTests(unittest.TestCase):
 
     def test_system_stage_awareness_describes_transformation_boundaries(self):
         system = text("prompts/00_system.md")
-        for leaked_summary in (
-            "Draft: literal expansion",
-            "Smooth: syntactic clarity only",
-            "Revise: coherence and flow only",
+        for removed_stage in (
+            "Draft: produce",
+            "Smooth: improve",
+            "Revise: improve",
         ):
-            with self.subTest(summary=leaked_summary):
-                self.assertNotIn(leaked_summary, system)
-        self.assertIn("Draft: produce the first complete target-aware text realisation", system)
-        self.assertIn("Smooth: improve local readability and connective flow", system)
-        self.assertIn("Revise: improve document-level coherence and target realisation", system)
+            with self.subTest(stage=removed_stage):
+                self.assertNotIn(removed_stage, system)
+        self.assertIn("Realise: produce one complete target-ready text realisation", system)
         self.assertIn("Peer review: independently assess compilation integrity and writing quality", system)
+        self.assertIn("Final revision: only after a validated `REVISE_REALISATION` decision", system)
+        self.assertIn("`PASS` requires no second writing pass", system)
+        self.assertIn("`BLOCKED_SOURCE` returns control", system)
 
     def test_generic_chain_does_not_impose_adult_publication_shape(self):
         generic = "\n".join(
             text(path)
             for path in (
                 "prompts/00_system.md",
-                "prompts/10_draft.md",
-                "prompts/20_smooth.md",
-                "prompts/30_revise.md",
+                "prompts/10_realise.md",
                 "prompts/40_peer_review.md",
                 "prompts/50_final.md",
             )
@@ -124,16 +123,14 @@ class TargetLayerAuthorityTests(unittest.TestCase):
         ):
             with self.subTest(leaked_prior=leaked_prior):
                 self.assertNotIn(leaked_prior, generic)
-        self.assertIn(
-            "do not infer rhetorical form, sectioning, tone, or document genre from the fact that the output format is LaTeX",
-            text("prompts/10_draft.md"),
-        )
+        realise = text("prompts/10_realise.md")
+        self.assertIn("LaTeX is the transport representation, not a genre instruction", realise)
         self.assertIn(
             "Do not import academic, adult-publication, argumentative, or otherwise stricter conventions",
             text("prompts/40_peer_review.md"),
         )
 
-    def test_explicit_target_structural_choice_is_not_overridden_by_draft_defaults(self):
+    def test_explicit_target_structural_choice_is_not_overridden_by_realise_defaults(self):
         target = """# Synthetic target
 Use frequent short sections and LaTeX lists when they improve this target's readability.
 Do not change authored concepts, grouping, order, or scope to create them.
@@ -141,7 +138,7 @@ Do not change authored concepts, grouping, order, or scope to create them.
         rendered = render_prompt(
             system=text("prompts/00_system.md"),
             target=target,
-            stage=text("prompts/10_draft.md"),
+            stage=text("prompts/10_realise.md"),
             source_text="# Source\n- First authored step.\n- Second authored step.",
             input_text="# Source\n- First authored step.\n- Second authored step.",
             output_type="tex",
@@ -169,14 +166,13 @@ Do not change authored concepts, grouping, order, or scope to create them.
 
     def test_pipeline_requires_empirical_justification_for_new_model_stages(self):
         pipeline = text("pipeline.md")
-        self.assertIn("Each model-backed stage incurs user-visible execution cost", pipeline)
-        self.assertIn("Architectural separation alone is not sufficient justification", pipeline)
-        self.assertIn("empirical evidence", pipeline)
-        self.assertIn("an existing stage cannot absorb the responsibility reliably", pipeline)
+        self.assertIn("Model-backed stage count is part of the user-visible cost surface", pipeline)
+        self.assertIn("Adding a model call requires empirical justification", pipeline)
+        self.assertIn("Blind smoothing or revision is not justified", pipeline)
 
         makefile = text("Makefile")
-        self.assertEqual(makefile.count("$(call RUN_STAGE,"), 6)
-        for stage in ("draft", "smooth", "revise", "review", "final", "summarize"):
+        self.assertEqual(makefile.count("$(call RUN_STAGE,"), 4)
+        for stage in ("realise", "review", "final", "summarize"):
             with self.subTest(stage=stage):
                 self.assertEqual(makefile.count(f"$(call RUN_STAGE,{stage},"), 1)
 
