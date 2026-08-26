@@ -36,9 +36,7 @@ class OutlineStructureRealisationTests(unittest.TestCase):
 
     def test_rhetorical_reorganisation_no_longer_requires_target_permission(self):
         system = text("prompts/00_system.md")
-        draft = text("prompts/10_draft.md")
-        smooth = text("prompts/20_smooth.md")
-        revise = text("prompts/30_revise.md")
+        realise = text("prompts/10_realise.md")
         final = text("prompts/50_final.md")
 
         self.assertIn(
@@ -49,39 +47,41 @@ class OutlineStructureRealisationTests(unittest.TestCase):
             "Presentation reorganisation is a baseline realisation freedom, not a coverage reduction",
             system,
         )
-        self.assertNotIn(
-            "Preserve authored order unless the selected target explicitly permits presentation reordering",
-            draft,
-        )
-        for stage in (smooth, revise, final):
-            with self.subTest(stage=stage[:40]):
-                self.assertNotIn("Preserve authored order by default", stage)
-                self.assertIn("conceptual topology", stage.lower())
+        self.assertIn("conceptual topology", realise.lower())
+        self.assertIn("rhetorically regroup", realise)
+        self.assertNotIn("Preserve authored order by default", final)
+        self.assertIn("conceptual topology", final.lower())
 
     def test_genuine_ordered_and_grouped_structures_remain_authoritative(self):
         system = text("prompts/00_system.md")
-        draft = text("prompts/10_draft.md")
+        realise = text("prompts/10_realise.md")
         review = text("prompts/40_peer_review.md")
         final = text("prompts/50_final.md")
 
         self.assertIn("When an authored ordering is semantically meaningful", system)
         self.assertIn("procedure, dependency chain, chronology, priority", system)
-        self.assertIn("Preserve explicit list, table, taxonomy, or numbered form", draft)
+        self.assertIn(
+            "Preserve genuine dependency, procedure, chronology, priority, taxonomy, qualification scope, and evidence/support attachment.",
+            realise,
+        )
+        self.assertIn("preserve visible lists, tables, taxonomies, numbered procedures", realise)
         self.assertIn("conceptual topology and provenance are preserved", review)
         self.assertIn("altered dependencies or qualifications", review)
         self.assertIn("turn an ordered procedure into unordered prose", final)
 
-    def test_draft_does_not_map_outline_items_or_headings_one_to_one(self):
-        draft = text("prompts/10_draft.md")
-        self.assertIn("not as a one-to-one target-output structure map", draft)
-        self.assertIn("Do not copy outline navigation numbering or labels", draft)
-        self.assertIn("Do not create a section or subsection merely because", draft)
+    def test_realise_does_not_map_outline_items_or_headings_one_to_one(self):
+        realise = text("prompts/10_realise.md")
+        self.assertIn("not as an outline discharged item by item", realise)
         self.assertIn(
-            "Do not require one source item to map to one sentence, paragraph, list item, section, or other target-facing unit",
-            draft,
+            "Do not create a section, paragraph, sentence, or list item merely because a source item has one.",
+            realise,
         )
-        self.assertIn("A source list may become integrated prose", draft)
-        self.assertNotIn("Avoid list formatting by default", draft)
+        self.assertIn(
+            "Avoid bullet-by-bullet, heading-by-heading, or sentence-by-sentence prosification",
+            realise,
+        )
+        self.assertIn("preserve visible lists, tables, taxonomies, numbered procedures", realise)
+        self.assertNotIn("Avoid list formatting by default", realise)
 
     def test_peer_review_judges_target_quality_before_source_classification(self):
         review = text("prompts/40_peer_review.md")
@@ -124,20 +124,18 @@ class OutlineStructureRealisationTests(unittest.TestCase):
             pipeline,
         )
         self.assertIn(
-            "without a special target permission when that changes only presentation topology",
+            "without a special target permission when only presentation topology changes",
             pipeline,
         )
-        self.assertIn("Target writing quality", pipeline)
+        self.assertIn("writing quality", pipeline)
         self.assertNotIn("target-owned coverage, ordering permissions", pipeline)
 
     def test_censorship_shape_exercises_both_presentation_and_conceptual_structure(self):
         source = text("tests/fixtures/censorship_topology_excerpt.md")
-        # Authoring-convenience structures that should not force target-facing units.
         self.assertIn("## Contribution", source)
         self.assertIn("## Boundary factors", source)
         self.assertIn("## Stress tests", source)
         self.assertIn("## Conclusion", source)
-        # Semantically structured material whose relationships must survive.
         self.assertIn("## Operational families", source)
         self.assertIn("### Exclusion", source)
         self.assertIn("### Attenuation", source)
@@ -154,9 +152,7 @@ class OutlineStructureRealisationTests(unittest.TestCase):
     def test_reorganisation_cannot_invent_connective_reasoning_or_detach_support(self):
         for path in (
             "prompts/00_system.md",
-            "prompts/10_draft.md",
-            "prompts/20_smooth.md",
-            "prompts/30_revise.md",
+            "prompts/10_realise.md",
             "prompts/50_final.md",
         ):
             prompt = text(path).lower()

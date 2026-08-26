@@ -79,8 +79,8 @@ def render_prompt(
             ]
         )
 
-    # Draft/summarize commonly operate directly on the source. Avoid duplicating
-    # a potentially large source payload when the working input is identical.
+    # Realise and summarize commonly operate directly on the source. Avoid
+    # duplicating a potentially large source payload when the working input is identical.
     if stage_input != source:
         sections.extend(
             [

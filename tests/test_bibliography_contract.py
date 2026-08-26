@@ -15,7 +15,7 @@ class BibliographyContractTests(unittest.TestCase):
         return render_prompt(
             system=text("prompts/00_system.md"),
             target=text(target_path),
-            stage=text("prompts/10_draft.md"),
+            stage=text("prompts/10_realise.md"),
             source_text="# Source\nClaim [Known 2020].",
             input_text="# Source\nClaim [Known 2020].",
             output_type="tex",
@@ -63,10 +63,8 @@ class BibliographyContractTests(unittest.TestCase):
             "Do not use formal scholarly citation apparatus in the child-facing realisation.",
             rendered,
         )
-        self.assertIn(
-            "use source-authorised narrative attribution only where the retained meaning requires it",
-            rendered,
-        )
+        self.assertIn("source-authored attribution", rendered)
+        self.assertIn("ordinary narrative form required by the target", rendered)
 
     def test_citation_protocol_does_not_infer_scholarly_apparatus_from_metadata(self):
         for target_path in (
@@ -145,7 +143,7 @@ class BibliographyContractTests(unittest.TestCase):
         self.assertIn('BIBLIOGRAPHY="$(BUILD_BIBLIOGRAPHY)" final', makefile)
         self.assertIn("--bibliography $(BIBLIOGRAPHY)", makefile)
         self.assertIn("--citation-protocol $(CITATION_PROTOCOL)", makefile)
-        self.assertIn("$(CITATION_PROTOCOL) $(P_DRAFT)", makefile)
+        self.assertIn("$(CITATION_PROTOCOL) $(P_REALISE)", makefile)
         self.assertIn('--bibliography "$(SELF_BIBLIOGRAPHY)"', makefile)
         self.assertNotIn("citation_audit", makefile)
         self.assertNotIn("citation-retention", makefile)

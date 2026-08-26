@@ -8,9 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 STAGES = {
     "prompts/05_summarize.md": "tex",
-    "prompts/10_draft.md": "tex",
-    "prompts/20_smooth.md": "tex",
-    "prompts/30_revise.md": "tex",
+    "prompts/10_realise.md": "tex",
     "prompts/40_peer_review.md": "md",
     "prompts/50_final.md": "tex",
 }
@@ -74,10 +72,10 @@ class RenderPromptContractTests(unittest.TestCase):
                 self.assertIn("SUCCESS: Return exactly one complete raw LaTeX document", rendered)
 
     def test_failure_contract_is_external_and_authorial(self):
-        rendered = self.render("prompts/10_draft.md", TARGETS[0], "tex")
+        rendered = self.render("prompts/10_realise.md", TARGETS[0], "tex")
         self.assertIn("Put @@FAIL on the first line", rendered)
         self.assertIn("do not invent or apply a conceptual fix", rendered)
-        self.assertIn("rather than embedding diagnostics in LaTeX", rendered)
+        self.assertIn("Do not mix a failure diagnostic into a successful artefact", rendered)
         self.assertNotIn("% GAP:", rendered)
         self.assertNotIn("% ISSUE:", rendered)
 
@@ -98,11 +96,9 @@ class RenderPromptContractTests(unittest.TestCase):
     def test_makefile_wires_all_model_stages_through_protocol_enforcement(self):
         makefile = text("Makefile")
         expected_calls = (
-            "$(call RUN_STAGE,draft,$(P_DRAFT),$(DRAFT_IN),tex,$@)",
-            "$(call RUN_STAGE,smooth,$(P_SMOOTH),$(DRAFT_OUT),tex,$@)",
-            "$(call RUN_STAGE,revise,$(P_REVISE),$(SMOOTH_OUT),tex,$@)",
-            "$(call RUN_STAGE,review,$(P_REVIEW),$(REVISE_OUT),md,$@)",
-            "$(call RUN_STAGE,final,$(P_FINAL),$(REVISE_OUT),tex,$@,--review $(REVIEW_OUT))",
+            "$(call RUN_STAGE,realise,$(P_REALISE),$(IN),tex,$@)",
+            "$(call RUN_STAGE,review,$(P_REVIEW),$(REALISE_OUT),md,$@)",
+            "$(call RUN_STAGE,final,$(P_FINAL),$(REALISE_OUT),tex,$@,--review $(REVIEW_OUT))",
             "$(call RUN_STAGE,summarize,prompts/05_summarize.md,$(IN),tex,$@)",
         )
         for call in expected_calls:

@@ -1,17 +1,16 @@
-import os
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VALID_REVISED = (
+REALISE = (
     "\\documentclass{article}\n"
     "\\begin{document}\n"
-    "Revised authored prose.\n"
+    "Realised authored prose.\n"
     "\\end{document}\n"
 )
-FAKE_FINAL = (
+FINAL = (
     "\\documentclass{article}\n"
     "\\begin{document}\n"
     "One bounded realisation revision.\n"
@@ -24,22 +23,26 @@ class ReviewMakeIntegrationTests(unittest.TestCase):
         self.tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self.tempdir.name)
         self.build = self.root / "build"
-        self.build.mkdir()
         self.source = self.root / "source.md"
         self.source.write_text("# Source\n- Authored claim\n", encoding="utf-8")
-        for name in ("draft.tex", "smooth.tex", "revise.tex"):
-            (self.build / name).write_text(VALID_REVISED, encoding="utf-8")
-
+        self.review_file = self.root / "review.txt"
         self.calls = self.root / "runner-calls.txt"
         self.runner = self.root / "fake-runner.sh"
         self.runner.write_text(
             "#!/usr/bin/env bash\n"
             "set -euo pipefail\n"
             "cat >/dev/null\n"
-            f"printf 'called\\n' >> '{self.calls}'\n"
-            "cat <<'EOF'\n"
-            + FAKE_FINAL
-            + "EOF\n",
+            f"printf '%s\\n' \"$COMPILED_PROSE_STAGE\" >> '{self.calls}'\n"
+            "case \"$COMPILED_PROSE_STAGE\" in\n"
+            "  prompts/10_realise.md) cat <<'DOC'\n"
+            + REALISE
+            + "DOC\n    ;;\n"
+            f"  prompts/40_peer_review.md) cat '{self.review_file}' ;;\n"
+            "  prompts/50_final.md) cat <<'DOC'\n"
+            + FINAL
+            + "DOC\n    ;;\n"
+            "  *) echo unexpected-stage >&2; exit 9 ;;\n"
+            "esac\n",
             encoding="utf-8",
         )
         self.runner.chmod(0o755)
@@ -48,15 +51,7 @@ class ReviewMakeIntegrationTests(unittest.TestCase):
         self.tempdir.cleanup()
 
     def run_make(self, review: str):
-        (self.build / "peer_review.md").write_text(review, encoding="utf-8")
-        # Creating peer_review.md updates the directory mtime. The production
-        # Makefile intentionally has BUILD_DIR as an order-establishing
-        # prerequisite, so make the fixture directory unambiguously older than
-        # the pre-seeded stage artefacts and avoid accidentally rebuilding them.
-        os.utime(self.build, (0, 0))
-        final = self.build / "final.tex"
-        if final.exists():
-            final.unlink()
+        self.review_file.write_text(review, encoding="utf-8")
         return subprocess.run(
             [
                 "make",
@@ -71,18 +66,21 @@ class ReviewMakeIntegrationTests(unittest.TestCase):
             check=False,
         )
 
-    def call_count(self) -> int:
+    def stages(self):
         if not self.calls.exists():
-            return 0
-        return len(self.calls.read_text(encoding="utf-8").splitlines())
+            return []
+        return self.calls.read_text(encoding="utf-8").splitlines()
 
-    def test_pass_promotes_without_any_final_model_call(self):
+    def test_pass_promotes_realisation_without_post_review_model_call(self):
         result = self.run_make("STATUS: PASS\n")
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(self.call_count(), 0)
         self.assertEqual(
-            (self.build / "final.tex").read_text(encoding="utf-8"), VALID_REVISED
+            self.stages(),
+            ["prompts/10_realise.md", "prompts/40_peer_review.md"],
+        )
+        self.assertEqual(
+            (self.build / "final.tex").read_text(encoding="utf-8"), REALISE
         )
 
     def test_realisation_review_runs_exactly_one_final_model_call(self):
@@ -92,19 +90,29 @@ class ReviewMakeIntegrationTests(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(self.call_count(), 1)
         self.assertEqual(
-            (self.build / "final.tex").read_text(encoding="utf-8"), FAKE_FINAL
+            self.stages(),
+            [
+                "prompts/10_realise.md",
+                "prompts/40_peer_review.md",
+                "prompts/50_final.md",
+            ],
+        )
+        self.assertEqual(
+            (self.build / "final.tex").read_text(encoding="utf-8"), FINAL
         )
 
-    def test_source_blocker_stops_before_final_model_call(self):
+    def test_source_blocker_stops_before_final_revision(self):
         result = self.run_make(
             "STATUS: BLOCKED_SOURCE\n"
             "- [MAJOR][SOURCE] Section 2 :: Required citation is absent from source.\n"
         )
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertEqual(self.call_count(), 0)
+        self.assertEqual(
+            self.stages(),
+            ["prompts/10_realise.md", "prompts/40_peer_review.md"],
+        )
         self.assertFalse((self.build / "final.tex").exists())
         diagnostic = (self.build / "errors" / "review.md").read_text(encoding="utf-8")
         self.assertIn("Source revision required", diagnostic)

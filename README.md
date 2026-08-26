@@ -4,24 +4,50 @@ Compiled Prose is a small, file-driven compiler pipeline for academic and techni
 
 The compiler analogy is architectural, not a promise of byte-for-byte deterministic generation. The project aims for a predictable, auditable transformation process whose authority and failure rules are stable even when model output varies.
 
-## Published self-example
+## Published example
 
-The repository publishes its own compiled essay as the worked example: [view the current self-example on GitHub Pages](https://grantaj.github.io/compiled-prose/). The Pages site makes the authoritative `outline.md` a first-class view and can present several target renderings of that same authored source side-by-side. The initial public targets are `journal_academic`, `magazine_general`, and `explain_like_im_5`. They are audience/genre contracts, not quality levels. Each rendering retains its own model, compilation commit, workflow-run, peer-review, PDF/raw LaTeX, and acceptance provenance while `outline.md` remains the conceptual authority.
+The repository publishes its own compiled essay as a worked example: [view it on GitHub Pages](https://grantaj.github.io/compiled-prose/). The site makes `outline.md` a first-class view and can present several target renderings of the same source side-by-side. The initial public targets are `journal_academic`, `magazine_general`, and `explain_like_im_5`. They are audience/genre contracts, not quality levels.
 
 ## Canonical documentation
 
-The repository deliberately keeps its documentation authority surface small:
-
-- `README.md` — project concept, setup, quick start, and release-facing operation;
-- `pipeline.md` — normative pipeline semantics and the boundary between mechanically enforced rules, prompt contracts, and design constraints;
+- `README.md` — project concept, setup, quick start, and release operation;
+- `pipeline.md` — normative pipeline semantics and enforcement boundaries;
 - `prompts/*.md` and `prompts/targets/*.md` — executable stage and target contracts;
-- `outline.md` — the authored conceptual source for the repository's self-example, not compiler documentation.
+- `outline.md` — the authored conceptual source for the repository example.
 
 Generated artefacts, source-audit evidence, bibliography metadata, and diagnostics are outputs or evidence about compilation, not authorities for what the source says.
 
 ## Architecture
 
-A stage is assembled as one flattened prompt before the backend is invoked:
+The core publication graph is deliberately small:
+
+```text
+authoritative source
+      |
+      v
+   REALISE
+      |
+      v
+ PEER REVIEW
+   /    |     \
+ PASS  REVISE  BLOCKED_SOURCE
+  |      |          |
+  |      v          `--> diagnostic + stop
+  |   FINAL REVISION
+  |      |
+  +------+
+      |
+      v
+   final.tex
+```
+
+A second writing pass happens only when peer review supplies new diagnostic information that justifies it. `PASS` promotes `realise.tex` directly to `final.tex`; `REVISE_REALISATION` permits exactly one bounded final revision; `BLOCKED_SOURCE` returns control to the human-authored source.
+
+This simplification is motivated by strong regression evidence rather than a claim that every model or document behaves identically. In a recent GPT-5.6 Sol compilation of the `grantaj/censorship` regression case, the old draft-to-smooth pass left about 99.42% of words unchanged and smooth-to-revise left about 99.86% unchanged, while the two passes cost roughly $0.73. They also failed to repair the main structural weakness that had motivated them: journal prose remaining too close to a prosified outline. Peer review, by contrast, added genuinely new information and exposed substantive source and literature problems. Modern models are therefore asked to produce a strong complete first realisation, peer review remains the independent second look, and another writing call is conditional on actual review findings.
+
+### Prompt composition and authority
+
+A model-backed stage is assembled as one flattened prompt:
 
 ```text
 system contract
@@ -30,7 +56,7 @@ system contract
   + authoritative source
   + optional bibliographic rendering metadata
   + derived stage input, when distinct from the source
-  + diagnostic context, when applicable
+  + peer-review diagnostic context, for final revision only
   + output/failure contract
         |
         v
@@ -38,53 +64,41 @@ model backend
         |
         v
 backend-independent protocol enforcement
-        |
-        +--> build/<stage artefact>
-        `--> build/errors/<stage>.md
 ```
 
-The original authoritative source is carried alongside downstream derived artefacts. Target files constrain realisation for a venue or audience; they do not supply claims, evidence, citations, attributions, content-bearing examples, or conceptual scope. Within the core publication pipeline, coverage is exhaustive by default, but a target may explicitly permit summarisation, compression, selective omission, or presentation reordering without changing what retained source material means. Targets also own evidence, attribution, and citation **presentation**: one target may require formal scholarly citations while another may use ordinary narrative attribution or explicitly suppress formal citation apparatus. This does not transfer evidentiary authority to the target or model. The source remains authoritative for support and attribution, and retained material must not become misleading through omission or presentation changes.
+The original authoritative source is carried alongside any downstream derived artefact. The source alone supplies conceptual content and topology. Target files constrain audience, register, coverage/compression, rhetorical form, formatting, and evidence/attribution/citation presentation. They do not supply claims, evidence, citations, attributions, content-bearing examples, or conceptual scope.
 
-A target may explicitly permit non-authoritative illustrative scaffolding to explain source-authorised concepts, but that scaffolding must remain traceable and removable and cannot become evidence, argument, scope, or conceptual authority. Optional bibliography metadata provides stable identifiers and verified publication metadata for citations that already exist in the authoritative source; it cannot author a new citation or claim and does not by itself force formal citations into every target. Peer review is diagnostic and likewise cannot become conceptual authority.
+Coverage is exhaustive by default, but a target may explicitly permit summarisation, compression, or selective omission. Presentation topology is not authoritative by default: source bullets, heading depth, adjacency, and navigation order may be reorganised when conceptual topology permits. Genuine dependency, procedure, chronology, taxonomy, qualification scope, and support attachment remain authoritative.
 
-The target-independent source-assurance floor is epistemic, not an inescapable academic style contract. It requires a coherent and adequately supported source, but it does not require every target to expose academic prose conventions, scholarly citation syntax, or academic-style visible argumentation.
+A target may explicitly permit non-authoritative illustrative scaffolding to explain source-authorised concepts, but that scaffolding must remain traceable and removable and cannot become evidence, argument, scope, or conceptual authority. Optional bibliography metadata supplies stable identifiers and verified publication metadata for citations already present in the source; it cannot author a new citation or claim. Peer review is diagnostic and likewise cannot become conceptual authority.
 
-Coverage selection, summarisation depth, omission, explanatory strategy, and citation/attribution presentation are semantic realisation decisions made by the model under the prompt contracts and judged by target-aware review and human acceptance. They are deliberately not encoded as deterministic Python rules. Mechanical checks verify provenance and protocol of material that is actually emitted; they do not decide what a target ought to include.
+For `journal_academic`, peer review is intentionally open-world and the OpenAI Responses adapter requires hosted web search. External material remains diagnostic evidence only. Any externally grounded finding that would change positioning, support, scope, or claims is classified `SOURCE` and blocks finalisation until the author changes the authoritative source.
 
 See `pipeline.md` for the exact stage and failure semantics.
 
-# Build & Installation Guide
+# Build and installation
 
 ## Prerequisites
 
-You need:
+You need GNU Make, Bash, Python >= 3.9, and `curl`. `jq` is optional.
 
-- GNU Make
-- Bash
-- Python >= 3.9
-- `curl`
+For release-candidate LaTeX validation, install `latexmk`, `biber`, and a LaTeX distribution with BibLaTeX support. Publication additionally uses `pandoc`.
 
-`jq` is optional. Python 3.9 is the minimum runtime exercised by ordinary CI.
-
-For release-candidate LaTeX validation of the self-example, also install `latexmk`, `biber`, and a working LaTeX distribution with BibLaTeX support. Publication additionally uses `pandoc` to build the inspectable Pages site. BibLaTeX/biber remains required by the self-example release toolchain because some targets, including the academic journal target, use formal scholarly citations even though other targets may not.
-
-For Debian/Ubuntu:
+Debian/Ubuntu:
 
 ```bash
 sudo apt install make python3 curl jq latexmk texlive-latex-extra texlive-bibtex-extra biber pandoc
 ```
 
-For macOS with Homebrew:
+macOS with Homebrew:
 
 ```bash
 brew install make python curl jq pandoc
 ```
 
-A TeX distribution that provides `latexmk`, BibLaTeX, and `biber` (for example MacTeX) is also required on macOS for PDF validation.
+Install a TeX distribution such as MacTeX separately for PDF validation.
 
 ## Configuration
-
-Copy the example environment file and edit it as required:
 
 ```bash
 cp .env.example .env
@@ -93,11 +107,7 @@ source .env
 set +a
 ```
 
-`.env` is not committed. It selects the backend, model configuration, and target style.
-
-### Local backend: Ollama
-
-Install Ollama, pull a model, and ensure its service is running. A typical configuration is:
+Typical Ollama configuration:
 
 ```bash
 BACKEND=ollama
@@ -105,11 +115,7 @@ OLLAMA_MODEL=llama3.1
 OLLAMA_HOST=http://localhost:11434
 ```
 
-### OpenAI API backend
-
-ChatGPT subscriptions do not include API usage. OpenAI API compilation requires a separately billed API account and key.
-
-For the OpenAI backend, install the Python dependency in a virtual environment:
+For OpenAI, create a virtual environment and install the provider dependency:
 
 ```bash
 python3 -m venv .venv
@@ -127,23 +133,21 @@ OPENAI_TEMPERATURE=0.2
 OPENAI_SEED=42
 ```
 
-## Keyless preflight
+ChatGPT subscriptions do not include API usage; API compilation is billed separately.
 
-Run the provider-free structural and regression suite before any model-backed compile:
+## Keyless preflight
 
 ```bash
 make check
 ```
 
-`make check` performs Python and shell syntax checks, runs the local unit/smoke tests, and audits the repository self-example's citation/source bookkeeping. It requires no API key, provider package, running model service, or network access.
+`make check` performs Python and shell syntax checks, unit/smoke tests, and the repository example's source/bibliography audit. It requires no API key, provider package, running model service, or network access.
 
-The self-example source audit can also be run directly:
+The source audit can be run directly:
 
 ```bash
 make self-preflight
 ```
-
-This checks that every source citation in `outline.md` has a catalog entry, every catalog entry has dated verification evidence in `self-example/source-audit.json`, and every audited source maps one-to-one to a stable entry in `self-example/references.bib`. The audit and bibliography files are release-readiness/rendering metadata only; neither adds conceptual authority beyond `outline.md`.
 
 Provider connectivity checks are deliberately separate:
 
@@ -152,160 +156,115 @@ make check-ollama
 make openai-check
 ```
 
-`check-ollama` contacts the configured local Ollama service. `openai-check` makes a real OpenAI API request and may incur a charge; it is never part of `make check` or ordinary CI.
+`openai-check` makes a real API request and may incur a charge; it is never part of ordinary CI or `make check`.
 
 ## Running the pipeline
 
-The repository self-example has one obvious end-to-end command:
+The repository example has one end-to-end command:
 
 ```bash
 make self
 ```
 
-`make self` first runs the keyless source preflight, deletes the transient build directory, copies the audited bibliography metadata into the build, compiles `outline.md` through the normal pipeline using the selected backend, performs provenance/protocol checks on any formal citations that the model actually emitted, and then requires `latexmk`/biber-capable validation to produce `build/final.pdf`. The mechanical postflight rejects unknown citation keys and malformed bibliography binding, but it does **not** decide whether source citations must appear, whether formal citation apparatus is appropriate, or what source material the selected target should retain. Those are prompt-level target-realisation decisions. The command does not hide or bypass the ordinary stage contracts. If `BACKEND=openai` is selected, the command makes paid API calls; no paid invocation is part of the keyless preflight.
+`make self` runs the keyless source preflight, performs a fresh compilation through the selected backend and target, validates emitted LaTeX stages, audits the final result, and produces `build/final.pdf`. If `BACKEND=openai` is selected, this command makes paid calls.
 
-For generic compilation, `IN` names the authoritative conceptual source and is required for a fresh model-backed build:
+Generic compilation requires the authoritative source explicitly:
 
 ```bash
 make final IN=outline.md
 ```
 
-When a project has separately verified bibliography metadata, pass it explicitly:
+With verified bibliography metadata:
 
 ```bash
 make final IN=outline.md BIBLIOGRAPHY=references.bib
 ```
 
-The bibliography supplies rendering metadata and stable citation keys only. The authoritative source must already supply the citations, attribution, and supported claims. Supplying bibliography metadata does not itself require the selected target to display formal citation apparatus.
-
-Run individual stages with the same source explicitly supplied:
+Individual core stages are:
 
 ```bash
-make draft IN=outline.md
-make smooth IN=outline.md
-make revise IN=outline.md
+make realise IN=outline.md
 make review IN=outline.md
 make final IN=outline.md
 ```
 
-There is also an independent summary transform:
+`review` depends on `realise`; `final` depends on both and handles the peer-review decision. There are no `draft`, `smooth`, or pre-review `revise` model stages.
+
+An independent summary transform remains available:
 
 ```bash
 make summarize IN=outline.md
 ```
 
-This auxiliary transform intrinsically compresses its source and is separate from the core publication pipeline's exhaustive-coverage default.
+This auxiliary transform intrinsically compresses its source and is not part of the core publication graph.
 
-By default generated files live under `build/`:
+Generated files live under `build/` by default:
 
-- `build/draft.tex`
-- `build/smooth.tex`
-- `build/revise.tex`
+- `build/realise.tex`
 - `build/peer_review.md`
 - `build/final.tex`
-- `build/final.pdf` after successful self-example LaTeX validation
-- `build/references.bib` during self-example compilation
-- `build/openai-usage.jsonl` when OpenAI responses report token usage
+- `build/final.pdf` after successful example validation
+- `build/references.bib` during example compilation
+- `build/openai-usage.jsonl` when OpenAI reports token usage
 - `build/summary.tex` when `summarize` is requested
 - `build/errors/<stage>.md` for blocking diagnostics
 
-The OpenAI usage log is transient observability data. `make clean` and `make clobber` remove it, and it is not part of the accepted Pages candidate.
-
-The build root is configurable without changing source paths:
+The build root is configurable:
 
 ```bash
 make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
 ```
 
-`make validate-latex` validates an already-existing `build/final.tex` and produces `build/final.pdf`; it fails if `final.tex` is absent rather than implicitly invoking a model-backed pipeline. `make clean` removes the known generated artefacts, copied bibliography, usage log, and diagnostics from the selected build directory. `make clobber` removes that build directory entirely.
+`make validate-latex` validates an already-existing `final.tex` and never triggers model execution. `make clean` removes known generated artefacts from the selected build directory; `make clobber` removes that build directory entirely.
 
 ## Peer-review gate
 
-Peer review uses a small machine-readable status contract:
+Peer review emits a small machine-readable protocol:
 
-- `PASS` — no findings; `revise.tex` is copied exactly to `final.tex` without another model call.
-- `REVISE_REALISATION` — findings are realisation-only; exactly one bounded final realisation pass is permitted.
+- `PASS` — no findings; `realise.tex` is copied exactly to `final.tex` without another model call.
+- `REVISE_REALISATION` — all findings are realisation-only; exactly one bounded final revision is permitted using the authoritative source, realised document, target, and review findings.
 - `BLOCKED_SOURCE` — at least one finding requires authorial source work; compilation stops before final revision and emits an external diagnostic.
 
-Malformed or internally inconsistent review status also fails closed. The review can identify missing support, but it cannot amend the source or turn a suggested citation or attribution into authority. It evaluates visible evidence and attribution against the selected target rather than assuming academic citation conventions.
+Malformed or internally inconsistent review status also fails closed. Review suggestions and externally discovered literature never become source authority automatically.
 
-## Self-example release acceptance
+## Release acceptance and publication
 
-Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final realisation with `outline.md` and the selected target. Confirm that no material claim was introduced without source authority, no represented proposition was silently strengthened or weakened, no content-bearing example/theory/citation/historical claim was added downstream, peer review did not expand conceptual scope, and retained qualifications and uncertainty remain sufficient to keep represented material faithful.
+Mechanical checks deliberately stop short of claiming semantic equivalence. After a successful self-compilation, a human must compare the candidate final realisation with `outline.md` and the selected target. Confirm that no material claim was introduced without source authority, no represented proposition was strengthened or weakened, no unsupported content-bearing example/theory/citation was added downstream, target-required coverage is appropriate, and qualifications/support relationships remain attached.
 
-Coverage and citation checks are target-relative. For an exhaustive target such as `journal_academic`, confirm that all materially distinct source content and source-supplied citations remain represented and correctly attached. For a target that explicitly permits compression or omission, confirm that omitted material is permitted by the target and that its removal has not made retained material misleading. For a target that explicitly suppresses formal citation apparatus, do not require citation syntax merely for provenance; instead confirm that any attribution needed by retained material is expressed faithfully in the target-appropriate form. Any target-permitted illustrative scaffolding should likewise be checked for a faithful, traceable mapping to a source concept, for material accuracy, and for remaining removable without changing the work's claims or evidentiary support.
+Compilation and publication are separate. **Compile self-example target** creates and retains one candidate but cannot deploy Pages. **Publish self-example** is keyless: the operator selects a target, the workflow finds that target's newest successful retained compilation, preserves compatible unselected targets from the latest retained showcase, and deploys through the `github-pages` environment gate. Publishing an existing candidate never invokes the model.
 
-Compilation and publication are deliberately separate. **Compile self-example target** creates and retains one candidate artifact but cannot deploy Pages. **Publish self-example** asks only which target to publish, finds that target's newest successful retained compilation, and deploys it after the `github-pages` environment gate. Already-published unselected targets are preserved automatically from the latest successful retained showcase. A candidate therefore never becomes public merely because it was generated, and publishing an already-generated candidate does not invoke the model again.
-
-The publication assembler still treats the exact `outline.md` bytes as the shared authoritative revision. Candidates compiled at different repository commits may be combined when their authored outline is byte-identical; this is what allows an already-good rendering to survive later compiler/workflow changes without an unnecessary paid rerun. Each rendering still exposes its own compilation commit, model, target, and originating run. If a selected candidate and the preserved showcase were compiled from different authoritative outline revisions, publication fails closed rather than silently mixing them.
-
-For targets that use formal citations, PDF and HTML deliberately share the same `references.bib`: LaTeX resolves source-authorised citation keys through BibLaTeX/biber, while Pages passes the same metadata to Pandoc citeproc. Targets that explicitly suppress formal citation apparatus may carry the audited bibliography as provenance metadata without displaying it in the target-facing text. The HTML builder does not parse or rewrite citation commands or manufacture bibliography entries. The paper title likewise comes from `final.tex` rather than a Pages-specific replacement title.
-
-## Retained self-example artefacts
-
-`build/` remains transient and generated prose is not committed to the source tree. Each successful paid compilation retains a self-contained candidate containing:
+A successful retained candidate contains:
 
 - the authoritative `outline.md`;
-- dated `source-audit.json` evidence for the supplied references;
-- `references.bib`, containing the stable verified bibliographic rendering metadata;
-- draft, smooth, and revise stage artefacts;
-- the final peer-review report;
-- final generated LaTeX;
-- the PDF produced by the documented LaTeX toolchain;
+- `source-audit.json` and verified `references.bib` provenance metadata;
+- `realise.tex`;
+- the peer-review report;
+- `final.tex` and `final.pdf`;
 - compilation commit, model, target, workflow-run metadata, and the human acceptance checklist.
 
-Candidate artifacts are retained for 90 days. The keyless publish workflow treats workflow run IDs as internal provenance, not operator inputs. For the selected target it resolves the newest non-expired candidate artifact whose originating **Compile self-example target** workflow completed successfully; failed or expired runs are not publishable. New paid compilations are separately restricted to `main`, while already-retained successful candidates remain reusable. The publish workflow automatically reuses the newest successful retained publication as the base so unselected targets remain unchanged, then verifies the downloaded candidate's target/run metadata and exact authoritative-outline compatibility before deployment. The assembled Pages site records an SHA-256 digest of the authoritative outline and preserves per-target build metadata and raw artifacts. None of these downstream artefacts becomes conceptual authority, and no secret or provider state is retained.
+Candidate artifacts are retained for 90 days. The publication assembler compares the authoritative outline bytes before combining target renderings, so an accepted rendering can survive compiler/workflow changes only while the source revision remains identical.
 
-## Switching backend or target
+## CI and paid compilation
 
-Runtime overrides remain explicit:
+Ordinary CI is keyless. Pushes and pull requests run `make check` and do not reference provider credentials or make model calls.
 
-```bash
-make BACKEND=ollama final IN=outline.md
-make BACKEND=openai final IN=outline.md
-make TARGET_STYLE=prompts/targets/journal_academic.md final IN=outline.md
-```
+Paid example compilation lives only in `.github/workflows/compile-self-example.yml`. It is manual, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. Manual dispatch exposes allowlisted model and target selectors.
 
-A target controls acceptable realisation for the audience or venue, including coverage/compression and evidence/attribution/citation presentation. It is not permission to invent conceptual content, alter conceptual scope, or fabricate support that is absent from the authoritative source; target-permitted illustrative scaffolding remains non-authoritative and subject to the provenance and fidelity rules in `pipeline.md`.
+A successful compilation normally invokes the selected model twice: once for `realise` and once for peer review. It makes one additional model call only when review returns `REVISE_REALISATION`. `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before final revision. The independent `summarize` transform is not invoked by `make final` or `make self`.
+
+Each successful OpenAI response records stage/model/token usage in the transient build usage log. The workflow renders per-stage and total estimated usage into the Actions summary without making another provider call.
+
+Publication lives separately in `.github/workflows/publish-self-example.yml` and is provider-free.
 
 ## Reproducibility
 
 Compiled Prose targets semantic and specification-level reproducibility:
 
-- source, prompts, target requirements, stage order, protocol checks, and configuration are file-driven and inspectable;
+- source, prompts, target requirements, stage graph, protocol checks, and configuration are file-driven and inspectable;
 - the same authority boundaries and failure rules apply across supported backends;
-- a `PASS` review produces an exact deterministic promotion from `revise.tex` to `final.tex`;
-- model-generated prose is **not** promised to be byte-for-byte identical across runs, models, provider versions, or platforms, even when a backend accepts a seed.
-
-Seeds and low temperatures can reduce variance where supported, but they are configuration controls rather than a repository-wide determinism guarantee.
-
-## CI, paid compilation, and the self-example
-
-Ordinary CI is deliberately keyless. Pushes and pull requests run `make check` and do not reference provider credentials or make model calls.
-
-Paid self-example compilation lives only in `.github/workflows/compile-self-example.yml`. It has only a `workflow_dispatch` trigger, requires explicit paid-use authorization, is restricted to `main`, and places the provider call behind the `paid-compilation` GitHub Environment. It compiles exactly one selected target and uploads a retained candidate; it has no Pages deployment step.
-
-Manual compilation dispatch includes allowlisted selectors for both model and target. Models currently offered are `gpt-5-mini`, `gpt-5`, `gpt-5.6-luna`, `gpt-5.6-terra`, and `gpt-5.6-sol`; `gpt-5-mini` remains the default. Targets initially offered are `journal_academic`, `magazine_general`, and `explain_like_im_5`, with `journal_academic` as the default. Model and target are both validated before the API-key-bearing step, and target identifiers are mapped through `tools/self_example_targets.py` rather than accepting arbitrary prompt paths. Target semantics remain in the target/prompt chain rather than being duplicated as deterministic target-policy code.
-
-Each successful OpenAI response records its stage, model, and API-reported token usage in the transient build usage log. After every paid compilation attempt, including failures, the workflow renders per-stage and total token usage plus estimated cost into the GitHub Actions step summary. Unknown model pricing is reported as `N/A` rather than guessed, and the estimate is explicitly not a billing record. This accounting makes no additional provider call. Pricing for the selectable GPT-5.6 family follows the provider's published short-context rates and applies the published long-context multiplier above 272,000 input tokens.
-
-If paid compilation fails, any `build/errors/*.md` diagnostics are printed into the Actions log and the available build/source/audit/bibliography evidence is retained as a 90-day failure artifact. A failed compilation never produces a publication candidate.
-
-Publication lives separately in `.github/workflows/publish-self-example.yml`. That workflow is manual, owner/`main`-restricted, and strictly keyless: it has no provider credential or model-backed path. Its only human release choice is the target. It scans retained artifacts, selects the newest non-expired candidate for that target whose originating compile workflow completed successfully, and automatically finds the latest successfully published retained showcase to preserve unselected targets. Historical successful retained compile candidates remain eligible so workflow/compiler maintenance does not force a paid rerun; current paid compilation policy separately restricts new runs to `main`. Publication then downloads those exact artifacts, verifies candidate target/run provenance and authoritative-outline compatibility, builds the outline-first multi-target Pages site, and deploys through the protected `github-pages` environment.
-
-Recommended repository configuration and operator flow:
-
-1. Create the `paid-compilation` environment, require the repository owner as reviewer, and restrict it to `main`.
-2. Store `OPENAI_API_KEY` as an environment secret under `paid-compilation` rather than exposing it to ordinary CI.
-3. Configure GitHub Pages to publish from **GitHub Actions**.
-4. Configure the `github-pages` environment to require the repository owner as reviewer.
-5. To generate or improve a rendering, start **Actions -> Compile self-example target -> Run workflow**, choose one target and model, explicitly authorize paid compilation, and approve the `paid-compilation` environment. Repeat paid runs as needed until the most recent successful candidate for that target is the one you want to publish.
-6. To publish without recompiling, start **Actions -> Publish self-example -> Run workflow**, choose that target, and approve `github-pages` after inspecting the assembled publication bundle. The workflow selects the latest successful retained compilation for that target automatically; no run ID needs to be copied or understood.
-
-For a repository with no prior retained publication, `journal_academic` must be published first so the historical top-level academic evidence URLs can be established. After that bootstrap, publishing any selected target automatically preserves the others. If the authoritative outline itself changes, incompatible preserved renderings are rejected rather than carried forward under a different source revision.
-
-One approved successful compilation invokes the selected model for draft, smooth, revise, and peer review. It makes one additional provider call only when review returns `REVISE_REALISATION`; `PASS` finalisation is deterministic and `BLOCKED_SOURCE` stops before a final provider call. The compile workflow defaults to `gpt-5-mini`, caps each model-backed stage at 10,000 output tokens, and performs no automatic retry. The publish workflow makes no provider call at all.
+- a `PASS` review produces an exact deterministic promotion from `realise.tex` to `final.tex`;
+- model-generated prose is not promised to be byte-identical across runs, models, provider versions, or platforms.
 
 ## Project intent
 
-This repository is both an implementation and its own worked example. Its central separation of concerns is simple: humans author the conceptual source; compiler stages select and realise source-authorised material under explicit target constraints; generated prose and diagnostics remain inspectable downstream artefacts.
+This repository is both an implementation and its own worked example. Humans author the conceptual source; the realisation stage writes it for a target; peer review supplies the independent second look; another writing pass occurs only when that review identifies a source-and-target-determined realisation defect.

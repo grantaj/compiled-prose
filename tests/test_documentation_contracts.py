@@ -9,7 +9,7 @@ README = ROOT / "README.md"
 PIPELINE = ROOT / "pipeline.md"
 MAKEFILE = ROOT / "Makefile"
 
-MODEL_TARGETS = {"draft", "smooth", "revise", "review", "final", "summarize"}
+MODEL_TARGETS = {"realise", "review", "final", "summarize"}
 STALE_REFERENCES = {
     "PIPELINE_SPEC.md",
     "ERROR_HANDLING.md",
@@ -21,9 +21,7 @@ STALE_REFERENCES = {
 PROMPT_ASSIGNMENTS = {
     "SYSTEM",
     "TARGET_STYLE",
-    "P_DRAFT",
-    "P_SMOOTH",
-    "P_REVISE",
+    "P_REALISE",
     "P_REVIEW",
     "P_FINAL",
 }
@@ -93,13 +91,17 @@ class DocumentationContractTests(unittest.TestCase):
                 self.assertTrue((ROOT / relative).is_file())
 
     def test_canonical_pipeline_stage_names_are_make_targets(self):
-        for target in ("draft", "smooth", "revise", "review", "final"):
+        for target in ("realise", "review", "final"):
             with self.subTest(target=target):
                 self.assertIn(target, self.phony_targets)
-                self.assertRegex(
-                    self.pipeline,
-                    rf"\*\*Make target:\*\* .*`{re.escape(target)}`",
-                )
+        self.assertIn("**Make target:** `realise`", self.pipeline)
+        self.assertIn("**Make target:** `review`", self.pipeline)
+        self.assertIn("**Make target:** reached only through `final`", self.pipeline)
+
+    def test_removed_pre_review_stage_targets_do_not_survive(self):
+        for target in ("draft", "smooth", "revise"):
+            with self.subTest(target=target):
+                self.assertNotIn(target, self.phony_targets)
 
     def test_canonical_docs_do_not_reference_stale_authorities(self):
         canonical_text = self.readme + "\n" + self.pipeline

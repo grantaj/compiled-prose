@@ -58,11 +58,11 @@ class ReviewDecisionTests(unittest.TestCase):
         self.tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self.tempdir.name)
         self.review = self.root / "peer_review.md"
-        self.revised = self.root / "revise.tex"
+        self.realised = self.root / "realise.tex"
         self.final = self.root / "final.tex"
         self.review_error = self.root / "errors" / "review.md"
         self.final_error = self.root / "errors" / "final.md"
-        self.revised.write_text(
+        self.realised.write_text(
             "\\documentclass{article}\n\\begin{document}\nAuthored prose.\n\\end{document}\n",
             encoding="utf-8",
         )
@@ -73,13 +73,20 @@ class ReviewDecisionTests(unittest.TestCase):
     def apply(self):
         return apply_review_decision(
             review=self.review,
-            revised=self.revised,
+            realised=self.realised,
             final_output=self.final,
             review_diagnostic=self.review_error,
             final_diagnostic=self.final_error,
         )
 
-    def test_pass_promotes_revised_artifact_without_model_revision(self):
+    def test_pass_promotes_realised_artifact_without_model_revision(self):
+        expected = (
+            b"\\documentclass{article}\r\n"
+            b"\\begin{document}\r\n"
+            b"Authored prose.\r\n"
+            b"\\end{document}\r\n"
+        )
+        self.realised.write_bytes(expected)
         self.review.write_text("STATUS: PASS\n", encoding="utf-8")
         self.review_error.parent.mkdir(parents=True)
         self.review_error.write_text("stale review error", encoding="utf-8")
@@ -88,10 +95,7 @@ class ReviewDecisionTests(unittest.TestCase):
         decision = self.apply()
 
         self.assertEqual(decision.status, "PASS")
-        self.assertEqual(
-            self.final.read_text(encoding="utf-8"),
-            self.revised.read_text(encoding="utf-8"),
-        )
+        self.assertEqual(self.final.read_bytes(), expected)
         self.assertFalse(self.review_error.exists())
         self.assertFalse(self.final_error.exists())
 
@@ -142,8 +146,8 @@ class ReviewDecisionTests(unittest.TestCase):
                 str(ROOT / "tools" / "review_decision.py"),
                 "--review",
                 str(self.review),
-                "--revised",
-                str(self.revised),
+                "--realised",
+                str(self.realised),
                 "--output",
                 str(self.final),
                 "--diagnostic",
@@ -168,8 +172,8 @@ class ReviewDecisionTests(unittest.TestCase):
                 str(ROOT / "tools" / "review_decision.py"),
                 "--review",
                 str(self.review),
-                "--revised",
-                str(self.revised),
+                "--realised",
+                str(self.realised),
                 "--output",
                 str(self.final),
                 "--diagnostic",
