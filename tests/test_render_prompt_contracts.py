@@ -75,7 +75,7 @@ class RenderPromptContractTests(unittest.TestCase):
         rendered = self.render("prompts/10_realise.md", TARGETS[0], "tex")
         self.assertIn("Put @@FAIL on the first line", rendered)
         self.assertIn("do not invent or apply a conceptual fix", rendered)
-        self.assertIn("rather than embedding diagnostics in LaTeX", rendered)
+        self.assertIn("Do not mix a failure diagnostic into a successful artefact", rendered)
         self.assertNotIn("% GAP:", rendered)
         self.assertNotIn("% ISSUE:", rendered)
 
