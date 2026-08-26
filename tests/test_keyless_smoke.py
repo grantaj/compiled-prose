@@ -39,7 +39,7 @@ class KeylessSmokeTests(unittest.TestCase):
                 "--system",
                 "prompts/00_system.md",
                 "--stage",
-                "prompts/10_draft.md",
+                "prompts/10_realise.md",
                 "--target",
                 "prompts/targets/journal_academic.md",
                 "--source",
