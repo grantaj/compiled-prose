@@ -25,9 +25,7 @@ class AcademicReviewToolBoundaryTests(unittest.TestCase):
     def test_prose_stages_never_receive_web_search(self):
         for stage in (
             "prompts/05_summarize.md",
-            "prompts/10_draft.md",
-            "prompts/20_smooth.md",
-            "prompts/30_revise.md",
+            "prompts/10_realise.md",
             "prompts/50_final.md",
         ):
             with self.subTest(stage=stage):
@@ -80,7 +78,7 @@ class ExternalReviewFindingGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             review = root / "peer_review.md"
-            revised = root / "revise.tex"
+            realised = root / "realise.tex"
             final = root / "final.tex"
             review_error = root / "errors" / "review.md"
             final_error = root / "errors" / "final.md"
@@ -90,7 +88,7 @@ class ExternalReviewFindingGateTests(unittest.TestCase):
                 "- [MAJOR][SOURCE] Central contribution :: Doe (1999) appears to formulate the same mechanism, materially narrowing the claimed novelty.\n",
                 encoding="utf-8",
             )
-            revised.write_text(
+            realised.write_text(
                 "\\documentclass{article}\n\\begin{document}\nClaim.\n\\end{document}\n",
                 encoding="utf-8",
             )
@@ -98,7 +96,7 @@ class ExternalReviewFindingGateTests(unittest.TestCase):
             with self.assertRaises(SourceReviewBlocked):
                 apply_review_decision(
                     review=review,
-                    revised=revised,
+                    realised=realised,
                     final_output=final,
                     review_diagnostic=review_error,
                     final_diagnostic=final_error,
