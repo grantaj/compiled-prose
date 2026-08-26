@@ -15,7 +15,7 @@ class EnforceProtocolTests(unittest.TestCase):
         raw: str,
         output: Path,
         diagnostic: Path,
-        stage: str = "draft",
+        stage: str = "realise",
         output_type: str = "tex",
         backend_exit_status=None,
     ):
@@ -45,10 +45,10 @@ class EnforceProtocolTests(unittest.TestCase):
     def test_success_outputs_are_published_for_tex_and_markdown(self):
         cases = (
             (
-                "draft",
+                "realise",
                 "tex",
                 "\\documentclass{article}\n\\begin{document}ok\\end{document}\n",
-                "draft.tex",
+                "realise.tex",
             ),
             ("review", "md", "# Review\n\nNo blocking issues.\n", "peer_review.md"),
         )
@@ -76,8 +76,8 @@ class EnforceProtocolTests(unittest.TestCase):
     def test_fail_sentinel_writes_external_diagnostic_and_removes_stale_output(self):
         with tempfile.TemporaryDirectory() as tmp:
             build = Path(tmp) / "custom-build"
-            output = build / "draft.tex"
-            diagnostic = build / "errors" / "draft.md"
+            output = build / "realise.tex"
+            diagnostic = build / "errors" / "realise.md"
             output.parent.mkdir(parents=True, exist_ok=True)
             output.write_text("old successful artefact", encoding="utf-8")
             raw = "@@FAIL\n# Blocking issues\n\n- Section 2 lacks an authored warrant.\n"
@@ -141,8 +141,8 @@ class EnforceProtocolTests(unittest.TestCase):
     def test_backend_failure_replaces_stale_diagnostic(self):
         with tempfile.TemporaryDirectory() as tmp:
             build = Path(tmp)
-            output = build / "draft.tex"
-            diagnostic = build / "errors" / "draft.md"
+            output = build / "realise.tex"
+            diagnostic = build / "errors" / "realise.md"
             diagnostic.parent.mkdir(parents=True)
             output.write_text("stale output", encoding="utf-8")
             diagnostic.write_text("stale source diagnostic", encoding="utf-8")
@@ -181,7 +181,7 @@ class MakefileProtocolIntegrationTests(unittest.TestCase):
             [
                 "make",
                 "-B",
-                "draft",
+                "realise",
                 f"IN={outline}",
                 f"BUILD_DIR={build}",
                 f"LLM_RUNNER=bash {runner}",
@@ -205,17 +205,17 @@ class MakefileProtocolIntegrationTests(unittest.TestCase):
                 runner,
                 "printf '%s\\n' '@@FAIL' '# Blocking issues' '' '- Missing authored warrant.'\n",
             )
-            stale = build / "draft.tex"
+            stale = build / "realise.tex"
             stale.write_text("old successful artefact", encoding="utf-8")
 
             result = self.run_make(build, outline, runner)
 
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse(stale.exists())
-            diagnostic = build / "errors" / "draft.md"
+            diagnostic = build / "errors" / "realise.md"
             self.assertTrue(diagnostic.exists())
             self.assertIn("Missing authored warrant", diagnostic.read_text(encoding="utf-8"))
-            self.assertFalse((ROOT / "build" / "errors" / "draft.md").exists())
+            self.assertFalse((ROOT / "build" / "errors" / "realise.md").exists())
 
     def test_make_rejects_wrong_declared_success_type(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -225,13 +225,13 @@ class MakefileProtocolIntegrationTests(unittest.TestCase):
             outline = root / "outline.md"
             outline.write_text("# Input\n- claim\n", encoding="utf-8")
             runner = root / "fake-llm.sh"
-            self.write_runner(runner, "printf '%s\\n' '# Explanation' '' 'Could not draft this.'\n")
+            self.write_runner(runner, "printf '%s\\n' '# Explanation' '' 'Could not realise this.'\n")
 
             result = self.run_make(build, outline, runner)
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertFalse((build / "draft.tex").exists())
-            diagnostic = build / "errors" / "draft.md"
+            self.assertFalse((build / "realise.tex").exists())
+            diagnostic = build / "errors" / "realise.md"
             self.assertIn(
                 "complete raw LaTeX document",
                 diagnostic.read_text(encoding="utf-8"),
@@ -246,9 +246,9 @@ class MakefileProtocolIntegrationTests(unittest.TestCase):
             outline.write_text("# Input\n- claim\n", encoding="utf-8")
             runner = root / "fake-llm.sh"
             self.write_runner(runner, "printf 'partial latex'\nexit 3\n")
-            stale = build / "draft.tex"
+            stale = build / "realise.tex"
             stale.write_text("old successful artefact", encoding="utf-8")
-            diagnostic = build / "errors" / "draft.md"
+            diagnostic = build / "errors" / "realise.md"
             diagnostic.parent.mkdir(parents=True)
             diagnostic.write_text("stale source diagnostic", encoding="utf-8")
 
@@ -273,14 +273,14 @@ class MakefileProtocolIntegrationTests(unittest.TestCase):
                 runner,
                 "printf '%s\\n' '\\documentclass{article}' '\\begin{document}ok\\end{document}'\n",
             )
-            diagnostic = build / "errors" / "draft.md"
+            diagnostic = build / "errors" / "realise.md"
             diagnostic.parent.mkdir(parents=True)
             diagnostic.write_text("stale failure", encoding="utf-8")
 
             result = self.run_make(build, outline, runner)
 
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn("\\documentclass{article}", (build / "draft.tex").read_text(encoding="utf-8"))
+            self.assertIn("\\documentclass{article}", (build / "realise.tex").read_text(encoding="utf-8"))
             self.assertFalse(diagnostic.exists())
 
 
