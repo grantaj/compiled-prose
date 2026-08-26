@@ -4,11 +4,11 @@ Authority and bounds:
 - Treat the stage input as a derived working artefact, not conceptual authority. The authoritative source defines what the work says and its conceptual topology.
 - Treat peer-review comments as diagnostic context, not conceptual authority.
 - The selected target defines the permitted coverage, rhetorical form, and realisation of the source, including evidence/attribution/citation presentation. Exhaustive conceptual coverage remains the default unless the selected target explicitly authorises reduced coverage.
-- The review gate permits this stage only when every finding is classified REALISATION and the review contains no SOURCE finding.
+- The review gate permits this stage only when the review contains at least one REALISATION finding and no SOURCE finding. ADVISORY findings may also be present; they are retained for the author and are not revision instructions for this stage.
 - This is one bounded final-revision pass. Do not request, imply, or initiate another review/revision cycle.
 
 Constraints:
-- Address review comments only where the correction is fully determined by the authoritative source and target-permitted realisation choices rather than requiring an authorial source change.
+- Address only REALISATION findings, and only where the correction is fully determined by the authoritative source and target-permitted realisation choices rather than requiring an authorial source change. Do not act on ADVISORY findings.
 - If the stage input has drifted from the authoritative source or does not satisfy the selected target's coverage or presentation requirements, repair the realisation only when the faithful correction is fully determined by the source and target; otherwise use the failure branch.
 - Follow the selected target's tone, register, reading level, coverage, rhetorical form, structure, formatting, and evidence/attribution/citation expectations without changing what retained source material says or how its authored concepts relate.
 - Do not introduce new concepts, claims, evidence, sources, attributions, citations, conceptual scope, conceptual relationships, or content-bearing examples.

@@ -72,7 +72,7 @@ Coverage is exhaustive by default, but a target may explicitly permit summarisat
 
 A target may explicitly permit non-authoritative illustrative scaffolding to explain source-authorised concepts, but that scaffolding must remain traceable and removable and cannot become evidence, argument, scope, or conceptual authority. Optional bibliography metadata supplies stable identifiers and verified publication metadata for citations already present in the source; it cannot author a new citation or claim. Peer review is diagnostic and likewise cannot become conceptual authority.
 
-For `journal_academic`, peer review is intentionally open-world and the OpenAI Responses adapter requires hosted web search. External material remains diagnostic evidence only. Any externally grounded finding that would change positioning, support, scope, or claims is classified `SOURCE` and blocks finalisation until the author changes the authoritative source.
+For `journal_academic`, peer review is intentionally open-world and the OpenAI Responses adapter requires hosted web search. External material remains diagnostic evidence only. A discovery is `SOURCE` only when it establishes a material defect in the article's positioning, support, scope, or claims; useful scholarly context that does not make revision necessary may instead be retained as `ADVISORY`.
 
 See `pipeline.md` for the exact stage and failure semantics.
 
@@ -221,9 +221,9 @@ make BUILD_DIR=/tmp/compiled-prose final IN=outline.md
 
 Peer review emits a small machine-readable protocol:
 
-- `PASS` — no findings; `realise.tex` is copied exactly to `final.tex` without another model call.
-- `REVISE_REALISATION` — all findings are realisation-only; exactly one bounded final revision is permitted using the authoritative source, realised document, target, and review findings.
-- `BLOCKED_SOURCE` — at least one finding requires authorial source work; compilation stops before final revision and emits an external diagnostic.
+- `PASS` — no material revision is required; the report may still retain nonfatal `ADVISORY` findings, and `realise.tex` is copied exactly to `final.tex` without another model call.
+- `REVISE_REALISATION` — at least one `REALISATION` finding and no `SOURCE` finding; exactly one bounded final revision is permitted, while any accompanying advisories remain diagnostic only.
+- `BLOCKED_SOURCE` — at least one `SOURCE` finding identifies a defect serious enough to require authorial source work; compilation stops before final revision and emits an external diagnostic.
 
 Malformed or internally inconsistent review status also fails closed. Review suggestions and externally discovered literature never become source authority automatically.
 

@@ -10,7 +10,7 @@ from typing import List
 
 STATUSES = ("PASS", "REVISE_REALISATION", "BLOCKED_SOURCE")
 FINDING_RE = re.compile(
-    r"^- \[(MAJOR|MINOR)\]\[(SOURCE|REALISATION)\] (.+?) :: (.+)$"
+    r"^- \[(MAJOR|MINOR)\]\[(SOURCE|REALISATION|ADVISORY)\] (.+?) :: (.+)$"
 )
 
 
@@ -94,7 +94,7 @@ def parse_review(raw: str) -> ReviewDecision:
             raise ReviewProtocolError(
                 "line "
                 f"{line_number} is malformed; expected `- [MAJOR|MINOR]"
-                "[SOURCE|REALISATION] <location> :: <finding>`"
+                "[SOURCE|REALISATION|ADVISORY] <location> :: <finding>`"
             )
         severity, level, location, message = match.groups()
         if not location.strip() or not message.strip():
@@ -110,7 +110,7 @@ def parse_review(raw: str) -> ReviewDecision:
 
     if any(finding.level == "SOURCE" for finding in findings):
         derived_status = "BLOCKED_SOURCE"
-    elif findings:
+    elif any(finding.level == "REALISATION" for finding in findings):
         derived_status = "REVISE_REALISATION"
     else:
         derived_status = "PASS"

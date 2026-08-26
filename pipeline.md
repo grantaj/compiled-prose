@@ -29,7 +29,7 @@ The repository example adds release-specific checks around its audited source ca
 
 ### Prompt contracts
 
-Prompt contracts govern properties not mechanically proved by the build system: source fidelity, absence of invented conceptual content, preservation of conceptual topology and epistemic stance, target-relative coverage, rhetorical architecture, writing quality, evidence/attribution/citation presentation, and semantic classification of review findings as `SOURCE` or `REALISATION`.
+Prompt contracts govern properties not mechanically proved by the build system: source fidelity, absence of invented conceptual content, preservation of conceptual topology and epistemic stance, target-relative coverage, rhetorical architecture, writing quality, evidence/attribution/citation presentation, and semantic classification of review findings as `SOURCE`, `REALISATION`, or nonfatal `ADVISORY`.
 
 A structurally valid LaTeX result can still violate these contracts. Mechanical code therefore does not try to force section counts, list usage, source-item mappings, or other surface proxies for prose quality.
 
@@ -109,7 +109,7 @@ When `BIBLIOGRAPHY=...` is supplied, `tools/render_prompt.py` includes it as a d
 
 `peer_review.md` and `$(BUILD_DIR)/errors/*.md` are diagnostics. They identify defects; they do not supply authored answers.
 
-Compilation is closed-world for prose-producing stages. Academic-journal peer review is the narrow open-world exception: it may inspect external scholarship to challenge novelty, positioning, support, and foundational omissions. External material remains review evidence only. A finding that depends on such material is `SOURCE` and therefore cannot flow into final revision until the author changes the authoritative source.
+Compilation is closed-world for prose-producing stages. Academic-journal peer review is the narrow open-world exception: it may inspect external scholarship to challenge novelty, positioning, support, and foundational omissions. External material remains review evidence only. It may support a blocking `SOURCE` finding when it establishes a material defect, or a nonfatal `ADVISORY` finding when it supplies useful scholarly context without making revision necessary. It never becomes authority for downstream prose.
 
 ## Flattened prompt composition
 
@@ -173,9 +173,9 @@ It must avoid bullet-by-bullet or heading-by-heading prosification while preserv
 **Inputs:** authoritative source plus `realise.tex`, target requirements, and optional bibliography metadata  
 **Output:** `$(BUILD_DIR)/peer_review.md`
 
-Peer review is conceptually independent from realisation. It first judges the realised artefact as though it were submitted directly as finished writing for the selected target. Fidelity, traceability, and visible preservation of source structure are not positive evidence of writing quality. The reviewer then compares identified defects with the source to classify them as `SOURCE` or `REALISATION`, and finally checks compilation integrity for drift and source-assurance failures.
+Peer review is conceptually independent from realisation. It first judges the realised artefact as though it were submitted directly as finished writing for the selected target. Fidelity, traceability, and visible preservation of source structure are not positive evidence of writing quality. The reviewer then compares identified defects with the source to classify required revisions as `SOURCE` or `REALISATION`, may retain useful nonfatal observations as `ADVISORY`, and finally checks compilation integrity for drift and source-assurance failures.
 
-For `journal_academic`, target quality includes novelty, significance, and scholarly positioning. The reviewer performs a proportional adversarial search for prior formulations, established terminology/theories, adjacent work that narrows the contribution, materially different explanations, and foundational omissions. A failed search never verifies novelty. Any material externally discovered finding is `SOURCE` because the author must decide whether and how to change the source.
+For `journal_academic`, target quality includes novelty, significance, and scholarly positioning. The reviewer performs a proportional adversarial search for prior formulations, established terminology/theories, adjacent work that narrows the contribution, materially different explanations, and foundational omissions. A failed search never verifies novelty. External relevance alone does not block: prior work is `SOURCE` only when the reviewer can state a material consequence for the article's viability, originality, positioning, scope, support, or central claims; otherwise worthwhile scholarly context may be retained as `ADVISORY`.
 
 **OpenAI transport configuration:** when the stage is exactly `prompts/40_peer_review.md` and target exactly `prompts/targets/journal_academic.md`, `tools/openai_responses.py` supplies hosted `web_search` with required tool use. No prose-producing stage or other built-in target receives that capability.
 
@@ -196,14 +196,14 @@ STATUS: BLOCKED_SOURCE
 Every later non-empty line must be:
 
 ```text
-- [MAJOR|MINOR][SOURCE|REALISATION] <location> :: <finding>
+- [MAJOR|MINOR][SOURCE|REALISATION|ADVISORY] <location> :: <finding>
 ```
 
 Status is mechanically consistent with findings:
 
 - any `SOURCE` finding -> `BLOCKED_SOURCE`;
 - otherwise one or more `REALISATION` findings -> `REVISE_REALISATION`;
-- no findings -> `PASS`.
+- otherwise -> `PASS`; advisory findings may remain in the report.
 
 Decision behaviour:
 
@@ -222,7 +222,7 @@ Review text remains diagnostic. It cannot introduce source authority through thi
 **Inputs:** authoritative source, `realise.tex`, selected target, validated peer-review findings, and optional bibliography metadata  
 **Output:** `$(BUILD_DIR)/final.tex`
 
-This is one bounded writing pass justified by the new information supplied by peer review. It must address validated realisation findings using only corrections fully determined by source and target. Review comments are diagnostic context, not authority. If a requested repair actually requires a new warrant, claim, evidence item, source, citation, conceptual relationship, scope choice, interpretation, or other authorial decision, the stage fails rather than improvising.
+This is one bounded writing pass justified by the new information supplied by peer review. It must address only validated `REALISATION` findings using corrections fully determined by source and target; `ADVISORY` findings are retained for the author and ignored by this pass. Review comments are diagnostic context, not authority. If a requested repair actually requires a new warrant, claim, evidence item, source, citation, conceptual relationship, scope choice, interpretation, or other authorial decision, the stage fails rather than improvising.
 
 There is no automatic route back to peer review and no recursive revision loop.
 
