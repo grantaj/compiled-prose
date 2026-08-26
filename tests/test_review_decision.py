@@ -80,6 +80,13 @@ class ReviewDecisionTests(unittest.TestCase):
         )
 
     def test_pass_promotes_realised_artifact_without_model_revision(self):
+        expected = (
+            b"\\documentclass{article}\r\n"
+            b"\\begin{document}\r\n"
+            b"Authored prose.\r\n"
+            b"\\end{document}\r\n"
+        )
+        self.realised.write_bytes(expected)
         self.review.write_text("STATUS: PASS\n", encoding="utf-8")
         self.review_error.parent.mkdir(parents=True)
         self.review_error.write_text("stale review error", encoding="utf-8")
@@ -88,10 +95,7 @@ class ReviewDecisionTests(unittest.TestCase):
         decision = self.apply()
 
         self.assertEqual(decision.status, "PASS")
-        self.assertEqual(
-            self.final.read_text(encoding="utf-8"),
-            self.realised.read_text(encoding="utf-8"),
-        )
+        self.assertEqual(self.final.read_bytes(), expected)
         self.assertFalse(self.review_error.exists())
         self.assertFalse(self.final_error.exists())
 
