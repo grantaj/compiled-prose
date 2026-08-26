@@ -11,40 +11,49 @@ def text(path: str) -> str:
 
 
 class PeerReviewCalibrationContractTests(unittest.TestCase):
-    def test_source_block_is_reserved_for_intellectual_viability(self):
-        prompt = text("prompts/40_peer_review.md")
-        self.assertIn("cannot responsibly make its central claims", prompt)
-        self.assertIn("underlying intellectual position", prompt)
-        self.assertIn("defensive machinery", prompt)
+    def test_nonfatal_scholarly_criticism_can_survive_pass(self):
+        decision = parse_review(
+            "STATUS: PASS\n"
+            "- [MAJOR][ADVISORY] Scholarly positioning :: A close antecedent would "
+            "improve contextualisation, but no material conflict with the claimed "
+            "contribution has been established.\n"
+        )
+        self.assertEqual(decision.status, "PASS")
+        self.assertEqual(decision.findings[0].level, "ADVISORY")
 
-    def test_academic_review_does_not_require_proof_like_completeness(self):
-        target = text("prompts/targets/journal_academic.md")
-        for concept in (
-            "not as mathematical proofs or formal specifications",
-            "deductive closure",
-            "exhaustive case coverage",
-            "symmetrical cases",
-        ):
-            with self.subTest(concept=concept):
-                self.assertIn(concept, target)
-
-    def test_conceptual_criticism_can_continue_to_final_revision(self):
+    def test_advisory_does_not_displace_required_realisation_revision(self):
         decision = parse_review(
             "STATUS: REVISE_REALISATION\n"
-            "- [MAJOR][REALISATION] Case-study discussion :: Clarify that the cases "
-            "play deliberately asymmetric evidentiary roles and avoid overstating "
-            "what any one case establishes.\n"
+            "- [MAJOR][ADVISORY] Scholarly positioning :: Prior work would provide "
+            "useful ancestry without changing the article's viability.\n"
+            "- [MAJOR][REALISATION] Case-study discussion :: The prose overstates "
+            "what one supplied case establishes.\n"
         )
         self.assertEqual(decision.status, "REVISE_REALISATION")
-        self.assertEqual(decision.findings[0].level, "REALISATION")
+        self.assertEqual(
+            [finding.level for finding in decision.findings],
+            ["ADVISORY", "REALISATION"],
+        )
 
-    def test_genuine_source_defect_still_blocks(self):
+    def test_genuine_external_novelty_conflict_still_blocks(self):
         decision = parse_review(
             "STATUS: BLOCKED_SOURCE\n"
-            "- [MAJOR][SOURCE] Central argument :: The conclusion depends on a premise "
-            "the authoritative source never supplies.\n"
+            "- [MAJOR][SOURCE] Central contribution :: Prior work substantially "
+            "formulates the same contribution, making the article's central "
+            "originality claim materially overstated.\n"
         )
         self.assertEqual(decision.status, "BLOCKED_SOURCE")
+
+    def test_academic_target_distinguishes_relevance_from_material_consequence(self):
+        target = text("prompts/targets/journal_academic.md")
+        self.assertIn("Treat relevance and material consequence separately", target)
+        self.assertIn("reported as ADVISORY", target)
+        self.assertIn("Escalate external prior work to SOURCE only", target)
+
+    def test_academic_target_follows_normal_abstract_citation_convention(self):
+        target = text("prompts/targets/journal_academic.md")
+        self.assertIn("abstract ordinarily may summarise claims", target)
+        self.assertIn("properly supported in the article body", target)
 
 
 if __name__ == "__main__":

@@ -15,10 +15,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReviewProtocolTests(unittest.TestCase):
-    def test_pass_requires_no_findings(self):
+    def test_plain_pass_has_no_findings(self):
         decision = parse_review("STATUS: PASS\n")
         self.assertEqual(decision.status, "PASS")
         self.assertEqual(decision.findings, [])
+
+    def test_advisory_findings_are_compatible_with_pass(self):
+        decision = parse_review(
+            "STATUS: PASS\n"
+            "- [MAJOR][ADVISORY] Scholarly positioning :: Relevant prior work would "
+            "improve context but does not materially change the article's viability.\n"
+        )
+        self.assertEqual(decision.status, "PASS")
+        self.assertEqual(decision.findings[0].level, "ADVISORY")
 
     def test_realisation_findings_require_bounded_revision_status(self):
         decision = parse_review(
@@ -31,6 +40,7 @@ class ReviewProtocolTests(unittest.TestCase):
     def test_any_source_finding_requires_blocked_status(self):
         decision = parse_review(
             "STATUS: BLOCKED_SOURCE\n"
+            "- [MINOR][ADVISORY] Literature context :: A comparison would be useful.\n"
             "- [MINOR][REALISATION] Section 1 :: Sentence is repetitive.\n"
             "- [MAJOR][SOURCE] Section 3 :: Claim lacks an authored warrant.\n"
         )
@@ -98,6 +108,20 @@ class ReviewDecisionTests(unittest.TestCase):
         self.assertEqual(self.final.read_bytes(), expected)
         self.assertFalse(self.review_error.exists())
         self.assertFalse(self.final_error.exists())
+
+    def test_pass_with_advisory_promotes_without_model_revision(self):
+        self.review.write_text(
+            "STATUS: PASS\n"
+            "- [MINOR][ADVISORY] Literature context :: A useful comparison could be "
+            "added in a future source revision, but it is not required to proceed.\n",
+            encoding="utf-8",
+        )
+
+        decision = self.apply()
+
+        self.assertEqual(decision.status, "PASS")
+        self.assertTrue(self.final.exists())
+        self.assertEqual(self.final.read_bytes(), self.realised.read_bytes())
 
     def test_realisation_review_removes_stale_final_and_allows_one_later_pass(self):
         self.review.write_text(
